@@ -1,0 +1,29 @@
+================================================================================
+  CALIBRATION SET 2-FOLD CROSS-VALIDATION (Out-of-Fold Generalization)
+================================================================================
+SPLIT DEFINITION:
+  Fold 1: calib_01 to calib_10 (10 images: 6 complete, 4 defective)
+  Fold 2: calib_11 to calib_20 (10 images: 1 complete, 9 defective)
+--------------------------------------------------------------------------------
+TRAIN ON FOLD 1 -> TEST ON FOLD 2:
+  Fold 1 Separation: Min Present ZNCC = 0.911, Max Missing ZNCC = 0.843
+  Chosen Thresholds: ZNCC mid = 0.877, Diff mid = 0.085
+  Test Results on Fold 2:
+    - Board-level Accuracy  : 10 / 10 (100.0%)
+    - Expected Missing Parts: 17
+    - Detected Missing Parts: 17
+    - False Alarms          : 0
+    - Misses                : 0
+    - Uncertain Calls       : 0
+--------------------------------------------------------------------------------
+TRAIN ON FOLD 2 -> TEST ON FOLD 1:
+  Fold 2 Separation: Min Present ZNCC = 0.962, Max Missing ZNCC = 0.859
+  Chosen Thresholds: ZNCC mid = 0.911, Diff mid = 0.053
+  Test Results on Fold 1:
+    - Board-level Accuracy  : 4 / 10 (40.0%)
+    - Expected Missing Parts: 3
+    - Detected Missing Parts: 3
+    - False Alarms          : 0
+    - Misses                : 0
+    - Uncertain Calls       : 28
+================================================================================
