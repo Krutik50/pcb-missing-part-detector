@@ -1,0 +1,235 @@
+/* Pure CSS: System fonts, zero CDN dependencies, industrial clean aesthetic */
+:root {
+    --bg-page: #0f141c;
+    --bg-card: #18202c;
+    --bg-card-subtle: #202a3a;
+    --text-primary: #e6edf3;
+    --text-secondary: #9aaec4;
+    --border-color: #2b394f;
+    --color-green: #238636;
+    --color-green-light: #2ea043;
+    --color-amber: #d29922;
+    --color-red: #da3633;
+    --color-blue: #388bfd;
+    --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    font-family: var(--font-stack);
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-header {
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.5rem;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-area h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--color-amber);
+    display: inline-block;
+    transition: background-color 0.3s ease;
+}
+
+.status-indicator.online {
+    background-color: var(--color-green-light);
+    box-shadow: 0 0 8px rgba(46, 160, 67, 0.6);
+}
+
+.status-indicator.offline {
+    background-color: var(--color-red);
+}
+
+.mode-badge {
+    background-color: var(--bg-card-subtle);
+    border: 1px solid var(--border-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.container {
+    max-width: 1200px;
+    width: 100%;
+    margin: 1.5rem auto;
+    padding: 0 1rem;
+    flex: 1;
+}
+
+.card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.card-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.description {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge-info {
+    background-color: rgba(56, 139, 253, 0.15);
+    color: var(--color-blue);
+    border: 1px solid rgba(56, 139, 253, 0.4);
+}
+
+.badge-success {
+    background-color: rgba(46, 160, 67, 0.15);
+    color: var(--color-green-light);
+    border: 1px solid rgba(46, 160, 67, 0.4);
+}
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.stat-box {
+    background-color: var(--bg-card-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-value {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+.workflow-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .workflow-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.step-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.step-badge {
+    background-color: var(--color-blue);
+    color: white;
+    width: fit-content;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.step-card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.step-card p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.placeholder-box {
+    flex: 1;
+    min-height: 200px;
+    border: 2px dashed var(--border-color);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    text-align: center;
+    background-color: rgba(32, 42, 58, 0.4);
+}
+
+.placeholder-box .icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.app-footer {
+    border-top: 1px solid var(--border-color);
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    background-color: var(--bg-card);
+}
