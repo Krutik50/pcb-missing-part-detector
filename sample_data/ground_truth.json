@@ -1,0 +1,593 @@
+{
+  "board_info": {
+    "name": "Industrial Sensor Controller Rev 2.1",
+    "resolution": [
+      1920,
+      1080
+    ],
+    "total_components": 14
+  },
+  "components": {
+    "U1_MCU": {
+      "type": "QFP32",
+      "label": "STM32F4",
+      "pixel_bbox": [
+        580,
+        400,
+        200,
+        200
+      ],
+      "normalized_bbox": [
+        0.302083,
+        0.37037,
+        0.104167,
+        0.185185
+      ]
+    },
+    "U2_REG": {
+      "type": "SOT223",
+      "label": "AMS1117",
+      "pixel_bbox": [
+        940,
+        440,
+        140,
+        100
+      ],
+      "normalized_bbox": [
+        0.489583,
+        0.407407,
+        0.072917,
+        0.092593
+      ]
+    },
+    "U3_EEPROM": {
+      "type": "SOIC8",
+      "label": "24C08",
+      "pixel_bbox": [
+        940,
+        620,
+        120,
+        90
+      ],
+      "normalized_bbox": [
+        0.489583,
+        0.574074,
+        0.0625,
+        0.083333
+      ]
+    },
+    "C1_DECOUP": {
+      "type": "C0805",
+      "label": "C1",
+      "pixel_bbox": [
+        480,
+        410,
+        50,
+        30
+      ],
+      "normalized_bbox": [
+        0.25,
+        0.37963,
+        0.026042,
+        0.027778
+      ]
+    },
+    "C2_DECOUP": {
+      "type": "C0805",
+      "label": "C2",
+      "pixel_bbox": [
+        480,
+        470,
+        50,
+        30
+      ],
+      "normalized_bbox": [
+        0.25,
+        0.435185,
+        0.026042,
+        0.027778
+      ]
+    },
+    "C3_DECOUP": {
+      "type": "C0805",
+      "label": "C3",
+      "pixel_bbox": [
+        480,
+        530,
+        50,
+        30
+      ],
+      "normalized_bbox": [
+        0.25,
+        0.490741,
+        0.026042,
+        0.027778
+      ]
+    },
+    "R1_PULLUP": {
+      "type": "R0805",
+      "label": "R1",
+      "pixel_bbox": [
+        820,
+        410,
+        50,
+        28
+      ],
+      "normalized_bbox": [
+        0.427083,
+        0.37963,
+        0.026042,
+        0.025926
+      ]
+    },
+    "R2_PULLUP": {
+      "type": "R0805",
+      "label": "R2",
+      "pixel_bbox": [
+        820,
+        460,
+        50,
+        28
+      ],
+      "normalized_bbox": [
+        0.427083,
+        0.425926,
+        0.026042,
+        0.025926
+      ]
+    },
+    "R3_PULLUP": {
+      "type": "R0805",
+      "label": "R3",
+      "pixel_bbox": [
+        820,
+        510,
+        50,
+        28
+      ],
+      "normalized_bbox": [
+        0.427083,
+        0.472222,
+        0.026042,
+        0.025926
+      ]
+    },
+    "R4_PULLUP": {
+      "type": "R0805",
+      "label": "R4",
+      "pixel_bbox": [
+        820,
+        560,
+        50,
+        28
+      ],
+      "normalized_bbox": [
+        0.427083,
+        0.518519,
+        0.026042,
+        0.025926
+      ]
+    },
+    "C4_BULK": {
+      "type": "ELEC_CAN",
+      "label": "100uF",
+      "pixel_bbox": [
+        1160,
+        420,
+        110,
+        110
+      ],
+      "normalized_bbox": [
+        0.604167,
+        0.388889,
+        0.057292,
+        0.101852
+      ]
+    },
+    "D1_LED": {
+      "type": "SMD_LED",
+      "label": "D1_PWR",
+      "pixel_bbox": [
+        1160,
+        580,
+        60,
+        35
+      ],
+      "normalized_bbox": [
+        0.604167,
+        0.537037,
+        0.03125,
+        0.032407
+      ]
+    },
+    "R5_SHUNTR": {
+      "type": "R1206",
+      "label": "R5",
+      "pixel_bbox": [
+        940,
+        280,
+        80,
+        45
+      ],
+      "normalized_bbox": [
+        0.489583,
+        0.259259,
+        0.041667,
+        0.041667
+      ]
+    },
+    "Y1_XTAL": {
+      "type": "XTAL_CAN",
+      "label": "16.000",
+      "pixel_bbox": [
+        580,
+        280,
+        130,
+        65
+      ],
+      "normalized_bbox": [
+        0.302083,
+        0.259259,
+        0.067708,
+        0.060185
+      ]
+    }
+  },
+  "images": {
+    "reference.png": {
+      "split": "reference",
+      "relative_path": "reference.png",
+      "missing_parts": [],
+      "present_parts": [
+        "U1_MCU",
+        "U2_REG",
+        "U3_EEPROM",
+        "C1_DECOUP",
+        "C2_DECOUP",
+        "C3_DECOUP",
+        "R1_PULLUP",
+        "R2_PULLUP",
+        "R3_PULLUP",
+        "R4_PULLUP",
+        "C4_BULK",
+        "D1_LED",
+        "R5_SHUNTR",
+        "Y1_XTAL"
+      ],
+      "expected_board_status": "OK",
+      "perturbations": {
+        "dx": 0,
+        "dy": 0,
+        "angle_deg": 0.0,
+        "gain": 1.0,
+        "bias": 0
+      }
+    },
+    "calibration/calib_01_all_ok.png": {
+      "split": "calibration",
+      "relative_path": "calibration/calib_01_all_ok.png",
+      "missing_parts": [],
+      "present_parts": [
+        "U1_MCU",
+        "U2_REG",
+        "U3_EEPROM",
+        "C1_DECOUP",
+        "C2_DECOUP",
+        "C3_DECOUP",
+        "R1_PULLUP",
+        "R2_PULLUP",
+        "R3_PULLUP",
+        "R4_PULLUP",
+        "C4_BULK",
+        "D1_LED",
+        "R5_SHUNTR",
+        "Y1_XTAL"
+      ],
+      "expected_board_status": "OK",
+      "perturbations": {
+        "dx": 2.2,
+        "dy": -1.8,
+        "angle_deg": 0.25,
+        "gain": 1.04,
+        "bias": 6
+      }
+    },
+    "calibration/calib_02_missing_c2_r4.png": {
+      "split": "calibration",
+      "relative_path": "calibration/calib_02_missing_c2_r4.png",
+      "missing_parts": [
+        "C2_DECOUP",
+        "R4_PULLUP"
+      ],
+      "present_parts": [
+        "U1_MCU",
+        "U2_REG",
+        "U3_EEPROM",
+        "C1_DECOUP",
+        "C3_DECOUP",
+        "R1_PULLUP",
+        "R2_PULLUP",
+        "R3_PULLUP",
+        "C4_BULK",
+        "D1_LED",
+        "R5_SHUNTR",
+        "Y1_XTAL"
+      ],
+      "expected_board_status": "DEFECT",
+      "perturbations": {
+        "dx": -3.5,
+        "dy": 2.1,
+        "angle_deg": -0.32,
+        "gain": 0.94,
+        "bias": -8
+      }
+    },
+    "calibration/calib_03_missing_u1_mcu.png": {
+      "split": "calibration",
+      "relative_path": "calibration/calib_03_missing_u1_mcu.png",
+      "missing_parts": [
+        "U1_MCU"
+      ],
+      "present_parts": [
+        "U2_REG",
+        "U3_EEPROM",
+        "C1_DECOUP",
+        "C2_DECOUP",
+        "C3_DECOUP",
+        "R1_PULLUP",
+        "R2_PULLUP",
+        "R3_PULLUP",
+        "R4_PULLUP",
+        "C4_BULK",
+        "D1_LED",
+        "R5_SHUNTR",
+        "Y1_XTAL"
+      ],
+      "expected_board_status": "DEFECT",
+      "perturbations": {
+        "dx": 1.5,
+        "dy": 3.0,
+        "angle_deg": 0.18,
+        "gain": 1.08,
+        "bias": 12
+      }
+    },
+    "calibration/calib_04_missing_r1_c3.png": {
+      "split": "calibration",
+      "relative_path": "calibration/calib_04_missing_r1_c3.png",
+      "missing_parts": [
+        "R1_PULLUP",
+        "C3_DECOUP"
+      ],
+      "present_parts": [
+        "U1_MCU",
+        "U2_REG",
+        "U3_EEPROM",
+        "C1_DECOUP",
+        "C2_DECOUP",
+        "R2_PULLUP",
+        "R3_PULLUP",
+        "R4_PULLUP",
+        "C4_BULK",
+        "D1_LED",
+        "R5_SHUNTR",
+        "Y1_XTAL"
+      ],
+      "expected_board_status": "DEFECT",
+      "perturbations": {
+        "dx": -2.0,
+        "dy": -2.5,
+        "angle_deg": -0.22,
+        "gain": 0.97,
+        "bias": -4
+      }
+    },
+    "calibration/calib_05_all_ok_glare_shift.png": {
+      "split": "calibration",
+      "relative_path": "calibration/calib_05_all_ok_glare_shift.png",
+      "missing_parts": [],
+      "present_parts": [
+        "U1_MCU",
+        "U2_REG",
+        "U3_EEPROM",
+        "C1_DECOUP",
+        "C2_DECOUP",
+        "C3_DECOUP",
+        "R1_PULLUP",
+        "R2_PULLUP",
+        "R3_PULLUP",
+        "R4_PULLUP",
+        "C4_BULK",
+        "D1_LED",
+        "R5_SHUNTR",
+        "Y1_XTAL"
+      ],
+      "expected_board_status": "OK",
+      "perturbations": {
+        "dx": 4.1,
+        "dy": -3.2,
+        "angle_deg": 0.45,
+        "gain": 1.1,
+        "bias": 15
+      }
+    },
+    "test_heldout/test_01_all_ok_shifted.png": {
+      "split": "test_heldout",
+      "relative_path": "test_heldout/test_01_all_ok_shifted.png",
+      "missing_parts": [],
+      "present_parts": [
+        "U1_MCU",
+        "U2_REG",
+        "U3_EEPROM",
+        "C1_DECOUP",
+        "C2_DECOUP",
+        "C3_DECOUP",
+        "R1_PULLUP",
+        "R2_PULLUP",
+        "R3_PULLUP",
+        "R4_PULLUP",
+        "C4_BULK",
+        "D1_LED",
+        "R5_SHUNTR",
+        "Y1_XTAL"
+      ],
+      "expected_board_status": "OK",
+      "perturbations": {
+        "dx": -4.8,
+        "dy": 3.6,
+        "angle_deg": -0.55,
+        "gain": 0.92,
+        "bias": -10
+      }
+    },
+    "test_heldout/test_02_missing_c1.png": {
+      "split": "test_heldout",
+      "relative_path": "test_heldout/test_02_missing_c1.png",
+      "missing_parts": [
+        "C1_DECOUP"
+      ],
+      "present_parts": [
+        "U1_MCU",
+        "U2_REG",
+        "U3_EEPROM",
+        "C2_DECOUP",
+        "C3_DECOUP",
+        "R1_PULLUP",
+        "R2_PULLUP",
+        "R3_PULLUP",
+        "R4_PULLUP",
+        "C4_BULK",
+        "D1_LED",
+        "R5_SHUNTR",
+        "Y1_XTAL"
+      ],
+      "expected_board_status": "DEFECT",
+      "perturbations": {
+        "dx": 2.8,
+        "dy": -2.0,
+        "angle_deg": 0.3,
+        "gain": 1.05,
+        "bias": 8
+      }
+    },
+    "test_heldout/test_03_missing_u2_r2.png": {
+      "split": "test_heldout",
+      "relative_path": "test_heldout/test_03_missing_u2_r2.png",
+      "missing_parts": [
+        "U2_REG",
+        "R2_PULLUP"
+      ],
+      "present_parts": [
+        "U1_MCU",
+        "U3_EEPROM",
+        "C1_DECOUP",
+        "C2_DECOUP",
+        "C3_DECOUP",
+        "R1_PULLUP",
+        "R3_PULLUP",
+        "R4_PULLUP",
+        "C4_BULK",
+        "D1_LED",
+        "R5_SHUNTR",
+        "Y1_XTAL"
+      ],
+      "expected_board_status": "DEFECT",
+      "perturbations": {
+        "dx": -1.8,
+        "dy": -3.5,
+        "angle_deg": -0.28,
+        "gain": 0.89,
+        "bias": -14
+      }
+    },
+    "test_heldout/test_04_missing_d1_led_y1_xtal.png": {
+      "split": "test_heldout",
+      "relative_path": "test_heldout/test_04_missing_d1_led_y1_xtal.png",
+      "missing_parts": [
+        "D1_LED",
+        "Y1_XTAL"
+      ],
+      "present_parts": [
+        "U1_MCU",
+        "U2_REG",
+        "U3_EEPROM",
+        "C1_DECOUP",
+        "C2_DECOUP",
+        "C3_DECOUP",
+        "R1_PULLUP",
+        "R2_PULLUP",
+        "R3_PULLUP",
+        "R4_PULLUP",
+        "C4_BULK",
+        "R5_SHUNTR"
+      ],
+      "expected_board_status": "DEFECT",
+      "perturbations": {
+        "dx": 3.6,
+        "dy": 2.4,
+        "angle_deg": 0.4,
+        "gain": 1.07,
+        "bias": 10
+      }
+    },
+    "test_heldout/test_05_all_ok_high_glare.png": {
+      "split": "test_heldout",
+      "relative_path": "test_heldout/test_05_all_ok_high_glare.png",
+      "missing_parts": [],
+      "present_parts": [
+        "U1_MCU",
+        "U2_REG",
+        "U3_EEPROM",
+        "C1_DECOUP",
+        "C2_DECOUP",
+        "C3_DECOUP",
+        "R1_PULLUP",
+        "R2_PULLUP",
+        "R3_PULLUP",
+        "R4_PULLUP",
+        "C4_BULK",
+        "D1_LED",
+        "R5_SHUNTR",
+        "Y1_XTAL"
+      ],
+      "expected_board_status": "OK",
+      "perturbations": {
+        "dx": 1.2,
+        "dy": -1.4,
+        "angle_deg": -0.15,
+        "gain": 1.14,
+        "bias": 18
+      }
+    },
+    "test_heldout/test_06_missing_multiple_components.png": {
+      "split": "test_heldout",
+      "relative_path": "test_heldout/test_06_missing_multiple_components.png",
+      "missing_parts": [
+        "C4_BULK",
+        "R5_SHUNTR",
+        "U3_EEPROM",
+        "R3_PULLUP"
+      ],
+      "present_parts": [
+        "U1_MCU",
+        "U2_REG",
+        "C1_DECOUP",
+        "C2_DECOUP",
+        "C3_DECOUP",
+        "R1_PULLUP",
+        "R2_PULLUP",
+        "R4_PULLUP",
+        "D1_LED",
+        "Y1_XTAL"
+      ],
+      "expected_board_status": "DEFECT",
+      "perturbations": {
+        "dx": -5.2,
+        "dy": -4.0,
+        "angle_deg": -0.65,
+        "gain": 0.95,
+        "bias": -6
+      }
+    }
+  }
+}
