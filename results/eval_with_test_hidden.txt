@@ -1,0 +1,61 @@
+==================================================================================
+  PCB MISSING COMPONENT DETECTOR - EVALUATION HARNESS
+==================================================================================
+Target Split      : CALIBRATION (20 images)
+Sensitivity Mode  : BALANCED
+Active Thresholds : ZNCC [low: 0.86, high: 0.89] | Diff [low: 0.07, high: 0.09]
+Search Slack      : ±16 pixels
+----------------------------------------------------------------------------------
+Image Filename                   | Exp    | Det    | Status     | FA   | Miss | Time (ms)
+----------------------------------------------------------------------------------
+calib_01_all_ok_nominal.png      | 0      | 0      | OK         | 0    | 0    |    169.5 ms
+calib_02_all_ok_shift_pos.png    | 0      | 0      | OK         | 0    | 0    |    281.3 ms
+calib_03_all_ok_shift_neg.png    | 0      | 0      | OK         | 0    | 0    |    235.5 ms
+calib_04_all_ok_bright.png       | 0      | 0      | OK         | 0    | 0    |    224.7 ms
+calib_05_all_ok_dim.png          | 0      | 0      | OK         | 0    | 0    |    259.1 ms
+calib_06_all_ok_glare_mcu.png    | 0      | 0      | OK         | 0    | 0    |    237.2 ms
+calib_07_all_ok_glare_passives.png | 0      | 0      | OK         | 0    | 0    |    218.7 ms
+calib_08_missing_u1_mcu.png      | 1      | 1      | DEFECT     | 0    | 0    |    163.9 ms
+calib_09_missing_c1.png          | 1      | 1      | DEFECT     | 0    | 0    |    149.4 ms
+calib_10_missing_r3.png          | 1      | 1      | DEFECT     | 0    | 0    |    173.0 ms
+calib_11_missing_y1_xtal.png     | 1      | 1      | DEFECT     | 0    | 0    |    423.5 ms
+calib_12_missing_adj_c1_c2.png   | 2      | 2      | DEFECT     | 0    | 0    |    566.5 ms
+calib_13_missing_adj_r1_r2.png   | 2      | 2      | DEFECT     | 0    | 0    |    415.3 ms
+calib_14_missing_adj_r3_r4.png   | 2      | 2      | DEFECT     | 0    | 0    |    546.4 ms
+calib_15_missing_adj_c2_c3.png   | 2      | 2      | DEFECT     | 0    | 0    |    298.6 ms
+calib_16_missing_c2_glare_on_pad.png | 1      | 1      | DEFECT     | 0    | 0    |    794.7 ms
+calib_17_missing_u2_glare_on_tab.png | 1      | 1      | DEFECT     | 0    | 0    |    985.3 ms
+calib_18_missing_r1_glare_on_pad.png | 1      | 1      | DEFECT     | 0    | 0    |   1531.2 ms
+calib_19_missing_c4_d1.png       | 2      | 2      | DEFECT     | 0    | 0    |    650.7 ms
+calib_20_missing_u3_r5_c3.png    | 3      | 3      | DEFECT     | 0    | 0    |    539.7 ms
+==================================================================================
+  EVALUATION SUMMARY
+==================================================================================
+Total Boards Evaluated      : 20
+Board-Level Correct Verdicts: 20 / 20 (100.0%)
+Total Components Tested     : 280
+Expected Missing Components : 20
+Detected Missing Components : 20
+False Alarms (False Pos)    : 0 (Present marked as Missing)
+Misses (False Negatives)    : 0 (Missing marked as Present)
+Uncertain / Borderline Calls: 0 (Flagged for visual check)
+----------------------------------------------------------------------------------
+Measured Speed (Wall-Clock Latency):
+ - Average per full 1080p board : 443.2 ms  (Min: 149.4 ms, Max: 1531.2 ms)
+ - Average per component crop   : 2.10 ms
+----------------------------------------------------------------------------------
+SCORE DISTRIBUTION & SEPARATION ANALYSIS
+(Use this empirical gap to calibrate decision thresholds)
+----------------------------------------------------------------------------------
+1. ZNCC Appearance Correlation Score (Higher is more similar):
+   - Components PRESENT (Good) : Min: 0.911 | 25%: 0.981 | Median: 0.985 | 75%: 0.989 | Max: 0.997
+   - Components MISSING (Empty): Min: 0.140 | 25%: 0.794 | Median: 0.825 | 75%: 0.841 | Max: 0.859
+
+2. Normalized Patch Difference MAE (Lower is more similar):
+   - Components PRESENT (Good) : Min: 0.013 | 25%: 0.019 | Median: 0.027 | 75%: 0.035 | Max: 0.063
+   - Components MISSING (Empty): Min: 0.055 | 25%: 0.106 | Median: 0.138 | 75%: 0.157 | Max: 0.265
+----------------------------------------------------------------------------------
+Empirical Separation Gap:
+ - ZNCC Gap   : +0.052 (Positive indicates clean margin)
+ - Diff MAE Gap: -0.008 (Positive indicates clean margin)
+==================================================================================
