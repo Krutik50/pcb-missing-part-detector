@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCB Missing Component Detector</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-content">
+            <div class="logo-area">
+                <span class="status-indicator" id="connection-status" title="Connecting..."></span>
+                <h1>PCB Missing Component Detector</h1>
+            </div>
+            <div class="mode-badge">Offline Mode (Task B)</div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- System Status Banner -->
+        <section class="card status-card">
+            <div class="card-header">
+                <h2>System Overview</h2>
+                <span class="badge badge-info" id="server-status-badge">Checking connection...</span>
+            </div>
+            <p class="description">
+                100% offline Automated Optical Inspection (AOI) platform for fixed-camera circuit board quality control.
+            </p>
+            <div class="stats-row">
+                <div class="stat-box">
+                    <span class="stat-label">Max Working Resolution</span>
+                    <span class="stat-value">1920 px (Longest Edge)</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Alignment Method</span>
+                    <span class="stat-value">Rigid ECC + Border Mask</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Verification Metrics</span>
+                    <span class="stat-value">ZNCC + Normalized Patch Diff</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Runtime CDNs</span>
+                    <span class="stat-value">0 (Pure Local Static Assets)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workflow Step Panels (Skeleton Placeholders) -->
+        <div class="workflow-grid">
+            <!-- Step 1: Reference Setup -->
+            <section class="card step-card" id="step-reference">
+                <div class="step-badge">Step 1</div>
+                <h3>Reference Board Setup</h3>
+                <p>Upload a photo of a known-good board and define component bounding boxes.</p>
+                <div class="placeholder-box">
+                    <span class="icon">📷</span>
+                    <p>Reference upload & canvas annotation ready for implementation.</p>
+                </div>
+            </section>
+
+            <!-- Step 2: Test Inspection -->
+            <section class="card step-card" id="step-inspection">
+                <div class="step-badge">Step 2</div>
+                <h3>Test Board Inspection</h3>
+                <p>Upload test photos to detect missing parts with local alignment and dual-metric checks.</p>
+                <div class="placeholder-box">
+                    <span class="icon">🔍</span>
+                    <p>Multi-image inspection pipeline ready for implementation.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="app-footer">
+        <p>PCB Missing Component Detector &bull; Fully Offline &bull; Task B Internship Take-Home</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
