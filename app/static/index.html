@@ -72,11 +72,17 @@
                     </div>
                 </div>
 
-                <div class="quick-sample-row">
-                    <span>Testing on sample data?</span>
-                    <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-ref">Load Sample Reference (sample_data/reference.png)</button>
-                    <button type="button" class="btn btn-sm btn-outline" id="btn-camera-ref"><span class="btn-icon-label">📹</span> Capture with Camera</button>
+                <div class="action-row-step1">
+                    <button type="button" class="btn btn-outline" id="btn-camera-ref"><span class="btn-icon-label">📹</span> Capture with Camera</button>
                 </div>
+
+                <details class="sample-details">
+                    <summary class="sample-summary">🧪 Sample data for testing</summary>
+                    <div class="sample-details-content">
+                        <span class="sample-hint">Testing without your own PCB files? Use bundled calibration images:</span>
+                        <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-ref">Load Sample Reference (sample_data/reference.png)</button>
+                    </div>
+                </details>
             </div>
         </section>
 
@@ -91,7 +97,6 @@
                         <button type="button" class="btn btn-sm btn-outline" id="btn-export-recipe" title="Download named parts and boxes as a recipe JSON">💾 Save Recipe</button>
                         <button type="button" class="btn btn-sm btn-outline" id="btn-import-recipe" title="Load recipe JSON and redraw boxes on this reference image">📂 Load Recipe</button>
                         <input type="file" id="recipe-file-input" accept=".json,application/json" class="file-input-hidden">
-                        <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-comps">Load Standard 14 Parts</button>
                         <button type="button" class="btn btn-sm btn-danger-outline" id="btn-clear-comps">Clear All</button>
                     </div>
                 </div>
@@ -104,6 +109,14 @@
                         Tightly-cropped boxes that clip solder pins cause false alarms under lighting shifts.
                     </div>
                 </div>
+
+                <details class="sample-details" style="margin-bottom: 1rem;">
+                    <summary class="sample-summary">🧪 Sample data for testing</summary>
+                    <div class="sample-details-content">
+                        <span class="sample-hint">Auto-populate standard 14 components for the sample reference board:</span>
+                        <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-comps">Load Standard 14 Parts</button>
+                    </div>
+                </details>
 
                 <div class="annotation-layout">
                     <!-- Left: Interactive Canvas -->
@@ -158,10 +171,16 @@
                             <input type="file" id="test-file-input" accept="image/*" multiple class="file-input-hidden">
                         </div>
                         <div id="test-file-list" class="file-tags-list"></div>
-                        <div class="quick-sample-row">
-                            <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-batch">Load Sample Batch (Complete, Missing MCU, Missing Passives)</button>
+                        <div class="action-row-step3">
                             <button type="button" class="btn btn-sm btn-outline" id="btn-camera-test"><span class="btn-icon-label">📹</span> Capture Test Photo with Camera</button>
                         </div>
+                        <details class="sample-details">
+                            <summary class="sample-summary">🧪 Sample data for testing</summary>
+                            <div class="sample-details-content">
+                                <span class="sample-hint">Load sample batch (1 OK, 2 Defective):</span>
+                                <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-batch">Load Sample Batch</button>
+                            </div>
+                        </details>
                     </div>
 
                     <!-- Right: Sensitivity & Action -->
@@ -213,6 +232,57 @@
                     <h2>Inspection Results</h2>
                     <span id="results-summary-badge" class="badge"></span>
                 </div>
+
+                <!-- Batch Summary & Yield Panel -->
+                <div id="batch-summary-panel" class="batch-summary-card">
+                    <div class="summary-card-header">
+                        <div class="summary-title-group">
+                            <h3>Inspection Batch Summary</h3>
+                            <span class="sub-brand">Production Yield & Defect Analysis</span>
+                        </div>
+                        <div class="summary-actions">
+                            <button type="button" class="btn btn-sm btn-outline" id="btn-download-csv">📥 Download CSV Report</button>
+                            <button type="button" class="btn btn-sm btn-outline" id="btn-print-report">🖨️ Printable Quality Report</button>
+                        </div>
+                    </div>
+
+                    <!-- Key Performance Indicators (KPIs) -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-val" id="kpi-total">0</div>
+                            <div class="kpi-label">Boards Inspected</div>
+                        </div>
+                        <div class="kpi-card kpi-ok">
+                            <div class="kpi-val" id="kpi-ok">0</div>
+                            <div class="kpi-label">Passed (OK)</div>
+                        </div>
+                        <div class="kpi-card kpi-defect">
+                            <div class="kpi-val" id="kpi-defect">0</div>
+                            <div class="kpi-label">Defects Found</div>
+                        </div>
+                        <div class="kpi-card kpi-review">
+                            <div class="kpi-val" id="kpi-review">0</div>
+                            <div class="kpi-label">Under Review</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-val" id="kpi-fpy">0%</div>
+                            <div class="kpi-label">First-Pass Yield (Machine)</div>
+                        </div>
+                        <div class="kpi-card kpi-final-yield">
+                            <div class="kpi-val" id="kpi-final-yield">0%</div>
+                            <div class="kpi-label">Final Yield (Post Sign-Off)</div>
+                        </div>
+                    </div>
+
+                    <!-- Top Missing Parts Pareto Tally -->
+                    <div class="defect-tally-section">
+                        <h4>Defect Pareto Analysis: Most Frequently Missing Components</h4>
+                        <div id="defect-tally-list" class="defect-tally-list">
+                            <span class="text-muted">No defects detected in this batch.</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="results-cards-container" class="results-cards-stack">
                     <!-- Dynamic result cards rendered here -->
                 </div>
@@ -254,6 +324,12 @@
 
             <div id="camera-error-banner" class="alert alert-danger d-none"></div>
 
+            <!-- Operator Camera Hint -->
+            <div class="camera-hint-box">
+                <span class="hint-icon">💡</span>
+                <span class="hint-text"><strong>Fixed Alignment Hint:</strong> Capture the reference board and all test boards using the <strong>same camera, fixed mount, and identical distance/position</strong> for reliable inspection.</span>
+            </div>
+
             <div class="camera-viewport-wrap">
                 <video id="camera-video-preview" autoplay playsinline muted></video>
                 <canvas id="camera-capture-canvas" class="d-none"></canvas>
@@ -274,6 +350,26 @@
                     <button type="button" class="btn btn-success" id="btn-capture-as-ref" disabled>Capture as Reference</button>
                     <button type="button" class="btn btn-outline" id="btn-capture-as-test" disabled>Capture as Test Board</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Printable Quality Report Modal -->
+    <div id="print-modal" class="modal-backdrop d-none">
+        <div class="modal-card modal-card-print">
+            <div class="modal-camera-header no-print">
+                <div class="camera-title-group">
+                    <span class="report-icon">📄</span>
+                    <h3>PCB AOI Batch Quality Certificate</h3>
+                </div>
+                <div style="display:flex; gap:0.5rem;">
+                    <button type="button" class="btn btn-primary" id="btn-trigger-print">🖨️ Print Certificate</button>
+                    <button type="button" class="btn-icon" id="btn-close-print">&times;</button>
+                </div>
+            </div>
+
+            <div id="printable-report-content" class="printable-area">
+                <!-- Dynamically generated printable quality certificate -->
             </div>
         </div>
     </div>
