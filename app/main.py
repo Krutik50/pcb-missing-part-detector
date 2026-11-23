@@ -44,6 +44,11 @@ app = FastAPI(
 # Mount static directory for offline assets (plain HTML, CSS, JS)
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
+# Mount sample_data directory for local offline testing and demo access
+SAMPLE_DIR = BASE_DIR.parent / "sample_data"
+if SAMPLE_DIR.exists():
+    app.mount("/sample_data", StaticFiles(directory=str(SAMPLE_DIR)), name="sample_data")
+
 
 class ComponentDef(BaseModel):
     name: str
@@ -74,6 +79,17 @@ async def health_check():
         "active_sessions_count": len(SESSIONS),
         "default_thresholds": cfg.get_effective_thresholds(),
     }
+
+
+@app.get("/api/sample-components")
+async def get_sample_components():
+    """Returns the canonical component definitions from ground_truth.json for demo / quick load."""
+    gt_file = BASE_DIR.parent / "sample_data" / "ground_truth.json"
+    if gt_file.exists():
+        with open(gt_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return {"components": data.get("components", {})}
+    return {"components": {}}
 
 
 def _validate_and_decode_image(file_bytes: bytes, filename: str) -> np.ndarray:

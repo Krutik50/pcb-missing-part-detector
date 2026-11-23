@@ -3,78 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PCB Missing Component Detector</title>
+    <title>PCB Missing Component Detector (AOI)</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    <!-- Top Header -->
     <header class="app-header">
-        <div class="header-content">
-            <div class="logo-area">
-                <span class="status-indicator" id="connection-status" title="Connecting..."></span>
-                <h1>PCB Missing Component Detector</h1>
+        <div class="header-inner">
+            <div class="brand">
+                <span class="status-indicator online" id="status-dot" title="System Ready"></span>
+                <div class="brand-text">
+                    <h1>PCB Missing Component Detector</h1>
+                    <span class="sub-brand">Shop-Floor Automated Optical Inspection &bull; Task B</span>
+                </div>
             </div>
-            <div class="mode-badge">Offline Mode (Task B)</div>
+            <div class="header-actions">
+                <span class="offline-tag">100% Offline Mode</span>
+                <button type="button" class="btn btn-outline" id="btn-reset" title="Start over with a new board">Start Over / Reset</button>
+            </div>
         </div>
     </header>
 
+    <!-- Main Container -->
     <main class="container">
-        <!-- System Status Banner -->
-        <section class="card status-card">
-            <div class="card-header">
-                <h2>System Overview</h2>
-                <span class="badge badge-info" id="server-status-badge">Checking connection...</span>
+        <!-- 3-Step Progress Indicator -->
+        <nav class="step-indicator" aria-label="Workflow Steps">
+            <div class="step-item active" id="step-nav-1">
+                <div class="step-circle">1</div>
+                <div class="step-label">Upload Reference</div>
             </div>
-            <p class="description">
-                100% offline Automated Optical Inspection (AOI) platform for fixed-camera circuit board quality control.
-            </p>
-            <div class="stats-row">
-                <div class="stat-box">
-                    <span class="stat-label">Max Working Resolution</span>
-                    <span class="stat-value">1920 px (Longest Edge)</span>
+            <div class="step-connector"></div>
+            <div class="step-item" id="step-nav-2">
+                <div class="step-circle">2</div>
+                <div class="step-label">Mark Components</div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step-item" id="step-nav-3">
+                <div class="step-circle">3</div>
+                <div class="step-label">Inspect Test Boards</div>
+            </div>
+        </nav>
+
+        <!-- Message / Error Banner -->
+        <div id="global-alert" class="alert d-none"></div>
+
+        <!-- ============================================================= -->
+        <!-- STEP 1: REFERENCE BOARD UPLOAD -->
+        <!-- ============================================================= -->
+        <section id="panel-step-1" class="workflow-panel">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Step 1: Upload Golden Reference Board</h2>
+                    <span class="badge badge-info">Baseline Calibration</span>
                 </div>
-                <div class="stat-box">
-                    <span class="stat-label">Alignment Method</span>
-                    <span class="stat-value">Rigid ECC + Border Mask</span>
+                <p class="section-desc">
+                    Upload a high-quality, evenly-lit photo of a fully-populated "golden" reference board.
+                    Components marked on this image will serve as the ground truth templates for automated inspection.
+                </p>
+
+                <div class="upload-dropzone" id="ref-dropzone">
+                    <div class="dropzone-content">
+                        <span class="upload-icon">📷</span>
+                        <h3>Drag & drop reference photo here</h3>
+                        <p class="dropzone-sub">or click to browse from your computer (PNG, JPEG, TIFF)</p>
+                        <input type="file" id="ref-file-input" accept="image/*" class="file-input-hidden">
+                        <button type="button" class="btn btn-primary" id="btn-browse-ref">Select Reference Image</button>
+                    </div>
                 </div>
-                <div class="stat-box">
-                    <span class="stat-label">Verification Metrics</span>
-                    <span class="stat-value">ZNCC + Normalized Patch Diff</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-label">Runtime CDNs</span>
-                    <span class="stat-value">0 (Pure Local Static Assets)</span>
+
+                <div class="quick-sample-row">
+                    <span>Testing on sample data?</span>
+                    <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-ref">Load Sample Reference (sample_data/reference.png)</button>
                 </div>
             </div>
         </section>
 
-        <!-- Workflow Step Panels (Skeleton Placeholders) -->
-        <div class="workflow-grid">
-            <!-- Step 1: Reference Setup -->
-            <section class="card step-card" id="step-reference">
-                <div class="step-badge">Step 1</div>
-                <h3>Reference Board Setup</h3>
-                <p>Upload a photo of a known-good board and define component bounding boxes.</p>
-                <div class="placeholder-box">
-                    <span class="icon">📷</span>
-                    <p>Reference upload & canvas annotation ready for implementation.</p>
+        <!-- ============================================================= -->
+        <!-- STEP 2: MARK COMPONENTS -->
+        <!-- ============================================================= -->
+        <section id="panel-step-2" class="workflow-panel d-none">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Step 2: Mark Components on Reference Board</h2>
+                    <div class="header-tools">
+                        <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-comps">Load Standard 14 Parts</button>
+                        <button type="button" class="btn btn-sm btn-danger-outline" id="btn-clear-comps">Clear All</button>
+                    </div>
                 </div>
-            </section>
 
-            <!-- Step 2: Test Inspection -->
-            <section class="card step-card" id="step-inspection">
-                <div class="step-badge">Step 2</div>
-                <h3>Test Board Inspection</h3>
-                <p>Upload test photos to detect missing parts with local alignment and dual-metric checks.</p>
-                <div class="placeholder-box">
-                    <span class="icon">🔍</span>
-                    <p>Multi-image inspection pipeline ready for implementation.</p>
+                <!-- Operator Hint Alert -->
+                <div class="hint-banner">
+                    <span class="hint-icon">💡</span>
+                    <div class="hint-text">
+                        <strong>Operator Framing Tip:</strong> Draw the bounding box around the <strong>entire component including its solder pads or leads</strong>.
+                        Tightly-cropped boxes that clip solder pins cause false alarms under lighting shifts.
+                    </div>
+                </div>
+
+                <div class="annotation-layout">
+                    <!-- Left: Interactive Canvas -->
+                    <div class="canvas-wrapper">
+                        <div class="canvas-toolbar">
+                            <span class="toolbar-info" id="canvas-dim-info">Resolution: 1920 &times; 1080</span>
+                            <span class="toolbar-hint">Click & drag on image to draw component box</span>
+                        </div>
+                        <div class="canvas-viewport" id="canvas-container">
+                            <canvas id="annotation-canvas"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Right: Component List Sidebar -->
+                    <aside class="components-sidebar">
+                        <div class="sidebar-header">
+                            <h3>Marked Parts (<span id="comp-count">0</span>)</h3>
+                        </div>
+                        <div class="sidebar-list" id="component-list-container">
+                            <div class="empty-state" id="empty-comps-msg">
+                                No components marked yet.<br>Click and drag on the reference board to define a component.
+                            </div>
+                        </div>
+                        <div class="sidebar-footer">
+                            <button type="button" class="btn btn-success btn-block" id="btn-proceed-to-step3">
+                                Proceed to Inspection &rarr;
+                            </button>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <!-- STEP 3: INSPECTION -->
+        <!-- ============================================================= -->
+        <section id="panel-step-3" class="workflow-panel d-none">
+            <!-- Inspection Setup Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Step 3: Upload & Inspect Test Boards</h2>
+                    <span class="badge badge-success" id="active-session-badge">Session Ready</span>
+                </div>
+
+                <div class="inspect-controls-grid">
+                    <!-- Left: Upload Test Photos -->
+                    <div class="test-upload-col">
+                        <label class="control-label">Upload Test Board Photos (Single or Batch):</label>
+                        <div class="upload-dropzone mini-dropzone" id="test-dropzone">
+                            <span class="upload-icon-sm">🔍</span>
+                            <p><strong>Drag & drop test photos</strong> or <button type="button" class="btn-link" id="btn-browse-test">browse files</button></p>
+                            <input type="file" id="test-file-input" accept="image/*" multiple class="file-input-hidden">
+                        </div>
+                        <div id="test-file-list" class="file-tags-list"></div>
+                        <div class="quick-sample-row">
+                            <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-batch">Load Sample Batch (Complete, Missing MCU, Missing Passives)</button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Sensitivity & Action -->
+                    <div class="sensitivity-col">
+                        <label class="control-label">Inspection Sensitivity Profile:</label>
+                        <div class="sensitivity-selector">
+                            <label class="radio-card">
+                                <input type="radio" name="sensitivity" value="strict">
+                                <div class="radio-card-body">
+                                    <span class="radio-title">Strict</span>
+                                    <span class="radio-desc">High vigilance; catches subtle variations</span>
+                                </div>
+                            </label>
+                            <label class="radio-card selected">
+                                <input type="radio" name="sensitivity" value="balanced" checked>
+                                <div class="radio-card-body">
+                                    <span class="radio-title">Balanced (Recommended)</span>
+                                    <span class="radio-desc">Calibrated for fixed-camera shop-floor AOI</span>
+                                </div>
+                            </label>
+                            <label class="radio-card">
+                                <input type="radio" name="sensitivity" value="lenient">
+                                <div class="radio-card-body">
+                                    <span class="radio-title">Lenient</span>
+                                    <span class="radio-desc">Higher tolerance for glare & lighting shifts</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <button type="button" class="btn btn-primary btn-lg btn-block" id="btn-run-inspect" disabled>
+                            Inspect Board(s)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Spinner State -->
+            <div id="inspection-spinner" class="spinner-overlay d-none">
+                <div class="spinner-box">
+                    <div class="spinner"></div>
+                    <h3>Inspecting Circuit Boards...</h3>
+                    <p id="spinner-msg">Aligning images via Euclidean ECC and matching components</p>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <section id="inspection-results-area" class="results-area d-none">
+                <div class="results-header">
+                    <h2>Inspection Results</h2>
+                    <span id="results-summary-badge" class="badge"></span>
+                </div>
+                <div id="results-cards-container" class="results-cards-stack">
+                    <!-- Dynamic result cards rendered here -->
                 </div>
             </section>
-        </div>
+        </section>
     </main>
 
+    <!-- Modal for Naming Component -->
+    <div id="name-modal" class="modal-backdrop d-none">
+        <div class="modal-card">
+            <h3>Name This Component</h3>
+            <p class="modal-sub">Enter a reference designator or label (e.g. U1, R1, C1):</p>
+            <input type="text" id="comp-name-input" class="text-input" placeholder="e.g. U1_MCU or R1_PULLUP" maxlength="32">
+            <div class="quick-tags" id="quick-tags-container">
+                <span class="tag-chip" data-prefix="U">U (IC)</span>
+                <span class="tag-chip" data-prefix="R">R (Resistor)</span>
+                <span class="tag-chip" data-prefix="C">C (Capacitor)</span>
+                <span class="tag-chip" data-prefix="D">D (Diode/LED)</span>
+                <span class="tag-chip" data-prefix="Y">Y (Crystal)</span>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" id="btn-cancel-name">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btn-save-name">Save Component</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
     <footer class="app-footer">
-        <p>PCB Missing Component Detector &bull; Fully Offline &bull; Task B Internship Take-Home</p>
+        <p>PCB Missing Component Detector &bull; 100% Offline &bull; Task B Internship Take-Home</p>
     </footer>
 
     <script src="/static/app.js"></script>
