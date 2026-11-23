@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.candidate.json",
+    "sha256": "995a6f75123b8fda48802a39e2777d764215023ec55b2a12dcf519510331536d",
+    "bytes": 8383
+  },
+  "artifact": {
+    "path": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.html",
+    "sha256": "65bf887d6dd00eb45138efb99a502e6f5912d1e6a68f04caf736e3e20de90523",
+    "bytes": 955943
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.finalize.json",
+    "summaryReceipt": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.3.0",
+    "availableVersion": "3.3.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-23T22:52:41.039Z",
+    "source": "network",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 5729,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  },
+  "visualReviewRecommendation": {
+    "action": "inspect-route-readability",
+    "signals": {
+      "resolvedCrossovers": 6
+    },
+    "reason": "Automated gates passed, but crossings or detours still need perceptual review before claiming visual quality.",
+    "affectedRoutes": {
+      "crossings": [
+        {
+          "left": {
+            "id": "c3",
+            "from": "recipe_manager",
+            "to": "roi_editor",
+            "label": "Load Recipe JSON",
+            "collectionIndex": 2,
+            "artifactIndex": 3
+          },
+          "right": {
+            "id": "c13",
+            "from": "operator",
+            "to": "signoff_console",
+            "label": "Operator Badge ID &amp; Verdict Override",
+            "collectionIndex": 12,
+            "artifactIndex": 13
+          },
+          "point": [
+            316,
+            242
+          ]
+        },
+        {
+          "left": {
+            "id": "c4",
+            "from": "camera_station",
+            "to": "api_router",
+            "label": "Captured Frames (Base64/Multipart)",
+            "collectionIndex": 3,
+            "artifactIndex": 4
+          },
+          "right": {
+            "id": "c12",
+            "from": "api_router",
+            "to": "inspection_ui",
+            "label": "JSON Inspection Results",
+            "collectionIndex": 11,
+            "artifactIndex": 12
+          },
+          "point": [
+            706.3,
+            424
+          ],
+          "sharedNode": "api_router"
+        },
+        {
+          "left": {
+            "id": "c4",
+            "from": "camera_station",
+            "to": "api_router",
+            "label": "Captured Frames (Base64/Multipart)",
+            "collectionIndex": 3,
+            "artifactIndex": 4
+          },
+          "right": {
+            "id": "c15",
+            "from": "signoff_console",
+            "to": "report_exporter",
+            "label": "GET /export_report",
+            "collectionIndex": 14,
+            "artifactIndex": 15
+          },
+          "point": [
+            706.3,
+            406
+          ]
+        },
+        {
+          "left": {
+            "id": "c5",
+            "from": "roi_editor",
+            "to": "api_router",
+            "label": "POST /components",
+            "collectionIndex": 4,
+            "artifactIndex": 5
+          },
+          "right": {
+            "id": "c15",
+            "from": "signoff_console",
+            "to": "report_exporter",
+            "label": "GET /export_report",
+            "collectionIndex": 14,
+            "artifactIndex": 15
+          },
+          "point": [
+            457.15,
+            406
+          ]
+        },
+        {
+          "left": {
+            "id": "c6",
+            "from": "inspection_ui",
+            "to": "api_router",
+            "label": "POST /inspect (Batch Images)",
+            "collectionIndex": 5,
+            "artifactIndex": 6
+          },
+          "right": {
+            "id": "c15",
+            "from": "signoff_console",
+            "to": "report_exporter",
+            "label": "GET /export_report",
+            "collectionIndex": 14,
+            "artifactIndex": 15
+          },
+          "point": [
+            721.65,
+            536
+          ]
+        },
+        {
+          "left": {
+            "id": "c12",
+            "from": "api_router",
+            "to": "inspection_ui",
+            "label": "JSON Inspection Results",
+            "collectionIndex": 11,
+            "artifactIndex": 12
+          },
+          "right": {
+            "id": "c15",
+            "from": "signoff_console",
+            "to": "report_exporter",
+            "label": "GET /export_report",
+            "collectionIndex": 14,
+            "artifactIndex": 15
+          },
+          "point": [
+            721.65,
+            424
+          ]
+        }
+      ],
+      "detours": [],
+      "truncated": false
+    },
+    "hints": [
+      "recipe_manager → roi_editor crosses operator → signoff_console: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
+      "camera_station → api_router and api_router → inspection_ui cross next to api_router: move node camera_station or inspection_ui so the two reach api_router from different sides (for example one level with it, one directly above or below it).",
+      "camera_station → api_router crosses signoff_console → report_exporter: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
+      "roi_editor → api_router crosses signoff_console → report_exporter: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
+      "inspection_ui → api_router crosses signoff_console → report_exporter: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
+      "api_router → inspection_ui crosses signoff_console → report_exporter: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor."
+    ],
+    "repair": "Trace these relationships at the desktop viewport. For Architecture, use references/architecture-layout-repair.md: reflow a blocked main path or tangled connected scene, and repair an isolated defect locally only when the surrounding composition is accepted. Preserve all semantic content and user-fixed geometry. Rerun finalize once after the edit."
+  }
+}

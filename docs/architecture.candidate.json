@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "PCB Missing Component Detector (Task B)",
+    "subtitle": "Offline Automated Optical Inspection (AOI) with ECC Alignment, Local ZNCC, Recipe Management & Operator Sign-off",
+    "output": "docs/architecture.html",
+    "quality_profile": "showcase"
+  },
+  "layout": {
+    "mode": "auto"
+  },
+  "components": [
+    {
+      "id": "operator",
+      "type": "external",
+      "label": "Assembly Operator",
+      "sublabel": "Production Line Inspector",
+      "icon": "person",
+      "explanation": "Human operator capturing PCB images, adjusting sensitivity, reviewing flagged defects, and signing off on uncertain components."
+    },
+    {
+      "id": "camera_station",
+      "type": "frontend",
+      "label": "Live Camera Station",
+      "sublabel": "navigator.mediaDevices",
+      "tag": "Offline WebRTC",
+      "icon": "frontend",
+      "explanation": "Client-side video stream capture station with live crosshairs, fixed positioning guidance, and frame freezing for reference and test boards."
+    },
+    {
+      "id": "recipe_manager",
+      "type": "frontend",
+      "label": "Recipe Engine",
+      "sublabel": "Save / Load JSON",
+      "tag": "256-bit aHash",
+      "icon": "frontend",
+      "explanation": "Exports and imports JSON inspection recipes with 256-bit luminance Average Hash (aHash) fingerprinting and aspect-ratio mismatch warnings."
+    },
+    {
+      "id": "roi_editor",
+      "type": "frontend",
+      "label": "Interactive ROI Canvas",
+      "sublabel": "HTML5 Canvas 2D",
+      "tag": "Normalized BBox",
+      "icon": "frontend",
+      "explanation": "Allows drawing and editing normalized bounding boxes [x1, y1, x2, y2] on golden reference boards with sensitivity controls."
+    },
+    {
+      "id": "inspection_ui",
+      "type": "frontend",
+      "label": "Batch Inspection UI",
+      "sublabel": "Multi-Image Console",
+      "tag": "Zero CDN / Vanilla JS",
+      "icon": "frontend",
+      "explanation": "Multi-board batch upload console with live status chips, side-by-side reference vs test crop diff viewer, and alignment metrics."
+    },
+    {
+      "id": "signoff_console",
+      "type": "frontend",
+      "label": "Operator Sign-Off & KPI",
+      "sublabel": "Human-in-the-Loop Triage",
+      "tag": "FPY & Pareto Tally",
+      "icon": "frontend",
+      "explanation": "Interactive audit panel for verifying PRESENT or confirming MISSING on uncertain parts with badge ID and notes, dynamic yield calculations, and printable reports."
+    },
+    {
+      "id": "api_router",
+      "type": "backend",
+      "label": "FastAPI Web Server",
+      "sublabel": "Uvicorn :8000",
+      "tag": "REST Endpoints",
+      "icon": "backend",
+      "explanation": "FastAPI application managing REST endpoints for reference upload, recipe validation, multi-board inspection, audit export, and static asset serving."
+    },
+    {
+      "id": "session_store",
+      "type": "database",
+      "label": "Session State Store",
+      "sublabel": "In-Memory Thread-Safe",
+      "tag": "Volatile Session",
+      "icon": "database",
+      "explanation": "In-memory dictionary mapping session UUIDs to golden reference OpenCV matrices, component coordinates, inspection run history, and audit logs."
+    },
+    {
+      "id": "aligner",
+      "type": "backend",
+      "label": "Global ECC Aligner",
+      "sublabel": "cv2.findTransformECC",
+      "tag": "Euclidean Warp",
+      "icon": "backend",
+      "explanation": "Computes Enhanced Correlation Coefficient maximization matrix to rigidly align incoming test boards to golden reference coordinates down to sub-pixel accuracy."
+    },
+    {
+      "id": "correlator",
+      "type": "backend",
+      "label": "Local ZNCC Correlator",
+      "sublabel": "Grid Search +/-4px",
+      "tag": "Multi-Channel ZNCC",
+      "icon": "backend",
+      "explanation": "Performs local sub-pixel translation search and Zero-mean Normalized Cross-Correlation alongside normalized Mean Absolute Difference (Patch Diff)."
+    },
+    {
+      "id": "classifier",
+      "type": "backend",
+      "label": "3-State Decision Logic",
+      "sublabel": "Frozen Dual-Threshold",
+      "tag": "OK / DEFECT / REVIEW",
+      "icon": "backend",
+      "explanation": "Applies calibrated dual-threshold gates (ZNCC >= 0.89 OK, ZNCC <= 0.86 DEFECT, intermediate REVIEW) to classify missing components safely."
+    },
+    {
+      "id": "report_exporter",
+      "type": "backend",
+      "label": "Inspection Report Exporter",
+      "sublabel": "CSV & Printable Audit",
+      "tag": "Machine + Human Audit",
+      "icon": "backend",
+      "explanation": "Generates downloadable inspection audit CSV files and formatted printable inspection reports retaining original machine verdicts alongside human operator overrides."
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Browser Client (100% Offline, Zero-CDN)",
+      "wraps": ["camera_station", "recipe_manager", "roi_editor", "inspection_ui", "signoff_console"]
+    },
+    {
+      "kind": "security-group",
+      "label": "Backend Application Server (FastAPI + OpenCV)",
+      "wraps": ["api_router", "session_store", "aligner", "correlator", "classifier", "report_exporter"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "operator",
+      "to": "camera_station",
+      "label": "Live Camera Feed",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c2",
+      "from": "operator",
+      "to": "roi_editor",
+      "label": "Mark Component ROIs"
+    },
+    {
+      "id": "c3",
+      "from": "recipe_manager",
+      "to": "roi_editor",
+      "label": "Load Recipe JSON"
+    },
+    {
+      "id": "c4",
+      "from": "camera_station",
+      "to": "api_router",
+      "label": "Captured Frames (Base64/Multipart)"
+    },
+    {
+      "id": "c5",
+      "from": "roi_editor",
+      "to": "api_router",
+      "label": "POST /components"
+    },
+    {
+      "id": "c6",
+      "from": "inspection_ui",
+      "to": "api_router",
+      "label": "POST /inspect (Batch Images)"
+    },
+    {
+      "id": "c7",
+      "from": "api_router",
+      "to": "session_store",
+      "label": "Get/Set Session State"
+    },
+    {
+      "id": "c8",
+      "from": "api_router",
+      "to": "aligner",
+      "label": "Global Board Alignment"
+    },
+    {
+      "id": "c9",
+      "from": "aligner",
+      "to": "correlator",
+      "label": "Warped Aligned ROIs"
+    },
+    {
+      "id": "c10",
+      "from": "correlator",
+      "to": "classifier",
+      "label": "ZNCC Score & Patch Diff"
+    },
+    {
+      "id": "c11",
+      "from": "classifier",
+      "to": "api_router",
+      "label": "Annotated Images & Board Verdicts"
+    },
+    {
+      "id": "c12",
+      "from": "api_router",
+      "to": "inspection_ui",
+      "label": "JSON Inspection Results"
+    },
+    {
+      "id": "c13",
+      "from": "operator",
+      "to": "signoff_console",
+      "label": "Operator Badge ID & Verdict Override"
+    },
+    {
+      "id": "c14",
+      "from": "signoff_console",
+      "to": "api_router",
+      "label": "POST /signoff"
+    },
+    {
+      "id": "c15",
+      "from": "signoff_console",
+      "to": "report_exporter",
+      "label": "GET /export_report"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Frontend Offline Client",
+      "items": [
+        "Vanilla JS + CSS without CDN or external dependencies",
+        "HTML5 Canvas bounding box editor with normalized coordinates",
+        "Webcam/USB camera capture station with alignment guidance",
+        "Recipe save/load with 256-bit aHash validation"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Computer Vision Core",
+      "items": [
+        "Global Euclidean alignment via cv2.findTransformECC",
+        "Local sub-pixel +/-4px translation refinement",
+        "Multi-channel Zero-mean Normalized Cross-Correlation (ZNCC)",
+        "Calibrated 3-state classifier: PRESENT, MISSING, UNCERTAIN"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Human-in-the-Loop & Audit",
+      "items": [
+        "Preserves raw machine verdicts alongside human operator overrides",
+        "Tracks badge ID, timestamps, and operator notes per component",
+        "Computes First-Pass Yield (FPY) vs post-sign-off Operational Yield",
+        "Exports full audit log as CSV and printable inspection report"
+      ]
+    }
+  ]
+}

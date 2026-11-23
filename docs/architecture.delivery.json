@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "df4fdc02-64c0-4bc0-ba3e-7bc30da5da55",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.candidate.json",
+  "output": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.html",
+  "specification": {
+    "sha256": "995a6f75123b8fda48802a39e2777d764215023ec55b2a12dcf519510331536d",
+    "bytes": 8383
+  },
+  "artifact": {
+    "sha256": "65bf887d6dd00eb45138efb99a502e6f5912d1e6a68f04caf736e3e20de90523",
+    "bytes": 955943
+  }
+}
