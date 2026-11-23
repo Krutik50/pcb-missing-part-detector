@@ -34,6 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
         refFileInput: document.getElementById('ref-file-input'),
         btnBrowseRef: document.getElementById('btn-browse-ref'),
         btnLoadSampleRef: document.getElementById('btn-load-sample-ref'),
+        btnCameraRef: document.getElementById('btn-camera-ref'),
+        btnOpenCamera: document.getElementById('btn-open-camera'),
 
         // Step 2
         annotationCanvas: document.getElementById('annotation-canvas'),
@@ -44,6 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
         compCount: document.getElementById('comp-count'),
         btnLoadSampleComps: document.getElementById('btn-load-sample-comps'),
         btnClearComps: document.getElementById('btn-clear-comps'),
+        btnExportRecipe: document.getElementById('btn-export-recipe'),
+        btnImportRecipe: document.getElementById('btn-import-recipe'),
+        recipeFileInput: document.getElementById('recipe-file-input'),
         btnProceedToStep3: document.getElementById('btn-proceed-to-step3'),
 
         // Step 3
@@ -52,12 +57,27 @@ document.addEventListener('DOMContentLoaded', () => {
         btnBrowseTest: document.getElementById('btn-browse-test'),
         testFileList: document.getElementById('test-file-list'),
         btnLoadSampleBatch: document.getElementById('btn-load-sample-batch'),
+        btnCameraTest: document.getElementById('btn-camera-test'),
         btnRunInspect: document.getElementById('btn-run-inspect'),
         inspectionSpinner: document.getElementById('inspection-spinner'),
         inspectionResultsArea: document.getElementById('inspection-results-area'),
         resultsSummaryBadge: document.getElementById('results-summary-badge'),
         resultsCardsContainer: document.getElementById('results-cards-container'),
         activeSessionBadge: document.getElementById('active-session-badge'),
+
+        // Live Camera Modal Elements
+        cameraModal: document.getElementById('camera-modal'),
+        btnCloseCamera: document.getElementById('btn-close-camera'),
+        cameraLiveDot: document.getElementById('camera-live-dot'),
+        cameraVideoPreview: document.getElementById('camera-video-preview'),
+        cameraCaptureCanvas: document.getElementById('camera-capture-canvas'),
+        cameraPlaceholder: document.getElementById('camera-placeholder'),
+        cameraDeviceSelect: document.getElementById('camera-device-select'),
+        cameraErrorBanner: document.getElementById('camera-error-banner'),
+        btnStartCamera: document.getElementById('btn-start-camera'),
+        btnStopCamera: document.getElementById('btn-stop-camera'),
+        btnCaptureAsRef: document.getElementById('btn-capture-as-ref'),
+        btnCaptureAsTest: document.getElementById('btn-capture-as-test'),
 
         // Modal
         nameModal: document.getElementById('name-modal'),
@@ -480,6 +500,319 @@ document.addEventListener('DOMContentLoaded', () => {
             renderComponentsList();
         }
     });
+
+    // --- RECIPE SAVE & LOAD ---
+    el.btnExportRecipe.addEventListener('click', () => {
+        hideAlert();
+        if (state.components.length === 0) {
+            showAlert('Cannot save empty recipe: please mark at least one component first.', 'danger');
+            return;
+        }
+
+        const defaultName = 'PCB_BOARD_RECIPE_' + new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const boardName = prompt('Enter a name for this PCB Board Recipe:', defaultName) || defaultName;
+
+        const recipe = {
+            recipe_version: '1.0',
+            board_name: boardName.trim(),
+            created_at: new Date().toISOString(),
+            image_size: {
+                width: state.workingDim.width,
+                height: state.workingDim.height,
+            },
+            sensitivity: state.activeSensitivity,
+            components: state.components.map(c => ({
+                name: c.name,
+                normalized_bbox: c.normalized,
+                pixel_bbox: c.bbox,
+            })),
+        };
+
+        const jsonStr = JSON.stringify(recipe, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const safeFilename = (boardName.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_') || 'pcb_recipe') + '.json';
+        a.download = safeFilename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showAlert(`Recipe "${boardName.trim()}" downloaded successfully as ${safeFilename}.`, 'success');
+    });
+
+    el.btnImportRecipe.addEventListener('click', () => {
+        hideAlert();
+        el.recipeFileInput.value = '';
+        el.recipeFileInput.click();
+    });
+
+    el.recipeFileInput.addEventListener('change', (e) => {
+        if (!e.target.files || !e.target.files[0]) return;
+        const file = e.target.files[0];
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const text = event.target.result;
+                let recipe;
+                try {
+                    recipe = JSON.parse(text);
+                } catch (parseErr) {
+                    throw new Error('File is not valid JSON or syntax is corrupted.');
+                }
+
+                // Check board components
+                const rawComps = recipe.components;
+                if (!rawComps || !Array.isArray(rawComps) || rawComps.length === 0) {
+                    throw new Error('Recipe is invalid: missing or empty "components" array.');
+                }
+
+                // Check image size match if recipe defines it
+                if (recipe.image_size && typeof recipe.image_size === 'object') {
+                    const rw = recipe.image_size.width;
+                    const rh = recipe.image_size.height;
+                    if (rw && rh && (rw !== state.workingDim.width || rh !== state.workingDim.height)) {
+                        showAlert(`Image size mismatch: Recipe was created for ${rw}×${rh} px, but the active reference board is ${state.workingDim.width}×${state.workingDim.height} px. Please load the matching board image.`, 'danger');
+                        return;
+                    }
+                }
+
+                // Parse and map components
+                const newComps = [];
+                for (let i = 0; i < rawComps.length; i++) {
+                    const c = rawComps[i];
+                    const compName = (c.name && String(c.name).trim()) || `PART_${i + 1}`;
+                    let pixelBox = null;
+
+                    if (c.pixel_bbox && Array.isArray(c.pixel_bbox) && c.pixel_bbox.length === 4) {
+                        pixelBox = c.pixel_bbox.map(v => Math.round(Number(v)));
+                    } else if (c.normalized_bbox && Array.isArray(c.normalized_bbox) && c.normalized_bbox.length === 4) {
+                        pixelBox = [
+                            Math.round(c.normalized_bbox[0] * state.workingDim.width),
+                            Math.round(c.normalized_bbox[1] * state.workingDim.height),
+                            Math.round(c.normalized_bbox[2] * state.workingDim.width),
+                            Math.round(c.normalized_bbox[3] * state.workingDim.height),
+                        ];
+                    } else {
+                        throw new Error(`Component #${i + 1} (${compName}) has invalid bbox data.`);
+                    }
+
+                    const [x, y, w, h] = pixelBox;
+                    const warning = getBoxWarning(w, h, state.workingDim.width, state.workingDim.height);
+
+                    newComps.push({
+                        id: 'comp_' + Date.now() + '_' + i,
+                        name: compName,
+                        bbox: [x, y, w, h],
+                        warning: warning,
+                        normalized: [
+                            Number((x / state.workingDim.width).toFixed(4)),
+                            Number((y / state.workingDim.height).toFixed(4)),
+                            Number((w / state.workingDim.width).toFixed(4)),
+                            Number((h / state.workingDim.height).toFixed(4)),
+                        ],
+                    });
+                }
+
+                state.components = newComps;
+
+                // Sync sensitivity if provided in recipe
+                if (recipe.sensitivity && ['strict', 'balanced', 'lenient'].includes(recipe.sensitivity)) {
+                    state.activeSensitivity = recipe.sensitivity;
+                    const radio = document.querySelector(`input[name="sensitivity"][value="${recipe.sensitivity}"]`);
+                    if (radio) {
+                        radio.checked = true;
+                        document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
+                        radio.closest('.radio-card').classList.add('selected');
+                    }
+                }
+
+                renderAnnotationCanvas();
+                renderComponentsList();
+                showAlert(`Successfully loaded recipe "${recipe.board_name || 'Custom'}" with ${newComps.length} components!`, 'success');
+
+            } catch (err) {
+                showAlert(`Failed to load recipe: ${err.message}`, 'danger');
+            }
+        };
+
+        reader.onerror = () => {
+            showAlert('Failed to read the selected recipe file from disk.', 'danger');
+        };
+
+        reader.readAsText(file);
+    });
+
+    // --- LIVE CAMERA CONTROLS ---
+    let cameraStream = null;
+
+    async function enumerateCameraDevices() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(d => d.kind === 'videoinput');
+            el.cameraDeviceSelect.innerHTML = '';
+            if (videoDevices.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'Default Camera';
+                el.cameraDeviceSelect.appendChild(opt);
+                return;
+            }
+            videoDevices.forEach((dev, idx) => {
+                const opt = document.createElement('option');
+                opt.value = dev.deviceId;
+                opt.textContent = dev.label || `Camera ${idx + 1}`;
+                el.cameraDeviceSelect.appendChild(opt);
+            });
+        } catch {
+            // Devices enumeration may require permission first
+        }
+    }
+
+    function showCameraError(msg) {
+        el.cameraErrorBanner.textContent = msg;
+        el.cameraErrorBanner.classList.remove('d-none');
+    }
+
+    function hideCameraError() {
+        el.cameraErrorBanner.classList.add('d-none');
+    }
+
+    function openCameraModal() {
+        hideAlert();
+        hideCameraError();
+        el.cameraModal.classList.remove('d-none');
+        enumerateCameraDevices();
+    }
+
+    function closeCameraModal() {
+        stopCamera();
+        el.cameraModal.classList.add('d-none');
+    }
+
+    async function startCamera() {
+        hideCameraError();
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showCameraError('Camera API (getUserMedia) is not supported in this browser or context.');
+            return;
+        }
+
+        const deviceId = el.cameraDeviceSelect.value;
+        const constraints = {
+            video: {
+                deviceId: deviceId ? { exact: deviceId } : undefined,
+                width: { ideal: 1920 },
+                height: { ideal: 1080 },
+            },
+        };
+
+        try {
+            el.btnStartCamera.disabled = true;
+            el.btnStartCamera.textContent = 'Starting Camera...';
+
+            let stream;
+            try {
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+            } catch (constrErr) {
+                // Fallback to generic constraints if exact device or resolution constraints fail
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            }
+
+            cameraStream = stream;
+            el.cameraVideoPreview.srcObject = stream;
+            el.cameraPlaceholder.classList.add('d-none');
+            el.cameraLiveDot.classList.add('active');
+
+            el.btnStartCamera.classList.add('d-none');
+            el.btnStopCamera.classList.remove('d-none');
+            el.btnCaptureAsRef.disabled = false;
+            el.btnCaptureAsTest.disabled = false;
+
+            // Re-enumerate to get device labels now that permission is granted
+            await enumerateCameraDevices();
+
+        } catch (err) {
+            let errorMsg = `Could not access camera: ${err.message}`;
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                errorMsg = 'Camera access was blocked by browser or system permissions. Please allow camera access in your browser.';
+            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                errorMsg = 'No camera hardware device found. Please connect a USB camera or webcam.';
+            } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                errorMsg = 'Camera hardware is currently in use by another application or locked by the OS.';
+            }
+            showCameraError(errorMsg);
+        } finally {
+            el.btnStartCamera.disabled = false;
+            el.btnStartCamera.textContent = 'Start Camera';
+        }
+    }
+
+    function stopCamera() {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        }
+        el.cameraVideoPreview.srcObject = null;
+        el.cameraPlaceholder.classList.remove('d-none');
+        el.cameraLiveDot.classList.remove('active');
+
+        el.btnStartCamera.classList.remove('d-none');
+        el.btnStopCamera.classList.add('d-none');
+        el.btnCaptureAsRef.disabled = true;
+        el.btnCaptureAsTest.disabled = true;
+    }
+
+    function captureCameraFrame(targetMode) {
+        const video = el.cameraVideoPreview;
+        const canvas = el.cameraCaptureCanvas;
+
+        const w = video.videoWidth || 1920;
+        const h = video.videoHeight || 1080;
+        canvas.width = w;
+        canvas.height = h;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, w, h);
+
+        canvas.toBlob((blob) => {
+            if (!blob) {
+                showCameraError('Failed to capture frame from video feed.');
+                return;
+            }
+            const filename = `camera_${targetMode}_${Date.now()}.png`;
+            const file = new File([blob], filename, { type: 'image/png' });
+
+            closeCameraModal();
+
+            if (targetMode === 'ref') {
+                handleReferenceFile(file);
+            } else if (targetMode === 'test') {
+                addTestFiles([file]);
+                if (state.currentStep !== 3) {
+                    setStep(3);
+                }
+                showAlert(`Captured frame "${filename}" added to test board queue.`, 'success');
+            }
+        }, 'image/png');
+    }
+
+    el.btnOpenCamera.addEventListener('click', openCameraModal);
+    el.btnCameraRef.addEventListener('click', openCameraModal);
+    el.btnCameraTest.addEventListener('click', openCameraModal);
+    el.btnCloseCamera.addEventListener('click', closeCameraModal);
+    el.btnStartCamera.addEventListener('click', startCamera);
+    el.btnStopCamera.addEventListener('click', stopCamera);
+    el.cameraDeviceSelect.addEventListener('change', () => {
+        if (cameraStream) {
+            startCamera(); // Restart with new device
+        }
+    });
+    el.btnCaptureAsRef.addEventListener('click', () => captureCameraFrame('ref'));
+    el.btnCaptureAsTest.addEventListener('click', () => captureCameraFrame('test'));
 
     // Step 2 Proceed to Step 3
     el.btnProceedToStep3.addEventListener('click', async () => {

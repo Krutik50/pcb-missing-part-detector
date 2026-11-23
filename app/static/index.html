@@ -19,6 +19,7 @@
             </div>
             <div class="header-actions">
                 <span class="offline-tag">100% Offline Mode</span>
+                <button type="button" class="btn btn-outline" id="btn-open-camera" title="Open Live Camera"><span class="btn-icon-label">📹</span> Live Camera</button>
                 <button type="button" class="btn btn-outline" id="btn-reset" title="Start over with a new board">Start Over / Reset</button>
             </div>
         </div>
@@ -74,6 +75,7 @@
                 <div class="quick-sample-row">
                     <span>Testing on sample data?</span>
                     <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-ref">Load Sample Reference (sample_data/reference.png)</button>
+                    <button type="button" class="btn btn-sm btn-outline" id="btn-camera-ref"><span class="btn-icon-label">📹</span> Capture with Camera</button>
                 </div>
             </div>
         </section>
@@ -86,6 +88,9 @@
                 <div class="card-header">
                     <h2>Step 2: Mark Components on Reference Board</h2>
                     <div class="header-tools">
+                        <button type="button" class="btn btn-sm btn-outline" id="btn-export-recipe" title="Download named parts and boxes as a recipe JSON">💾 Save Recipe</button>
+                        <button type="button" class="btn btn-sm btn-outline" id="btn-import-recipe" title="Load recipe JSON and redraw boxes on this reference image">📂 Load Recipe</button>
+                        <input type="file" id="recipe-file-input" accept=".json,application/json" class="file-input-hidden">
                         <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-comps">Load Standard 14 Parts</button>
                         <button type="button" class="btn btn-sm btn-danger-outline" id="btn-clear-comps">Clear All</button>
                     </div>
@@ -155,6 +160,7 @@
                         <div id="test-file-list" class="file-tags-list"></div>
                         <div class="quick-sample-row">
                             <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-batch">Load Sample Batch (Complete, Missing MCU, Missing Passives)</button>
+                            <button type="button" class="btn btn-sm btn-outline" id="btn-camera-test"><span class="btn-icon-label">📹</span> Capture Test Photo with Camera</button>
                         </div>
                     </div>
 
@@ -230,6 +236,44 @@
             <div class="modal-actions">
                 <button type="button" class="btn btn-outline" id="btn-cancel-name">Cancel</button>
                 <button type="button" class="btn btn-primary" id="btn-save-name">Save Component</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Camera Modal -->
+    <div id="camera-modal" class="modal-backdrop d-none">
+        <div class="modal-card modal-card-camera">
+            <div class="modal-camera-header">
+                <div class="camera-title-group">
+                    <span class="live-dot" id="camera-live-dot"></span>
+                    <h3>Live Inspection Camera</h3>
+                </div>
+                <button type="button" class="btn-icon" id="btn-close-camera" title="Close Camera">&times;</button>
+            </div>
+            <p class="modal-sub">Preview video stream from USB inspection camera or webcam. Point at board under fixed lighting.</p>
+
+            <div id="camera-error-banner" class="alert alert-danger d-none"></div>
+
+            <div class="camera-viewport-wrap">
+                <video id="camera-video-preview" autoplay playsinline muted></video>
+                <canvas id="camera-capture-canvas" class="d-none"></canvas>
+                <div id="camera-placeholder" class="camera-placeholder">
+                    <span class="camera-placeholder-icon">📷</span>
+                    <p>Camera is currently stopped.<br>Click "Start Camera" below to initiate video feed.</p>
+                </div>
+            </div>
+
+            <div class="camera-controls-bar">
+                <div class="camera-device-select-wrap">
+                    <label for="camera-device-select" class="control-label-sm">Select Camera Device:</label>
+                    <select id="camera-device-select" class="device-select"></select>
+                </div>
+                <div class="camera-actions-row">
+                    <button type="button" class="btn btn-primary" id="btn-start-camera">Start Camera</button>
+                    <button type="button" class="btn btn-danger-outline d-none" id="btn-stop-camera">Stop Camera</button>
+                    <button type="button" class="btn btn-success" id="btn-capture-as-ref" disabled>Capture as Reference</button>
+                    <button type="button" class="btn btn-outline" id="btn-capture-as-test" disabled>Capture as Test Board</button>
+                </div>
             </div>
         </div>
     </div>

@@ -267,6 +267,75 @@ class TestBackendAPI(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertIn("not found", response.json()["detail"])
 
+    def test_get_sample_recipe(self):
+        response = client.get("/api/sample-recipe")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["recipe_version"], "1.0")
+        self.assertEqual(data["board_name"], "PCB_SAMPLE_MAIN_BOARD")
+        self.assertEqual(data["image_size"], {"width": 1920, "height": 1080})
+        self.assertEqual(data["sensitivity"], "balanced")
+        self.assertGreater(len(data["components"]), 0)
+
+    def test_validate_recipe_success(self):
+        recipe = {
+            "recipe_version": "1.0",
+            "board_name": "TEST_BOARD_REV1",
+            "image_size": {"width": 1920, "height": 1080},
+            "sensitivity": "balanced",
+            "components": [
+                {"name": "U1_MCU", "normalized_bbox": [0.3021, 0.3704, 0.1042, 0.1852]},
+                {"name": "R1_PULLUP", "pixel_bbox": [880, 420, 24, 48]},
+            ],
+        }
+        response = client.post("/api/recipes/validate?expected_width=1920&expected_height=1080", json=recipe)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data["valid"])
+        self.assertEqual(data["board_name"], "TEST_BOARD_REV1")
+        self.assertEqual(data["components_count"], 2)
+        self.assertFalse(data["dimension_mismatch"])
+
+    def test_validate_recipe_dimension_mismatch(self):
+        recipe = {
+            "recipe_version": "1.0",
+            "board_name": "TEST_BOARD_REV1",
+            "image_size": {"width": 1920, "height": 1080},
+            "sensitivity": "balanced",
+            "components": [
+                {"name": "U1_MCU", "normalized_bbox": [0.3021, 0.3704, 0.1042, 0.1852]},
+            ],
+        }
+        # Expected is 1280x720, but recipe was 1920x1080
+        response = client.post("/api/recipes/validate?expected_width=1280&expected_height=720", json=recipe)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data["valid"])
+        self.assertTrue(data["dimension_mismatch"])
+        self.assertIn("Image size mismatch", data["dimension_warning"])
+
+    def test_validate_recipe_empty_components_rejection(self):
+        recipe = {
+            "recipe_version": "1.0",
+            "board_name": "TEST_BOARD_EMPTY",
+            "components": [],
+        }
+        response = client.post("/api/recipes/validate", json=recipe)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("zero components", response.json()["detail"])
+
+    def test_validate_recipe_invalid_normalized_bbox(self):
+        recipe = {
+            "recipe_version": "1.0",
+            "board_name": "TEST_BOARD_INVALID",
+            "components": [
+                {"name": "U1_MCU", "normalized_bbox": [1.5, 0.3, 0.2, 0.2]},  # 1.5 > 1.0
+            ],
+        }
+        response = client.post("/api/recipes/validate", json=recipe)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("between 0.0 and 1.0", response.json()["detail"])
+
 
 if __name__ == "__main__":
     unittest.main()
