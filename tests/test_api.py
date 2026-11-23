@@ -267,6 +267,149 @@ class TestBackendAPI(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertIn("not found", response.json()["detail"])
 
+    def test_get_sample_recipe(self):
+        response = client.get("/api/sample-recipe")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["recipe_version"], "1.0")
+        self.assertEqual(data["board_name"], "PCB_SAMPLE_MAIN_BOARD")
+        self.assertEqual(data["image_size"]["width"], 1920)
+        self.assertEqual(data["image_size"]["height"], 1080)
+        self.assertIn("aspect_ratio", data["image_size"])
+        self.assertIn("image_fingerprint", data)
+        self.assertEqual(data["sensitivity"], "balanced")
+        self.assertGreater(len(data["components"]), 0)
+
+    def test_validate_recipe_success(self):
+        recipe = {
+            "recipe_version": "1.0",
+            "board_name": "TEST_BOARD_REV1",
+            "image_size": {"width": 1920, "height": 1080},
+            "sensitivity": "balanced",
+            "components": [
+                {"name": "U1_MCU", "normalized_bbox": [0.3021, 0.3704, 0.1042, 0.1852]},
+                {"name": "R1_PULLUP", "pixel_bbox": [880, 420, 24, 48]},
+            ],
+        }
+        response = client.post("/api/recipes/validate?expected_width=1920&expected_height=1080", json=recipe)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data["valid"])
+        self.assertEqual(data["board_name"], "TEST_BOARD_REV1")
+        self.assertEqual(data["components_count"], 2)
+        self.assertFalse(data["dimension_mismatch"])
+
+    def test_validate_recipe_aspect_ratio_and_fingerprint(self):
+        # 1. Matching Aspect Ratio (1920x1080 and 1280x720 both have 16:9 = ~1.778)
+        recipe = {
+            "recipe_version": "1.0",
+            "board_name": "TEST_BOARD_AR",
+            "image_size": {"width": 1920, "height": 1080, "aspect_ratio": 1.7778},
+            "image_fingerprint": "abc123hash",
+            "sensitivity": "balanced",
+            "components": [
+                {"name": "U1_MCU", "normalized_bbox": [0.3021, 0.3704, 0.1042, 0.1852]},
+            ],
+        }
+        resp = client.post("/api/recipes/validate?expected_width=1280&expected_height=720&expected_fingerprint=abc123hash", json=recipe)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertTrue(data["valid"])
+        self.assertFalse(data["aspect_ratio_mismatch"])
+        self.assertFalse(data["fingerprint_mismatch"])
+
+        # 2. Differing Aspect Ratio (1920x1080 AR 1.778 vs 1000x1000 AR 1.0)
+        resp_diff = client.post("/api/recipes/validate?expected_width=1000&expected_height=1000&expected_fingerprint=different_hash", json=recipe)
+        self.assertEqual(resp_diff.status_code, 200)
+        data_diff = resp_diff.json()
+        self.assertTrue(data_diff["valid"])
+        self.assertTrue(data_diff["aspect_ratio_mismatch"])
+        self.assertTrue(data_diff["fingerprint_mismatch"])
+        self.assertIn("Aspect ratio warning", data_diff["aspect_ratio_warning"])
+        self.assertIn("fingerprint", data_diff["fingerprint_warning"])
+
+    def test_operator_signoff_and_csv_report_export(self):
+        # 1. Upload reference
+        with open(SAMPLE_DIR / "reference.png", "rb") as f:
+            ref_resp = client.post("/api/reference", files={"file": ("reference.png", f, "image/png")})
+        session_id = ref_resp.json()["session_id"]
+
+        # 2. Register components
+        client.post(
+            f"/api/sessions/{session_id}/components",
+            json={"components": [{"name": "U1_MCU", "bbox": [580, 400, 200, 200]}]},
+        )
+
+        # 3. Inspect a test board
+        with open(SAMPLE_DIR / "calibration/calib_01_all_ok_nominal.png", "rb") as fp:
+            client.post(
+                "/api/inspect",
+                data={"session_id": session_id, "sensitivity": "balanced"},
+                files=[("test_images", ("board_nominal.png", fp, "image/png"))],
+            )
+
+        # 4. Record sign-off
+        signoff_payload = {
+            "filename": "board_nominal.png",
+            "component_name": "U1_MCU",
+            "final_status": "PRESENT",
+            "operator_id": "OP-702",
+            "note": "Verified under microscope",
+        }
+        sign_resp = client.post(f"/api/sessions/{session_id}/signoff", json=signoff_payload)
+        self.assertEqual(sign_resp.status_code, 200)
+        self.assertEqual(sign_resp.json()["status"], "success")
+
+        # 5. Export CSV Report
+        csv_resp = client.get(f"/api/sessions/{session_id}/report.csv")
+        self.assertEqual(csv_resp.status_code, 200)
+        self.assertIn("text/csv", csv_resp.headers["content-type"])
+        csv_text = csv_resp.text
+        self.assertIn("Timestamp,Session_ID,Board_Filename", csv_text)
+        self.assertIn("board_nominal.png", csv_text)
+        self.assertIn("OP-702", csv_text)
+        self.assertIn("Verified under microscope", csv_text)
+
+    def test_validate_recipe_dimension_mismatch(self):
+        recipe = {
+            "recipe_version": "1.0",
+            "board_name": "TEST_BOARD_REV1",
+            "image_size": {"width": 1920, "height": 1080},
+            "sensitivity": "balanced",
+            "components": [
+                {"name": "U1_MCU", "normalized_bbox": [0.3021, 0.3704, 0.1042, 0.1852]},
+            ],
+        }
+        # Expected is 1000x1000 (aspect ratio 1.0), but recipe was 1920x1080 (1.778)
+        response = client.post("/api/recipes/validate?expected_width=1000&expected_height=1000", json=recipe)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data["valid"])
+        self.assertTrue(data["dimension_mismatch"])
+        self.assertIn("Aspect ratio warning", data["dimension_warning"])
+
+    def test_validate_recipe_empty_components_rejection(self):
+        recipe = {
+            "recipe_version": "1.0",
+            "board_name": "TEST_BOARD_EMPTY",
+            "components": [],
+        }
+        response = client.post("/api/recipes/validate", json=recipe)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("zero components", response.json()["detail"])
+
+    def test_validate_recipe_invalid_normalized_bbox(self):
+        recipe = {
+            "recipe_version": "1.0",
+            "board_name": "TEST_BOARD_INVALID",
+            "components": [
+                {"name": "U1_MCU", "normalized_bbox": [1.5, 0.3, 0.2, 0.2]},  # 1.5 > 1.0
+            ],
+        }
+        response = client.post("/api/recipes/validate", json=recipe)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("between 0.0 and 1.0", response.json()["detail"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
         testFiles: [],  // File objects
         currentStep: 1,
         activeSensitivity: 'balanced',
+        referenceFingerprint: null,
+        lastInspectionData: null,
+        signoffs: {}, // filename -> { compName: { final_status, operator_id, note, timestamp } }
     };
 
     // --- DOM Elements ---
@@ -34,6 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
         refFileInput: document.getElementById('ref-file-input'),
         btnBrowseRef: document.getElementById('btn-browse-ref'),
         btnLoadSampleRef: document.getElementById('btn-load-sample-ref'),
+        btnCameraRef: document.getElementById('btn-camera-ref'),
+        btnOpenCamera: document.getElementById('btn-open-camera'),
 
         // Step 2
         annotationCanvas: document.getElementById('annotation-canvas'),
@@ -44,6 +49,9 @@ document.addEventListener('DOMContentLoaded', () => {
         compCount: document.getElementById('comp-count'),
         btnLoadSampleComps: document.getElementById('btn-load-sample-comps'),
         btnClearComps: document.getElementById('btn-clear-comps'),
+        btnExportRecipe: document.getElementById('btn-export-recipe'),
+        btnImportRecipe: document.getElementById('btn-import-recipe'),
+        recipeFileInput: document.getElementById('recipe-file-input'),
         btnProceedToStep3: document.getElementById('btn-proceed-to-step3'),
 
         // Step 3
@@ -52,12 +60,45 @@ document.addEventListener('DOMContentLoaded', () => {
         btnBrowseTest: document.getElementById('btn-browse-test'),
         testFileList: document.getElementById('test-file-list'),
         btnLoadSampleBatch: document.getElementById('btn-load-sample-batch'),
+        btnCameraTest: document.getElementById('btn-camera-test'),
         btnRunInspect: document.getElementById('btn-run-inspect'),
         inspectionSpinner: document.getElementById('inspection-spinner'),
         inspectionResultsArea: document.getElementById('inspection-results-area'),
         resultsSummaryBadge: document.getElementById('results-summary-badge'),
         resultsCardsContainer: document.getElementById('results-cards-container'),
         activeSessionBadge: document.getElementById('active-session-badge'),
+
+        // Batch Summary & KPIs
+        batchSummaryPanel: document.getElementById('batch-summary-panel'),
+        kpiTotal: document.getElementById('kpi-total'),
+        kpiOk: document.getElementById('kpi-ok'),
+        kpiDefect: document.getElementById('kpi-defect'),
+        kpiReview: document.getElementById('kpi-review'),
+        kpiFpy: document.getElementById('kpi-fpy'),
+        kpiFinalYield: document.getElementById('kpi-final-yield'),
+        defectTallyList: document.getElementById('defect-tally-list'),
+        btnDownloadCsv: document.getElementById('btn-download-csv'),
+        btnPrintReport: document.getElementById('btn-print-report'),
+
+        // Printable Modal
+        printModal: document.getElementById('print-modal'),
+        printableReportContent: document.getElementById('printable-report-content'),
+        btnTriggerPrint: document.getElementById('btn-trigger-print'),
+        btnClosePrint: document.getElementById('btn-close-print'),
+
+        // Live Camera Modal Elements
+        cameraModal: document.getElementById('camera-modal'),
+        btnCloseCamera: document.getElementById('btn-close-camera'),
+        cameraLiveDot: document.getElementById('camera-live-dot'),
+        cameraVideoPreview: document.getElementById('camera-video-preview'),
+        cameraCaptureCanvas: document.getElementById('camera-capture-canvas'),
+        cameraPlaceholder: document.getElementById('camera-placeholder'),
+        cameraDeviceSelect: document.getElementById('camera-device-select'),
+        cameraErrorBanner: document.getElementById('camera-error-banner'),
+        btnStartCamera: document.getElementById('btn-start-camera'),
+        btnStopCamera: document.getElementById('btn-stop-camera'),
+        btnCaptureAsRef: document.getElementById('btn-capture-as-ref'),
+        btnCaptureAsTest: document.getElementById('btn-capture-as-test'),
 
         // Modal
         nameModal: document.getElementById('name-modal'),
@@ -155,6 +196,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    function computeImageFingerprint(img) {
+        try {
+            const c = document.createElement('canvas');
+            c.width = 16;
+            c.height = 16;
+            const ctx = c.getContext('2d');
+            ctx.drawImage(img, 0, 0, 16, 16);
+            const p = ctx.getImageData(0, 0, 16, 16).data;
+            let sum = 0;
+            const grays = new Float32Array(256);
+            for (let i = 0, j = 0; i < p.length; i += 4, j++) {
+                const g = 0.299 * p[i] + 0.587 * p[i+1] + 0.114 * p[i+2];
+                grays[j] = g;
+                sum += g;
+            }
+            const avg = sum / 256;
+            let hash = '';
+            for (let i = 0; i < 256; i += 4) {
+                let nibble = 0;
+                for (let b = 0; b < 4; b++) {
+                    if (grays[i + b] >= avg) nibble |= (1 << (3 - b));
+                }
+                hash += nibble.toString(16);
+            }
+            return hash;
+        } catch {
+            return 'ref_hash_fallback';
+        }
+    }
+
     async function handleReferenceFile(file) {
         hideAlert();
         if (!file.type.startsWith('image/')) {
@@ -189,6 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const img = new Image();
             img.onload = () => {
                 state.referenceImg = img;
+                state.referenceFingerprint = computeImageFingerprint(img);
                 el.canvasDimInfo.textContent = `Working Canvas: ${data.working_width} × ${data.working_height} px (Scale: ${data.scale_factor.toFixed(3)})`;
                 el.activeSessionBadge.textContent = `Session: ${data.session_id.substring(0, 8)}...`;
                 setStep(2);
@@ -481,6 +553,333 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- RECIPE SAVE & LOAD ---
+    el.btnExportRecipe.addEventListener('click', () => {
+        hideAlert();
+        if (state.components.length === 0) {
+            showAlert('Cannot save empty recipe: please mark at least one component first.', 'danger');
+            return;
+        }
+
+        const defaultName = 'PCB_BOARD_RECIPE_' + new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const boardName = prompt('Enter a name for this PCB Board Recipe:', defaultName) || defaultName;
+
+        const recipe = {
+            recipe_version: '1.0',
+            board_name: boardName.trim(),
+            created_at: new Date().toISOString(),
+            image_size: {
+                width: state.workingDim.width,
+                height: state.workingDim.height,
+                aspect_ratio: Number((state.workingDim.width / state.workingDim.height).toFixed(4)),
+            },
+            image_fingerprint: state.referenceFingerprint || null,
+            sensitivity: state.activeSensitivity,
+            components: state.components.map(c => ({
+                name: c.name,
+                normalized_bbox: c.normalized,
+                pixel_bbox: c.bbox,
+            })),
+        };
+
+        const jsonStr = JSON.stringify(recipe, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const safeFilename = (boardName.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_') || 'pcb_recipe') + '.json';
+        a.download = safeFilename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showAlert(`Recipe "${boardName.trim()}" downloaded successfully as ${safeFilename}.`, 'success');
+    });
+
+    el.btnImportRecipe.addEventListener('click', () => {
+        hideAlert();
+        el.recipeFileInput.value = '';
+        el.recipeFileInput.click();
+    });
+
+    el.recipeFileInput.addEventListener('change', (e) => {
+        if (!e.target.files || !e.target.files[0]) return;
+        const file = e.target.files[0];
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const text = event.target.result;
+                let recipe;
+                try {
+                    recipe = JSON.parse(text);
+                } catch (parseErr) {
+                    throw new Error('File is not valid JSON or syntax is corrupted.');
+                }
+
+                // Check board components
+                const rawComps = recipe.components;
+                if (!rawComps || !Array.isArray(rawComps) || rawComps.length === 0) {
+                    throw new Error('Recipe is invalid: missing or empty "components" array.');
+                }
+
+                let loadWarnings = [];
+
+                // Check aspect ratio (compare aspect ratio, not exact pixels; warn only, do not block)
+                if (recipe.image_size && typeof recipe.image_size === 'object') {
+                    const rw = recipe.image_size.width;
+                    const rh = recipe.image_size.height;
+                    const recipeAR = recipe.image_size.aspect_ratio || (rw && rh ? rw / rh : null);
+                    const currentAR = state.workingDim.width / state.workingDim.height;
+                    if (recipeAR && Math.abs(currentAR - recipeAR) > 0.02) {
+                        loadWarnings.push(`Aspect ratio warning: Recipe was created for aspect ratio ${recipeAR.toFixed(2)} (${rw}×${rh}), but reference board is ${currentAR.toFixed(2)} (${state.workingDim.width}×${state.workingDim.height}). Normalized boxes may stretch.`);
+                    }
+                }
+
+                // Check reference image fingerprint (warn only, do not block)
+                if (recipe.image_fingerprint && state.referenceFingerprint && recipe.image_fingerprint !== state.referenceFingerprint) {
+                    loadWarnings.push('Reference board fingerprint mismatch: This recipe was created for a different reference image. Please verify component alignment.');
+                }
+
+                // Parse and map components
+                const newComps = [];
+                for (let i = 0; i < rawComps.length; i++) {
+                    const c = rawComps[i];
+                    const compName = (c.name && String(c.name).trim()) || `PART_${i + 1}`;
+                    let pixelBox = null;
+
+                    if (c.pixel_bbox && Array.isArray(c.pixel_bbox) && c.pixel_bbox.length === 4) {
+                        pixelBox = c.pixel_bbox.map(v => Math.round(Number(v)));
+                    } else if (c.normalized_bbox && Array.isArray(c.normalized_bbox) && c.normalized_bbox.length === 4) {
+                        pixelBox = [
+                            Math.round(c.normalized_bbox[0] * state.workingDim.width),
+                            Math.round(c.normalized_bbox[1] * state.workingDim.height),
+                            Math.round(c.normalized_bbox[2] * state.workingDim.width),
+                            Math.round(c.normalized_bbox[3] * state.workingDim.height),
+                        ];
+                    } else {
+                        throw new Error(`Component #${i + 1} (${compName}) has invalid bbox data.`);
+                    }
+
+                    const [x, y, w, h] = pixelBox;
+                    const warning = getBoxWarning(w, h, state.workingDim.width, state.workingDim.height);
+
+                    newComps.push({
+                        id: 'comp_' + Date.now() + '_' + i,
+                        name: compName,
+                        bbox: [x, y, w, h],
+                        warning: warning,
+                        normalized: [
+                            Number((x / state.workingDim.width).toFixed(4)),
+                            Number((y / state.workingDim.height).toFixed(4)),
+                            Number((w / state.workingDim.width).toFixed(4)),
+                            Number((h / state.workingDim.height).toFixed(4)),
+                        ],
+                    });
+                }
+
+                state.components = newComps;
+
+                // Sync sensitivity if provided in recipe
+                if (recipe.sensitivity && ['strict', 'balanced', 'lenient'].includes(recipe.sensitivity)) {
+                    state.activeSensitivity = recipe.sensitivity;
+                    const radio = document.querySelector(`input[name="sensitivity"][value="${recipe.sensitivity}"]`);
+                    if (radio) {
+                        radio.checked = true;
+                        document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
+                        radio.closest('.radio-card').classList.add('selected');
+                    }
+                }
+
+                renderAnnotationCanvas();
+                renderComponentsList();
+                if (loadWarnings.length > 0) {
+                    showAlert(`Recipe loaded (${newComps.length} parts) with warnings: ${loadWarnings.join(' | ')}`, 'warning');
+                } else {
+                    showAlert(`Successfully loaded recipe "${recipe.board_name || 'Custom'}" with ${newComps.length} components!`, 'success');
+                }
+
+            } catch (err) {
+                showAlert(`Failed to load recipe: ${err.message}`, 'danger');
+            }
+        };
+
+        reader.onerror = () => {
+            showAlert('Failed to read the selected recipe file from disk.', 'danger');
+        };
+
+        reader.readAsText(file);
+    });
+
+    // --- LIVE CAMERA CONTROLS ---
+    let cameraStream = null;
+
+    async function enumerateCameraDevices() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(d => d.kind === 'videoinput');
+            el.cameraDeviceSelect.innerHTML = '';
+            if (videoDevices.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'Default Camera';
+                el.cameraDeviceSelect.appendChild(opt);
+                return;
+            }
+            videoDevices.forEach((dev, idx) => {
+                const opt = document.createElement('option');
+                opt.value = dev.deviceId;
+                opt.textContent = dev.label || `Camera ${idx + 1}`;
+                el.cameraDeviceSelect.appendChild(opt);
+            });
+        } catch {
+            // Devices enumeration may require permission first
+        }
+    }
+
+    function showCameraError(msg) {
+        el.cameraErrorBanner.textContent = msg;
+        el.cameraErrorBanner.classList.remove('d-none');
+    }
+
+    function hideCameraError() {
+        el.cameraErrorBanner.classList.add('d-none');
+    }
+
+    function openCameraModal() {
+        hideAlert();
+        hideCameraError();
+        el.cameraModal.classList.remove('d-none');
+        enumerateCameraDevices();
+    }
+
+    function closeCameraModal() {
+        stopCamera();
+        el.cameraModal.classList.add('d-none');
+    }
+
+    async function startCamera() {
+        hideCameraError();
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showCameraError('Camera API (getUserMedia) is not supported in this browser or context.');
+            return;
+        }
+
+        const deviceId = el.cameraDeviceSelect.value;
+        const constraints = {
+            video: {
+                deviceId: deviceId ? { exact: deviceId } : undefined,
+                width: { ideal: 1920 },
+                height: { ideal: 1080 },
+            },
+        };
+
+        try {
+            el.btnStartCamera.disabled = true;
+            el.btnStartCamera.textContent = 'Starting Camera...';
+
+            let stream;
+            try {
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+            } catch (constrErr) {
+                // Fallback to generic constraints if exact device or resolution constraints fail
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            }
+
+            cameraStream = stream;
+            el.cameraVideoPreview.srcObject = stream;
+            el.cameraPlaceholder.classList.add('d-none');
+            el.cameraLiveDot.classList.add('active');
+
+            el.btnStartCamera.classList.add('d-none');
+            el.btnStopCamera.classList.remove('d-none');
+            el.btnCaptureAsRef.disabled = false;
+            el.btnCaptureAsTest.disabled = false;
+
+            // Re-enumerate to get device labels now that permission is granted
+            await enumerateCameraDevices();
+
+        } catch (err) {
+            let errorMsg = `Could not access camera: ${err.message}`;
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                errorMsg = 'Camera access was blocked by browser or system permissions. Please allow camera access in your browser.';
+            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                errorMsg = 'No camera hardware device found. Please connect a USB camera or webcam.';
+            } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                errorMsg = 'Camera hardware is currently in use by another application or locked by the OS.';
+            }
+            showCameraError(errorMsg);
+        } finally {
+            el.btnStartCamera.disabled = false;
+            el.btnStartCamera.textContent = 'Start Camera';
+        }
+    }
+
+    function stopCamera() {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        }
+        el.cameraVideoPreview.srcObject = null;
+        el.cameraPlaceholder.classList.remove('d-none');
+        el.cameraLiveDot.classList.remove('active');
+
+        el.btnStartCamera.classList.remove('d-none');
+        el.btnStopCamera.classList.add('d-none');
+        el.btnCaptureAsRef.disabled = true;
+        el.btnCaptureAsTest.disabled = true;
+    }
+
+    function captureCameraFrame(targetMode) {
+        const video = el.cameraVideoPreview;
+        const canvas = el.cameraCaptureCanvas;
+
+        const w = video.videoWidth || 1920;
+        const h = video.videoHeight || 1080;
+        canvas.width = w;
+        canvas.height = h;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, w, h);
+
+        canvas.toBlob((blob) => {
+            if (!blob) {
+                showCameraError('Failed to capture frame from video feed.');
+                return;
+            }
+            const filename = `camera_${targetMode}_${Date.now()}.png`;
+            const file = new File([blob], filename, { type: 'image/png' });
+
+            closeCameraModal();
+
+            if (targetMode === 'ref') {
+                handleReferenceFile(file);
+            } else if (targetMode === 'test') {
+                addTestFiles([file]);
+                if (state.currentStep !== 3) {
+                    setStep(3);
+                }
+                showAlert(`Captured frame "${filename}" added to test board queue.`, 'success');
+            }
+        }, 'image/png');
+    }
+
+    el.btnOpenCamera.addEventListener('click', openCameraModal);
+    el.btnCameraRef.addEventListener('click', openCameraModal);
+    el.btnCameraTest.addEventListener('click', openCameraModal);
+    el.btnCloseCamera.addEventListener('click', closeCameraModal);
+    el.btnStartCamera.addEventListener('click', startCamera);
+    el.btnStopCamera.addEventListener('click', stopCamera);
+    el.cameraDeviceSelect.addEventListener('change', () => {
+        if (cameraStream) {
+            startCamera(); // Restart with new device
+        }
+    });
+    el.btnCaptureAsRef.addEventListener('click', () => captureCameraFrame('ref'));
+    el.btnCaptureAsTest.addEventListener('click', () => captureCameraFrame('test'));
+
     // Step 2 Proceed to Step 3
     el.btnProceedToStep3.addEventListener('click', async () => {
         if (state.components.length === 0) {
@@ -654,17 +1053,50 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- RENDER INSPECTION RESULTS ---
+    // --- RENDER INSPECTION RESULTS & BATCH SUMMARY ---
     function renderInspectionResults(data) {
+        state.lastInspectionData = data;
         el.inspectionResultsArea.classList.remove('d-none');
+        if (el.batchSummaryPanel) {
+            el.batchSummaryPanel.classList.remove('d-none');
+        }
+
+        renderResultCards();
+        updateBatchSummary();
+
+        // Scroll to results
+        el.inspectionResultsArea.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function renderResultCards() {
+        if (!state.lastInspectionData) return;
+        const data = state.lastInspectionData;
         el.resultsCardsContainer.innerHTML = '';
 
         let okCount = 0, defectCount = 0, reviewCount = 0;
 
         data.results.forEach((res, resIdx) => {
-            if (res.board_status === 'OK') okCount++;
-            else if (res.board_status === 'DEFECT') defectCount++;
-            else if (res.board_status === 'REVIEW') reviewCount++;
+            const bSign = state.signoffs[res.filename] || {};
+
+            // Compute effective status for this board considering sign-offs
+            let hasMissing = false;
+            let hasUncertain = false;
+            let hasSignoffs = false;
+
+            res.components.forEach(c => {
+                const sign = bSign[c.name];
+                const effStatus = sign ? sign.final_status : c.status;
+                if (effStatus === 'MISSING') hasMissing = true;
+                else if (effStatus === 'UNCERTAIN') hasUncertain = true;
+                if (sign) hasSignoffs = true;
+            });
+
+            let effectiveBoardStatus = hasMissing ? 'DEFECT' : (hasUncertain ? 'REVIEW' : 'OK');
+            if (res.board_status === 'ERROR') effectiveBoardStatus = 'ERROR';
+
+            if (effectiveBoardStatus === 'OK') okCount++;
+            else if (effectiveBoardStatus === 'DEFECT') defectCount++;
+            else if (effectiveBoardStatus === 'REVIEW') reviewCount++;
 
             const card = document.createElement('div');
             card.className = 'result-card';
@@ -674,15 +1106,21 @@ document.addEventListener('DOMContentLoaded', () => {
             let icon = '✓';
             let titleText = 'OK — PASSED';
 
-            if (res.board_status === 'DEFECT') {
+            if (effectiveBoardStatus === 'DEFECT') {
                 bannerClass = 'banner-defect';
                 icon = '✗';
-                titleText = 'DEFECT — MISSING PARTS DETECTED';
-            } else if (res.board_status === 'REVIEW') {
+                titleText = hasSignoffs && res.board_status === 'REVIEW'
+                    ? 'DEFECT — MISSING PARTS CONFIRMED VIA SIGN-OFF'
+                    : 'DEFECT — MISSING PARTS DETECTED';
+            } else if (effectiveBoardStatus === 'REVIEW') {
                 bannerClass = 'banner-review';
                 icon = '⚠';
-                titleText = 'REVIEW — OPERATOR CHECK REQUIRED';
-            } else if (res.board_status === 'ERROR') {
+                titleText = 'REVIEW — OPERATOR SIGN-OFF REQUIRED';
+            } else if (effectiveBoardStatus === 'OK' && hasSignoffs && res.board_status === 'REVIEW') {
+                bannerClass = 'banner-ok';
+                icon = '✓';
+                titleText = 'OK — PASSED (SIGN-OFF VERIFIED)';
+            } else if (effectiveBoardStatus === 'ERROR') {
                 bannerClass = 'banner-defect';
                 icon = '⚠';
                 titleText = 'PROCESSING ERROR';
@@ -697,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="result-banner ${bannerClass}">
                     <div>
                         <div class="banner-status-title"><span>${icon}</span> ${titleText}</div>
-                        <div class="banner-summary">${res.summary}</div>
+                        <div class="banner-summary">${res.summary} ${hasSignoffs ? '<span style="opacity:0.9;">(Human review logged)</span>' : ''}</div>
                     </div>
                     <div style="text-align:right;">
                         <span class="banner-filename">${res.filename}</span>
@@ -717,14 +1155,15 @@ document.addEventListener('DOMContentLoaded', () => {
                             <thead>
                                 <tr>
                                     <th>Component</th>
-                                    <th>Status</th>
-                                    <th>ZNCC Score</th>
-                                    <th>Patch Residual (Diff)</th>
-                                    <th>Inspection Diagnostic Reason</th>
+                                    <th>Verdict & Operator Sign-Off</th>
+                                    <th>ZNCC</th>
+                                    <th>Diff</th>
+                                    <th>Diagnostic Reason</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${res.components.map(c => {
+                                    const sign = bSign[c.name];
                                     let badgeClass = 'badge-success';
                                     let rowClass = '';
                                     if (c.status === 'MISSING') {
@@ -734,10 +1173,43 @@ document.addEventListener('DOMContentLoaded', () => {
                                         badgeClass = 'badge-amber';
                                         rowClass = 'row-uncertain';
                                     }
+
+                                    let signoffHtml = '';
+                                    if (c.status === 'UNCERTAIN') {
+                                        if (sign) {
+                                            const isPres = sign.final_status === 'PRESENT';
+                                            const signBadge = isPres ? 'badge-signoff-verified' : 'badge-signoff-confirmed';
+                                            const signIcon = isPres ? '✓' : '✗';
+                                            signoffHtml = `
+                                                <div style="margin-top:0.35rem;">
+                                                    <span class="${signBadge}">${signIcon} ${isPres ? 'VERIFIED PRESENT' : 'CONFIRMED MISSING'}</span>
+                                                    <span style="font-size:0.75rem; color:#8b949e; margin-left:0.3rem;">(By ${sign.operator_id}${sign.note ? ' &bull; ' + sign.note : ''})</span>
+                                                    <button type="button" class="btn-link btn-edit-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" style="margin-left:0.5rem; font-size:0.75rem; color:#58a6ff;">✎ Edit</button>
+                                                </div>
+                                                <div style="font-size:0.75rem; color:#8b949e; margin-top:2px;">Original Machine Verdict: UNCERTAIN</div>
+                                            `;
+                                        } else {
+                                            signoffHtml = `
+                                                <div class="signoff-box">
+                                                    <div class="signoff-header-text">⚠ Operator Sign-Off Required for This Part</div>
+                                                    <div class="signoff-controls-row">
+                                                        <input type="text" class="signoff-input signoff-input-badge" id="badge-${resIdx}-${c.name}" placeholder="Badge ID" value="OP-1">
+                                                        <input type="text" class="signoff-input signoff-input-note" id="note-${resIdx}-${c.name}" placeholder="Optional note (e.g. glare on lead)">
+                                                        <button type="button" class="btn btn-sm btn-success btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="PRESENT">✓ Verify Present</button>
+                                                        <button type="button" class="btn btn-sm btn-danger btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="MISSING">✗ Confirm Missing</button>
+                                                    </div>
+                                                </div>
+                                            `;
+                                        }
+                                    }
+
                                     return `
                                         <tr class="${rowClass}">
                                             <td><strong>${c.name}</strong></td>
-                                            <td><span class="badge ${badgeClass}">${c.status}</span></td>
+                                            <td>
+                                                <span class="badge ${badgeClass}">${c.status}</span>
+                                                ${signoffHtml}
+                                            </td>
                                             <td class="score-num">${c.scores.zncc.toFixed(4)}</td>
                                             <td class="score-num">${c.scores.patch_diff.toFixed(4)}</td>
                                             <td>${c.reason}</td>
@@ -760,8 +1232,295 @@ document.addEventListener('DOMContentLoaded', () => {
         el.resultsSummaryBadge.className = defectCount > 0 ? 'badge badge-danger' : (reviewCount > 0 ? 'badge badge-amber' : 'badge badge-success');
         el.resultsSummaryBadge.textContent = `${data.results.length} Board(s): ${okCount} OK, ${defectCount} Defect, ${reviewCount} Review`;
 
-        // Scroll to results
-        el.inspectionResultsArea.scrollIntoView({ behavior: 'smooth' });
+        // Attach Sign-Off Handlers
+        attachSignoffHandlers();
+    }
+
+    function attachSignoffHandlers() {
+        el.resultsCardsContainer.querySelectorAll('.btn-signoff').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const target = e.currentTarget;
+                const resIdx = target.getAttribute('data-res-idx');
+                const fname = target.getAttribute('data-fname');
+                const comp = target.getAttribute('data-comp');
+                const verdict = target.getAttribute('data-verdict');
+
+                const badgeEl = document.getElementById(`badge-${resIdx}-${comp}`);
+                const noteEl = document.getElementById(`note-${resIdx}-${comp}`);
+                const badge = (badgeEl && badgeEl.value.trim()) || 'OPERATOR';
+                const note = (noteEl && noteEl.value.trim()) || '';
+
+                if (!state.signoffs[fname]) state.signoffs[fname] = {};
+                state.signoffs[fname][comp] = {
+                    final_status: verdict,
+                    operator_id: badge,
+                    note: note,
+                    timestamp: new Date().toLocaleTimeString(),
+                };
+
+                // Sync to backend if session exists
+                if (state.sessionId) {
+                    fetch(`/api/sessions/${state.sessionId}/signoff`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            filename: fname,
+                            component_name: comp,
+                            final_status: verdict,
+                            operator_id: badge,
+                            note: note,
+                        }),
+                    }).catch(() => {});
+                }
+
+                renderResultCards();
+                updateBatchSummary();
+            });
+        });
+
+        el.resultsCardsContainer.querySelectorAll('.btn-edit-signoff').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const target = e.currentTarget;
+                const fname = target.getAttribute('data-fname');
+                const comp = target.getAttribute('data-comp');
+                if (state.signoffs[fname] && state.signoffs[fname][comp]) {
+                    delete state.signoffs[fname][comp];
+                    renderResultCards();
+                    updateBatchSummary();
+                }
+            });
+        });
+    }
+
+    function updateBatchSummary() {
+        if (!state.lastInspectionData || !state.lastInspectionData.results) return;
+        const results = state.lastInspectionData.results;
+        const total = results.length;
+
+        let machineOk = 0, machineDefect = 0, machineReview = 0;
+        let finalOk = 0, finalDefect = 0, finalReview = 0;
+        const missingCounts = {};
+
+        results.forEach(res => {
+            const mStatus = res.board_status;
+            if (mStatus === 'OK') machineOk++;
+            else if (mStatus === 'DEFECT') machineDefect++;
+            else if (mStatus === 'REVIEW') machineReview++;
+
+            const bSign = state.signoffs[res.filename] || {};
+            let bHasMissing = false;
+            let bHasUncertain = false;
+
+            res.components.forEach(c => {
+                const sign = bSign[c.name];
+                const effectiveStatus = sign ? sign.final_status : c.status;
+                if (effectiveStatus === 'MISSING') {
+                    bHasMissing = true;
+                    missingCounts[c.name] = (missingCounts[c.name] || 0) + 1;
+                } else if (effectiveStatus === 'UNCERTAIN') {
+                    bHasUncertain = true;
+                }
+            });
+
+            if (bHasMissing) finalDefect++;
+            else if (bHasUncertain) finalReview++;
+            else finalOk++;
+        });
+
+        const fpy = total > 0 ? ((machineOk / total) * 100).toFixed(1) : '0.0';
+        const finalYield = total > 0 ? ((finalOk / total) * 100).toFixed(1) : '0.0';
+
+        if (el.kpiTotal) el.kpiTotal.textContent = total;
+        if (el.kpiOk) el.kpiOk.textContent = machineOk;
+        if (el.kpiDefect) el.kpiDefect.textContent = machineDefect;
+        if (el.kpiReview) el.kpiReview.textContent = machineReview;
+        if (el.kpiFpy) el.kpiFpy.textContent = `${fpy}%`;
+        if (el.kpiFinalYield) el.kpiFinalYield.textContent = `${finalYield}%`;
+
+        // Defect Pareto tally
+        if (el.defectTallyList) {
+            el.defectTallyList.innerHTML = '';
+            const sortedMissing = Object.keys(missingCounts).sort((a, b) => missingCounts[b] - missingCounts[a]);
+            if (sortedMissing.length === 0) {
+                el.defectTallyList.innerHTML = '<span class="text-muted">No missing components reported in this batch.</span>';
+            } else {
+                sortedMissing.forEach(name => {
+                    const chip = document.createElement('span');
+                    chip.className = 'defect-chip';
+                    chip.textContent = `${name}: ${missingCounts[name]} missing`;
+                    el.defectTallyList.appendChild(chip);
+                });
+            }
+        }
+    }
+
+    // --- CSV EXPORT ---
+    function downloadCsvReport() {
+        if (!state.lastInspectionData || !state.lastInspectionData.results) {
+            showAlert('No inspection results available to export.', 'danger');
+            return;
+        }
+
+        const results = state.lastInspectionData.results;
+        const rows = [
+            ['Timestamp', 'Board_Filename', 'Board_Machine_Status', 'Board_Final_Status', 'Component', 'Machine_Status', 'Final_Status', 'ZNCC_Score', 'Patch_Diff', 'Operator_ID', 'Operator_Note', 'Diagnostic_Reason']
+        ];
+
+        const ts = new Date().toISOString();
+        results.forEach(res => {
+            const bSign = state.signoffs[res.filename] || {};
+            let bHasMissing = false, bHasUncertain = false;
+            res.components.forEach(c => {
+                const sign = bSign[c.name];
+                const eff = sign ? sign.final_status : c.status;
+                if (eff === 'MISSING') bHasMissing = true;
+                else if (eff === 'UNCERTAIN') bHasUncertain = true;
+            });
+            const finalBStatus = bHasMissing ? 'DEFECT' : (bHasUncertain ? 'REVIEW' : 'OK');
+
+            res.components.forEach(c => {
+                const sign = bSign[c.name] || {};
+                const eff = sign.final_status || c.status;
+                rows.push([
+                    ts,
+                    res.filename,
+                    res.board_status,
+                    finalBStatus,
+                    c.name,
+                    c.status,
+                    eff,
+                    c.scores.zncc.toFixed(4),
+                    c.scores.patch_diff.toFixed(4),
+                    sign.operator_id || '',
+                    sign.note || '',
+                    `"${(c.reason || '').replace(/"/g, '""')}"`
+                ]);
+            });
+        });
+
+        const csvContent = rows.map(r => r.join(',')).join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `aoi_batch_report_${Date.now()}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    if (el.btnDownloadCsv) {
+        el.btnDownloadCsv.addEventListener('click', downloadCsvReport);
+    }
+
+    // --- PRINTABLE INSPECTION REPORT ---
+    function openPrintableReport() {
+        if (!state.lastInspectionData) {
+            showAlert('No inspection data available for printing.', 'danger');
+            return;
+        }
+
+        const data = state.lastInspectionData;
+        const results = data.results;
+        const total = results.length;
+
+        let machineOk = 0, finalOk = 0;
+        results.forEach(res => {
+            if (res.board_status === 'OK') machineOk++;
+            const bSign = state.signoffs[res.filename] || {};
+            let hasMiss = false, hasUnc = false;
+            res.components.forEach(c => {
+                const eff = (bSign[c.name] && bSign[c.name].final_status) || c.status;
+                if (eff === 'MISSING') hasMiss = true;
+                else if (eff === 'UNCERTAIN') hasUnc = true;
+            });
+            if (!hasMiss && !hasUnc) finalOk++;
+        });
+
+        const fpy = total > 0 ? ((machineOk / total) * 100).toFixed(1) : '0.0';
+        const finalY = total > 0 ? ((finalOk / total) * 100).toFixed(1) : '0.0';
+
+        let tableRows = '';
+        results.forEach(res => {
+            const bSign = state.signoffs[res.filename] || {};
+            let hasMiss = false, hasUnc = false;
+            res.components.forEach(c => {
+                const eff = (bSign[c.name] && bSign[c.name].final_status) || c.status;
+                if (eff === 'MISSING') hasMiss = true;
+                else if (eff === 'UNCERTAIN') hasUnc = true;
+            });
+            const finalBStatus = hasMiss ? 'DEFECT' : (hasUnc ? 'REVIEW' : 'OK');
+
+            res.components.forEach(c => {
+                const sign = bSign[c.name];
+                const eff = sign ? sign.final_status : c.status;
+                const signText = sign ? `${sign.final_status} (by ${sign.operator_id}${sign.note ? ': ' + sign.note : ''})` : '-';
+                tableRows += `
+                    <tr>
+                        <td>${res.filename}</td>
+                        <td><strong>${c.name}</strong></td>
+                        <td>${c.status}</td>
+                        <td><strong>${eff}</strong></td>
+                        <td>${c.scores.zncc.toFixed(4)}</td>
+                        <td>${c.scores.patch_diff.toFixed(4)}</td>
+                        <td>${signText}</td>
+                    </tr>
+                `;
+            });
+        });
+
+        el.printableReportContent.innerHTML = `
+            <div class="print-cert-header">
+                <div>
+                    <h1>PCB AUTOMATED OPTICAL INSPECTION REPORT</h1>
+                    <p>Batch Inspection & Audit Record</p>
+                </div>
+                <div style="text-align:right;">
+                    <p><strong>Inspection Date:</strong> ${new Date().toLocaleString()}</p>
+                    <p><strong>Session ID:</strong> ${state.sessionId || 'N/A'}</p>
+                </div>
+            </div>
+            <div class="print-meta-grid">
+                <div class="print-meta-item"><strong>Boards Inspected</strong>${total}</div>
+                <div class="print-meta-item"><strong>Sensitivity Mode</strong>${state.activeSensitivity.toUpperCase()}</div>
+                <div class="print-meta-item"><strong>First-Pass Yield (Machine)</strong>${fpy}%</div>
+                <div class="print-meta-item"><strong>Final Yield (Post Sign-Off)</strong>${finalY}%</div>
+            </div>
+            <table class="print-table">
+                <thead>
+                    <tr>
+                        <th>Board Filename</th>
+                        <th>Component</th>
+                        <th>Machine Verdict</th>
+                        <th>Final Verdict</th>
+                        <th>ZNCC</th>
+                        <th>Diff</th>
+                        <th>Operator Sign-Off</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tableRows}
+                </tbody>
+            </table>
+            <div class="print-footer-sign">
+                <div><strong>Lead Inspector:</strong> ______________________</div>
+                <div><strong>Line Supervisor:</strong> ______________________</div>
+                <div><strong>Date:</strong> ______________________</div>
+            </div>
+        `;
+
+        el.printModal.classList.remove('d-none');
+    }
+
+    if (el.btnPrintReport) {
+        el.btnPrintReport.addEventListener('click', openPrintableReport);
+    }
+    if (el.btnTriggerPrint) {
+        el.btnTriggerPrint.addEventListener('click', () => window.print());
+    }
+    if (el.btnClosePrint) {
+        el.btnClosePrint.addEventListener('click', () => el.printModal.classList.add('d-none'));
     }
 
     function drawResultCanvas(canvasId, result) {
