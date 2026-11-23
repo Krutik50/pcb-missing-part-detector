@@ -1414,7 +1414,7 @@ document.addEventListener('DOMContentLoaded', () => {
         el.btnDownloadCsv.addEventListener('click', downloadCsvReport);
     }
 
-    // --- PRINTABLE QUALITY CERTIFICATE ---
+    // --- PRINTABLE INSPECTION REPORT ---
     function openPrintableReport() {
         if (!state.lastInspectionData) {
             showAlert('No inspection data available for printing.', 'danger');
@@ -1473,8 +1473,8 @@ document.addEventListener('DOMContentLoaded', () => {
         el.printableReportContent.innerHTML = `
             <div class="print-cert-header">
                 <div>
-                    <h1>PCB AUTOMATED OPTICAL INSPECTION CERTIFICATE</h1>
-                    <p>Quality Verification & Audit Record &bull; IPC-A-610 Class 3 / ISO 9001 Compliance</p>
+                    <h1>PCB AUTOMATED OPTICAL INSPECTION REPORT</h1>
+                    <p>Batch Inspection & Audit Record</p>
                 </div>
                 <div style="text-align:right;">
                     <p><strong>Inspection Date:</strong> ${new Date().toLocaleString()}</p>
@@ -1504,8 +1504,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tbody>
             </table>
             <div class="print-footer-sign">
-                <div><strong>Lead QA Inspector:</strong> ______________________</div>
-                <div><strong>Line Supervisor Signature:</strong> ______________________</div>
+                <div><strong>Lead Inspector:</strong> ______________________</div>
+                <div><strong>Line Supervisor:</strong> ______________________</div>
                 <div><strong>Date:</strong> ______________________</div>
             </div>
         `;

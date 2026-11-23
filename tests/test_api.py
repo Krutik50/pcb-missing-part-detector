@@ -370,6 +370,46 @@ class TestBackendAPI(unittest.TestCase):
         self.assertIn("OP-702", csv_text)
         self.assertIn("Verified under microscope", csv_text)
 
+    def test_validate_recipe_dimension_mismatch(self):
+        recipe = {
+            "recipe_version": "1.0",
+            "board_name": "TEST_BOARD_REV1",
+            "image_size": {"width": 1920, "height": 1080},
+            "sensitivity": "balanced",
+            "components": [
+                {"name": "U1_MCU", "normalized_bbox": [0.3021, 0.3704, 0.1042, 0.1852]},
+            ],
+        }
+        # Expected is 1000x1000 (aspect ratio 1.0), but recipe was 1920x1080 (1.778)
+        response = client.post("/api/recipes/validate?expected_width=1000&expected_height=1000", json=recipe)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data["valid"])
+        self.assertTrue(data["dimension_mismatch"])
+        self.assertIn("Aspect ratio warning", data["dimension_warning"])
+
+    def test_validate_recipe_empty_components_rejection(self):
+        recipe = {
+            "recipe_version": "1.0",
+            "board_name": "TEST_BOARD_EMPTY",
+            "components": [],
+        }
+        response = client.post("/api/recipes/validate", json=recipe)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("zero components", response.json()["detail"])
+
+    def test_validate_recipe_invalid_normalized_bbox(self):
+        recipe = {
+            "recipe_version": "1.0",
+            "board_name": "TEST_BOARD_INVALID",
+            "components": [
+                {"name": "U1_MCU", "normalized_bbox": [1.5, 0.3, 0.2, 0.2]},  # 1.5 > 1.0
+            ],
+        }
+        response = client.post("/api/recipes/validate", json=recipe)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("between 0.0 and 1.0", response.json()["detail"])
+
 
 if __name__ == "__main__":
     unittest.main()
