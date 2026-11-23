@@ -92,6 +92,127 @@ async def get_sample_components():
     return {"components": {}}
 
 
+class RecipeComponent(BaseModel):
+    name: str
+    normalized_bbox: Optional[List[float]] = None
+    pixel_bbox: Optional[List[float]] = None
+
+
+class RecipeImageSize(BaseModel):
+    width: int
+    height: int
+
+
+class RecipePayload(BaseModel):
+    recipe_version: Optional[str] = "1.0"
+    board_name: str
+    image_size: Optional[RecipeImageSize] = None
+    sensitivity: Optional[str] = "balanced"
+    components: List[RecipeComponent]
+
+
+@app.get("/api/sample-recipe")
+async def get_sample_recipe():
+    """Generates a downloadable sample recipe JSON from ground truth definitions."""
+    gt_file = BASE_DIR.parent / "sample_data" / "ground_truth.json"
+    if not gt_file.exists():
+        raise HTTPException(status_code=404, detail="Ground truth sample data not found.")
+    with open(gt_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    raw_comps = data.get("components", {})
+    components_list = []
+    for cid, info in raw_comps.items():
+        components_list.append({
+            "name": cid,
+            "normalized_bbox": info.get("normalized_bbox"),
+            "pixel_bbox": info.get("pixel_bbox"),
+        })
+    return {
+        "recipe_version": "1.0",
+        "board_name": "PCB_SAMPLE_MAIN_BOARD",
+        "image_size": {"width": 1920, "height": 1080},
+        "sensitivity": "balanced",
+        "components": components_list,
+    }
+
+
+@app.post("/api/recipes/validate")
+async def validate_recipe(
+    recipe: RecipePayload,
+    expected_width: Optional[int] = None,
+    expected_height: Optional[int] = None,
+):
+    """
+    Validates a board recipe JSON schema, verifies components,
+    and checks if image dimensions match the reference board.
+    """
+    if not recipe.board_name or not recipe.board_name.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Recipe must specify a non-empty board_name.",
+        )
+    if not recipe.components or len(recipe.components) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Recipe contains zero components. At least one component is required.",
+        )
+
+    # Check sensitivity profile
+    if recipe.sensitivity not in ("strict", "balanced", "lenient"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid sensitivity '{recipe.sensitivity}'. Must be one of: strict, balanced, lenient.",
+        )
+
+    # Validate image size match if expected dimensions are given
+    dimension_mismatch = False
+    dimension_warning = None
+    if recipe.image_size and expected_width and expected_height:
+        if (recipe.image_size.width != expected_width or recipe.image_size.height != expected_height):
+            dimension_mismatch = True
+            dimension_warning = (
+                f"Image size mismatch: Recipe was created for {recipe.image_size.width}x{recipe.image_size.height} px, "
+                f"but reference board is {expected_width}x{expected_height} px."
+            )
+
+    # Validate individual components
+    validated_components = []
+    for comp in recipe.components:
+        if not comp.name or not comp.name.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Component missing name in recipe.",
+            )
+        if not comp.normalized_bbox and not comp.pixel_bbox:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Component '{comp.name}' must have either normalized_bbox or pixel_bbox.",
+            )
+        if comp.normalized_bbox:
+            if len(comp.normalized_bbox) != 4:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Component '{comp.name}' normalized_bbox must have 4 elements [x, y, w, h].",
+                )
+            for val in comp.normalized_bbox:
+                if val < 0.0 or val > 1.0:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Component '{comp.name}' normalized_bbox values must be between 0.0 and 1.0.",
+                    )
+        validated_components.append(comp.model_dump() if hasattr(comp, "model_dump") else comp.dict())
+
+    return {
+        "valid": True,
+        "board_name": recipe.board_name,
+        "sensitivity": recipe.sensitivity,
+        "components_count": len(validated_components),
+        "dimension_mismatch": dimension_mismatch,
+        "dimension_warning": dimension_warning,
+        "components": validated_components,
+    }
+
+
 def _validate_and_decode_image(file_bytes: bytes, filename: str) -> np.ndarray:
     """Validates file size and decodes into a BGR OpenCV image."""
     if len(file_bytes) == 0:
