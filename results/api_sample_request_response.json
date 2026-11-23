@@ -1,0 +1,270 @@
+{
+  "endpoint": "POST /api/inspect",
+  "request": {
+    "session_id": "8be549c1f7814574b7ce517556239b2b",
+    "sensitivity": "balanced",
+    "test_images_count": 4,
+    "filenames": [
+      "calib_01_all_ok_nominal.png",
+      "calib_08_missing_u1_mcu.png",
+      "calib_09_missing_c1.png",
+      "calib_12_missing_adj_c1_c2.png"
+    ]
+  },
+  "response_summary": {
+    "sensitivity": "balanced",
+    "thresholds": {
+      "zncc_high": 0.89,
+      "zncc_low": 0.86,
+      "diff_low": 0.065,
+      "diff_high": 0.09
+    },
+    "total_images_inspected": 4,
+    "results": [
+      {
+        "filename": "calib_01_all_ok_nominal.png",
+        "board_status": "OK",
+        "summary": "All components confirmed PRESENT (OK)",
+        "alignment": {
+          "success": true,
+          "fallback_used": false,
+          "dx_px": 0.2,
+          "dy_px": 1.28,
+          "rotation_deg": -0.14,
+          "message": "EUCLIDEAN alignment succeeded"
+        },
+        "components_sample": [
+          {
+            "name": "C1_DECOUP",
+            "status": "PRESENT",
+            "scores": {
+              "zncc": 0.9945,
+              "patch_diff": 0.0145
+            },
+            "reason": "High confidence match (ZNCC: 0.99 >= 0.89, Diff: 0.01 <= 0.07)",
+            "box": {
+              "pixel": [
+                480,
+                410,
+                50,
+                30
+              ],
+              "normalized": [
+                0.25,
+                0.3796,
+                0.026,
+                0.0278
+              ]
+            }
+          },
+          {
+            "name": "C2_DECOUP",
+            "status": "PRESENT",
+            "scores": {
+              "zncc": 0.9932,
+              "patch_diff": 0.0161
+            },
+            "reason": "High confidence match (ZNCC: 0.99 >= 0.89, Diff: 0.02 <= 0.07)",
+            "box": {
+              "pixel": [
+                480,
+                470,
+                50,
+                30
+              ],
+              "normalized": [
+                0.25,
+                0.4352,
+                0.026,
+                0.0278
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "filename": "calib_08_missing_u1_mcu.png",
+        "board_status": "DEFECT",
+        "summary": "1 missing component(s) detected: ['U1_MCU']",
+        "alignment": {
+          "success": true,
+          "fallback_used": false,
+          "dx_px": -0.42,
+          "dy_px": 5.73,
+          "rotation_deg": -0.19,
+          "message": "EUCLIDEAN alignment succeeded"
+        },
+        "components_sample": [
+          {
+            "name": "C1_DECOUP",
+            "status": "PRESENT",
+            "scores": {
+              "zncc": 0.9941,
+              "patch_diff": 0.0162
+            },
+            "reason": "High confidence match (ZNCC: 0.99 >= 0.89, Diff: 0.02 <= 0.07)",
+            "box": {
+              "pixel": [
+                480,
+                410,
+                50,
+                30
+              ],
+              "normalized": [
+                0.25,
+                0.3796,
+                0.026,
+                0.0278
+              ]
+            }
+          },
+          {
+            "name": "C2_DECOUP",
+            "status": "PRESENT",
+            "scores": {
+              "zncc": 0.9949,
+              "patch_diff": 0.0158
+            },
+            "reason": "High confidence match (ZNCC: 0.99 >= 0.89, Diff: 0.02 <= 0.07)",
+            "box": {
+              "pixel": [
+                480,
+                470,
+                50,
+                30
+              ],
+              "normalized": [
+                0.25,
+                0.4352,
+                0.026,
+                0.0278
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "filename": "calib_09_missing_c1.png",
+        "board_status": "DEFECT",
+        "summary": "1 missing component(s) detected: ['C1_DECOUP']",
+        "alignment": {
+          "success": true,
+          "fallback_used": false,
+          "dx_px": -0.23,
+          "dy_px": -4.48,
+          "rotation_deg": 0.18,
+          "message": "EUCLIDEAN alignment succeeded"
+        },
+        "components_sample": [
+          {
+            "name": "C1_DECOUP",
+            "status": "MISSING",
+            "scores": {
+              "zncc": 0.8255,
+              "patch_diff": 0.1358
+            },
+            "reason": "Surface mismatch & high pad residual (ZNCC: 0.83 < 0.86, Diff: 0.14 > 0.09)",
+            "box": {
+              "pixel": [
+                480,
+                410,
+                50,
+                30
+              ],
+              "normalized": [
+                0.25,
+                0.3796,
+                0.026,
+                0.0278
+              ]
+            }
+          },
+          {
+            "name": "C2_DECOUP",
+            "status": "PRESENT",
+            "scores": {
+              "zncc": 0.9935,
+              "patch_diff": 0.0196
+            },
+            "reason": "High confidence match (ZNCC: 0.99 >= 0.89, Diff: 0.02 <= 0.07)",
+            "box": {
+              "pixel": [
+                480,
+                470,
+                50,
+                30
+              ],
+              "normalized": [
+                0.25,
+                0.4352,
+                0.026,
+                0.0278
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "filename": "calib_12_missing_adj_c1_c2.png",
+        "board_status": "DEFECT",
+        "summary": "2 missing component(s) detected: ['C1_DECOUP', 'C2_DECOUP']",
+        "alignment": {
+          "success": true,
+          "fallback_used": false,
+          "dx_px": 0.13,
+          "dy_px": -3.51,
+          "rotation_deg": 0.3,
+          "message": "EUCLIDEAN alignment succeeded"
+        },
+        "components_sample": [
+          {
+            "name": "C1_DECOUP",
+            "status": "MISSING",
+            "scores": {
+              "zncc": 0.8224,
+              "patch_diff": 0.1468
+            },
+            "reason": "Surface mismatch & high pad residual (ZNCC: 0.82 < 0.86, Diff: 0.15 > 0.09)",
+            "box": {
+              "pixel": [
+                480,
+                410,
+                50,
+                30
+              ],
+              "normalized": [
+                0.25,
+                0.3796,
+                0.026,
+                0.0278
+              ]
+            }
+          },
+          {
+            "name": "C2_DECOUP",
+            "status": "MISSING",
+            "scores": {
+              "zncc": 0.8288,
+              "patch_diff": 0.143
+            },
+            "reason": "Surface mismatch & high pad residual (ZNCC: 0.83 < 0.86, Diff: 0.14 > 0.09)",
+            "box": {
+              "pixel": [
+                480,
+                470,
+                50,
+                30
+              ],
+              "normalized": [
+                0.25,
+                0.4352,
+                0.026,
+                0.0278
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
