@@ -1,0 +1,87 @@
+==================================================================================
+  PCB MISSING COMPONENT DETECTOR - WEAKNESSES, LIMITATIONS & EDGE CASES
+==================================================================================
+Date: 2026-11-23
+Scope: Diagnostic analysis across 20 calibration boards (280 component inspections)
+
+This document honestly and objectively records all weak points, failure modes,
+and edge cases identified in the detection system during diagnostic stress testing.
+
+----------------------------------------------------------------------------------
+1. SENSITIVITY TO BOUNDING BOX ANNOTATION ERRORS (JITTER & SIZING)
+----------------------------------------------------------------------------------
+A. Shrunk Bounding Boxes (-20% width/height):
+   - CRITICAL FAILURE: Produced 1 FALSE ALARM (Present called MISSING) and 7 UNCERTAIN
+     verdicts out of 260 present component evaluations.
+   - Specific failure: calib_06_all_ok_glare_mcu.png U1_MCU (QFP32). When the box is
+     shrunk by 20%, the peripheral tin pins are completely clipped out. The remaining
+     crop contains only the textureless black plastic mold body. Under glare, its ZNCC
+     collapses from 0.9114 down to 0.7929, erroneously triggering a DEFECT call on a
+     100% complete board.
+   - Similarly, shrinking U3_EEPROM boxes clipped its 8 gull-wing leads, dropping ZNCC
+     into the 0.867 - 0.886 range and triggering 7 UNCERTAIN flags.
+   - Takeaway: Annotators must include the solder pads and pins within the bounding
+     box. Tight inner crops that exclude pins severely destabilize ZNCC.
+
+B. Expanded Bounding Boxes (+20% width/height):
+   - Failure mode: Produced 2 UNCERTAIN calls on MISSING components (calib_20 R5 and U3).
+   - By capturing excessive surrounding green PCB substrate, the uniform background
+     dominates the patch variance, artificially raising the correlation of empty
+     footprints (empty U3 ZNCC rose from 0.8590 to 0.8944, exceeding the 0.89 high threshold).
+   - Takeaway: Loose bounding boxes that include excess substrate mask missing defects.
+
+----------------------------------------------------------------------------------
+2. 3-PIXEL ALIGNMENT SHIFT DEGRADATION
+----------------------------------------------------------------------------------
+- When bounding boxes or registration suffer a 3-pixel translation error:
+  - Nominal separation gap: Min Present ZNCC (0.911) - Max Missing ZNCC (0.859) = +0.052
+  - Shifted (-3px, -3px) gap: Min Present ZNCC (0.914) - Max Missing ZNCC (0.883) = +0.030
+- Degradation: The separation safety margin shrinks by 42.3% (from 0.052 to 0.030).
+- Impact: While coarse detection still functions, the narrower margin reduces the
+  allowable tolerance for environmental glare or dust before crossing into UNCERTAIN territory.
+
+----------------------------------------------------------------------------------
+3. EMPTY FOOTPRINT STRUCTURAL CORRELATION (THE 0.85 ZNCC CEILING)
+----------------------------------------------------------------------------------
+- Empty footprints on bare PCBs do NOT score near 0.0 correlation. For small ICs
+  (SOIC8 U3) and passives (0805 resistors/capacitors), empty footprints yield
+  ZNCC scores between 0.81 and 0.86 even under pristine, neutral lighting (gain=1.0, bias=0).
+- Root Cause:
+  Bare PCB footprints possess bright tin/copper solder pads and white silkscreen
+  borders that physically mirror the exact locations, dimensions, and spatial arrangement
+  of the component pins and package outlines. Because ZNCC evaluates spatial pattern
+  covariance normalized by local variance, this geometric congruence creates strong
+  positive correlation (~0.85) purely from the pads.
+- Impact: The detector relies on the narrow band between 0.86 and 0.91 to separate
+  empty pads from populated parts. This makes multi-metric confirmation (ZNCC + Patch Diff)
+  mandatory; ZNCC alone cannot provide a wide margin of safety.
+
+----------------------------------------------------------------------------------
+4. FAILURE OF GLOBAL SUBSTRATE NORMALIZATION & CIELAB COLOR DIFFERENCE
+----------------------------------------------------------------------------------
+- Diagnostic testing proved that replacing per-patch local normalization with global
+  substrate lighting compensation and CIELAB Delta E completely FAILS:
+  - Present components Delta E: [13.31, 30.83]
+  - Missing components Delta E: [26.94, 49.85]
+  - Overlap zone: [26.94, 30.83] (Negative margin of -3.89 Delta E units)
+- Root Cause:
+  1. Specular Glare: Glare is highly localized. Global compensation cannot suppress a
+     localized specular beam, causing present parts under glare (e.g. calib_07 C1) to
+     exhibit extreme color distance (Delta E = 30.83).
+  2. Color Camouflage: Dark component bodies (black plastic ICs) on dark green solder
+     mask exhibit minimal color distance when removed, allowing missing footprints
+     to register low Delta E (Delta E = 26.94), indistinguishable from present parts under glare.
+  3. Lack of Pattern Recognition: CIELAB Delta E has no spatial awareness and is
+     strictly an intensity/chroma difference.
+
+----------------------------------------------------------------------------------
+5. LOCAL SPECULAR GLARE SENSITIVITY
+----------------------------------------------------------------------------------
+- Concentrated directional glare reflecting off metallic solder joints or plastic
+  molds (as modeled in calib_06 and calib_07) is the single largest environmental
+  degradation factor.
+- When direct glare saturates pixels in small passives (0805), Patch Difference rises
+  from ~0.02 up to 0.063 - 0.075, pushing borderline components into UNCERTAIN/REVIEW.
+- Recommendation for physical setup: Diffused ring lighting or cross-polarization
+  filters on camera lens and light sources are strongly advised to eliminate specular highlights.
+==================================================================================
