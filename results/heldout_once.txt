@@ -1,0 +1,69 @@
+==================================================================================
+  PCB MISSING COMPONENT DETECTOR - EVALUATION HARNESS
+==================================================================================
+Target Split      : TEST_HELDOUT (10 images)
+Sensitivity Mode  : BALANCED
+Active Thresholds : ZNCC [low: 0.86, high: 0.89] | Diff [low: 0.07, high: 0.09]
+Search Slack      : ±16 pixels
+----------------------------------------------------------------------------------
+Image Filename                   | Exp    | Det    | Status     | FA   | Miss | Time (ms)
+----------------------------------------------------------------------------------
+test_01_all_ok_max_shift.png     | 0      | 0      | OK         | 0    | 0    |    171.1 ms
+test_02_all_ok_dim_underexposed.png | 0      | 0      | REVIEW*OK  | 0    | 0    |    129.3 ms
+test_03_all_ok_severe_dual_glare.png | 0      | 1      | DEFECT*OK  | 1    | 0    |    137.8 ms
+test_04_missing_adj_c1_c2.png    | 2      | 2      | DEFECT     | 0    | 0    |    138.6 ms
+test_05_missing_adj_r2_r3_r4.png | 3      | 3      | DEFECT     | 0    | 0    |    142.6 ms
+test_06_missing_u1_glare_on_bare_pads.png | 1      | 1      | DEFECT     | 0    | 0    |    203.3 ms
+test_07_missing_c3_glare_on_pad.png | 1      | 1      | DEFECT     | 0    | 0    |    173.5 ms
+test_08_missing_u2_regulator.png | 1      | 1      | DEFECT     | 0    | 0    |    176.1 ms
+test_09_missing_d1_led_y1_xtal.png | 2      | 2      | DEFECT     | 0    | 0    |    183.1 ms
+test_10_missing_multi_scattered.png | 4      | 3      | DEFECT     | 0    | 1    |    234.4 ms
+==================================================================================
+  EVALUATION SUMMARY
+==================================================================================
+Total Boards Evaluated      : 10
+Board-Level Correct Verdicts: 8 / 10 (80.0%)
+Total Components Tested     : 140
+Expected Missing Components : 14
+Detected Missing Components : 14
+False Alarms (False Pos)    : 1 (Present marked as Missing)
+Misses (False Negatives)    : 1 (Missing marked as Present)
+Uncertain / Borderline Calls: 12 (Flagged for visual check)
+----------------------------------------------------------------------------------
+Measured Speed (Wall-Clock Latency):
+ - Average per full 1080p board : 169.0 ms  (Min: 129.3 ms, Max: 234.4 ms)
+ - Average per component crop   : 0.41 ms
+----------------------------------------------------------------------------------
+SCORE DISTRIBUTION & SEPARATION ANALYSIS
+(Use this empirical gap to calibrate decision thresholds)
+----------------------------------------------------------------------------------
+1. ZNCC Appearance Correlation Score (Higher is more similar):
+   - Components PRESENT (Good) : Min: 0.860 | 25%: 0.974 | Median: 0.980 | 75%: 0.985 | Max: 0.994
+   - Components MISSING (Empty): Min: 0.062 | 25%: 0.728 | Median: 0.816 | 75%: 0.839 | Max: 0.902
+
+2. Normalized Patch Difference MAE (Lower is more similar):
+   - Components PRESENT (Good) : Min: 0.017 | 25%: 0.026 | Median: 0.037 | 75%: 0.047 | Max: 0.084
+   - Components MISSING (Empty): Min: 0.052 | 25%: 0.101 | Median: 0.126 | 75%: 0.167 | Max: 0.294
+----------------------------------------------------------------------------------
+Empirical Separation Gap:
+ - ZNCC Gap   : -0.042 (Positive indicates clean margin)
+ - Diff MAE Gap: -0.032 (Positive indicates clean margin)
+==================================================================================
+
+==================================================================================
+  DETAILED PER-PART OUTCOME ANOMALIES ON HELD-OUT TEST SET
+==================================================================================
+UNCERTAIN (Manual Review)      [GT: PRESENT] | test_02_all_ok_dim_underexposed.png  | R1_PULLUP    | ZNCC: 0.9791 | Diff: 0.0756
+UNCERTAIN (Manual Review)      [GT: PRESENT] | test_02_all_ok_dim_underexposed.png  | R2_PULLUP    | ZNCC: 0.9706 | Diff: 0.0817
+UNCERTAIN (Manual Review)      [GT: PRESENT] | test_02_all_ok_dim_underexposed.png  | R3_PULLUP    | ZNCC: 0.9723 | Diff: 0.0802
+UNCERTAIN (Manual Review)      [GT: PRESENT] | test_02_all_ok_dim_underexposed.png  | R4_PULLUP    | ZNCC: 0.9781 | Diff: 0.0759
+UNCERTAIN (Manual Review)      [GT: PRESENT] | test_02_all_ok_dim_underexposed.png  | R5_SHUNTR    | ZNCC: 0.9779 | Diff: 0.0738
+FALSE ALARM (False Positive)   | test_03_all_ok_severe_dual_glare.png | U1_MCU       | ZNCC: 0.8597 | Diff: 0.0767
+UNCERTAIN (Manual Review)      [GT: PRESENT] | test_08_missing_u2_regulator.png     | R1_PULLUP    | ZNCC: 0.9689 | Diff: 0.0725
+UNCERTAIN (Manual Review)      [GT: PRESENT] | test_08_missing_u2_regulator.png     | R2_PULLUP    | ZNCC: 0.9762 | Diff: 0.0669
+UNCERTAIN (Manual Review)      [GT: PRESENT] | test_08_missing_u2_regulator.png     | R3_PULLUP    | ZNCC: 0.9686 | Diff: 0.0723
+UNCERTAIN (Manual Review)      [GT: PRESENT] | test_08_missing_u2_regulator.png     | R5_SHUNTR    | ZNCC: 0.9727 | Diff: 0.0655
+UNCERTAIN (Manual Review)      [GT: PRESENT] | test_10_missing_multi_scattered.png  | R1_PULLUP    | ZNCC: 0.9543 | Diff: 0.0752
+UNCERTAIN (Manual Review)      [GT: PRESENT] | test_10_missing_multi_scattered.png  | R2_PULLUP    | ZNCC: 0.9411 | Diff: 0.0842
+UNCERTAIN (Manual Review)      [GT: PRESENT] | test_10_missing_multi_scattered.png  | R3_PULLUP    | ZNCC: 0.9713 | Diff: 0.0661
+MISS (False Negative)          | test_10_missing_multi_scattered.png  | U3_EEPROM    | ZNCC: 0.9019 | Diff: 0.0518
