@@ -1572,3 +1572,619 @@ body {
     color: var(--text-muted);
 }
 
+/* ==========================================================================
+   ENTERPRISE MULTI-WORKSPACE APP SHELL & COLLAPSIBLE SIDEBAR
+   ========================================================================== */
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--bg-page);
+    width: 100%;
+}
+
+.app-sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: linear-gradient(180deg, #0d121b 0%, #080c13 100%);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 120;
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+.app-sidebar.collapsed {
+    width: 72px;
+    min-width: 72px;
+}
+
+.app-sidebar.collapsed .sidebar-title-group,
+.app-sidebar.collapsed .sidebar-link-text,
+.app-sidebar.collapsed .sidebar-badge,
+.app-sidebar.collapsed .sidebar-footer-info {
+    display: none !important;
+}
+
+.app-sidebar.collapsed .sidebar-header {
+    justify-content: center;
+    padding: 1rem 0;
+}
+
+.app-sidebar.collapsed .sidebar-link {
+    justify-content: center;
+    padding: 0.85rem 0;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.15rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #1f6feb, #238636);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(31, 111, 235, 0.4);
+    flex-shrink: 0;
+}
+
+.sidebar-title-group h2 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+
+.sidebar-subtitle {
+    font-size: 0.72rem;
+    color: var(--color-blue);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1rem 0.6rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0.9rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-link:hover {
+    color: var(--text-primary);
+    background-color: rgba(56, 139, 253, 0.08);
+}
+
+.sidebar-link.active {
+    color: #fff;
+    background: linear-gradient(90deg, rgba(56, 139, 253, 0.18), rgba(56, 139, 253, 0.05));
+    border-left-color: var(--color-blue);
+    font-weight: 600;
+}
+
+.sidebar-icon {
+    font-size: 1.15rem;
+    width: 22px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.sidebar-badge {
+    margin-left: auto;
+    font-size: 0.68rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+}
+
+.sidebar-link.active .sidebar-badge {
+    background: rgba(56, 139, 253, 0.25);
+    color: var(--color-blue);
+    border-color: rgba(56, 139, 253, 0.4);
+}
+
+.sidebar-footer {
+    padding: 1rem 0.85rem;
+    border-top: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sidebar-footer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    overflow: hidden;
+}
+
+.btn-sidebar-toggle {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-sidebar-toggle:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+}
+
+.app-shell-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow-x: hidden;
+}
+
+.workspace-viewport {
+    flex: 1;
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.app-workspace {
+    animation: fadeInWorkspace 0.2s ease-in-out;
+}
+
+@keyframes fadeInWorkspace {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   WORKSPACE 1: INTERACTIVE SPLIT DIFF SLIDER
+   ========================================================================== */
+.result-view-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.9rem;
+    background: var(--bg-card-subtle);
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 6px 6px 0 0;
+}
+
+.view-mode-tabs {
+    display: flex;
+    gap: 0.35rem;
+}
+
+.btn-view-mode {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 0.3rem 0.65rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-view-mode:hover {
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+}
+
+.btn-view-mode.active {
+    background: var(--color-blue);
+    border-color: var(--color-blue);
+    color: #fff;
+    font-weight: 600;
+}
+
+.split-slider-container {
+    position: relative;
+    width: 100%;
+    height: 480px;
+    overflow: hidden;
+    background: #000;
+    user-select: none;
+    border-radius: 0 0 6px 6px;
+}
+
+.split-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.split-layer img,
+.split-layer canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.split-layer-top {
+    z-index: 2;
+    width: 50%;
+    border-right: 2px solid #58a6ff;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.7);
+}
+
+.split-divider-handle {
+    position: absolute;
+    top: 50%;
+    right: -16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #58a6ff;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    transform: translateY(-50%);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+    cursor: ew-resize;
+    z-index: 5;
+}
+
+.split-label-badge {
+    position: absolute;
+    top: 10px;
+    padding: 0.25rem 0.55rem;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    z-index: 4;
+}
+
+.split-label-ref {
+    left: 10px;
+    background: rgba(35, 134, 54, 0.85);
+    color: #fff;
+}
+
+.split-label-test {
+    right: 10px;
+    background: rgba(56, 139, 253, 0.85);
+    color: #fff;
+}
+
+.split-range-input {
+    width: 100%;
+    margin-top: 0.5rem;
+    accent-color: var(--color-blue);
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   DIGITAL MICROSCOPE LOUPE POP-OUT (3X ZOOM)
+   ========================================================================== */
+.microscope-loupe-card {
+    background: linear-gradient(145deg, #182232, #101724);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-top: 1rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    animation: fadeIn 0.2s ease;
+}
+
+.loupe-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.loupe-header-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.loupe-header-title h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.loupe-crops-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.loupe-crop-box {
+    background: #080c13;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.6rem;
+    text-align: center;
+}
+
+.loupe-crop-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.loupe-crop-canvas {
+    width: 100%;
+    height: 140px;
+    object-fit: contain;
+    background: #000;
+    border-radius: 4px;
+    image-rendering: pixelated;
+}
+
+.loupe-metrics-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.6rem;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.loupe-metric-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.loupe-metric-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.loupe-metric-val {
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+}
+
+/* ==========================================================================
+   WORKSPACE 2: RECIPE & BOARD STUDIO
+   ========================================================================== */
+.studio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1rem;
+}
+
+.studio-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.studio-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-blue);
+}
+
+.studio-thumb-wrapper {
+    width: 100%;
+    height: 180px;
+    background: #000;
+    overflow: hidden;
+    position: relative;
+}
+
+.studio-thumb-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.studio-body {
+    padding: 1.15rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* ==========================================================================
+   WORKSPACE 3: QUALITY & YIELD SPC DASHBOARD
+   ========================================================================== */
+.spc-kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.spc-kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.spc-kpi-title {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.spc-kpi-value {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
+.spc-chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.spc-chart-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.25rem;
+}
+
+.pareto-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.pareto-label {
+    width: 130px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.pareto-bar-track {
+    flex: 1;
+    height: 18px;
+    background: var(--bg-card-subtle);
+    border-radius: 9px;
+    overflow: hidden;
+    position: relative;
+}
+
+.pareto-bar-fill {
+    height: 100%;
+    border-radius: 9px;
+    transition: width 0.5s ease;
+}
+
+.pareto-count {
+    width: 45px;
+    text-align: right;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+}
+
+/* ==========================================================================
+   WORKSPACE 5: CAMERA CALIBRATION RETICLE
+   ========================================================================== */
+.reticle-container {
+    position: relative;
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid var(--border-color);
+}
+
+.reticle-overlay-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.reticle-crosshair-h {
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: rgba(88, 166, 255, 0.4);
+}
+
+.reticle-crosshair-v {
+    position: absolute;
+    left: 50%;
+    top: 10%;
+    bottom: 10%;
+    width: 1px;
+    background: rgba(88, 166, 255, 0.4);
+}
+
+.reticle-boundary-box {
+    position: absolute;
+    top: 15%;
+    left: 15%;
+    width: 70%;
+    height: 70%;
+    border: 2px dashed rgba(46, 160, 67, 0.6);
+    border-radius: 6px;
+    box-shadow: 0 0 15px rgba(46, 160, 67, 0.15);
+}
+

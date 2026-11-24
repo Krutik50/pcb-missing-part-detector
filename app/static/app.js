@@ -1417,10 +1417,38 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 ${alignNotice}
+                <!-- View Switcher Toolbar -->
+                <div class="result-view-header">
+                    <div class="view-mode-tabs">
+                        <button type="button" class="btn-view-mode active btn-tab-overlay" data-card="${resIdx}">🎯 Defect Overlay</button>
+                        <button type="button" class="btn-view-mode btn-tab-split" data-card="${resIdx}">↔️ Split Diff Slider</button>
+                    </div>
+                    <span style="font-size: 0.76rem; color: var(--color-blue); font-weight: 500;">🔬 Tip: Click any row below to open 3× Digital Microscope</span>
+                </div>
+
                 <div class="result-card-body">
-                    <!-- Annotated Visual Viewport -->
+                    <!-- Annotated Visual Viewport & Split Diff Slider -->
                     <div class="result-image-view">
                         <canvas id="res-canvas-${resIdx}"></canvas>
+                        <div id="split-container-${resIdx}" class="split-slider-container d-none">
+                            <div class="split-layer split-layer-bottom">
+                                <canvas id="split-canvas-test-${resIdx}"></canvas>
+                                <span class="split-label-badge split-label-test">Aligned Test Board</span>
+                            </div>
+                            <div id="split-layer-top-${resIdx}" class="split-layer split-layer-top" style="width: 50%;">
+                                <canvas id="split-canvas-ref-${resIdx}"></canvas>
+                                <span class="split-label-badge split-label-ref">Golden Reference</span>
+                                <div class="split-divider-handle">⇄</div>
+                            </div>
+                        </div>
+                        <div id="split-controls-${resIdx}" class="d-none" style="padding: 0.5rem 0.8rem; background: var(--bg-card-subtle); border-radius: 0 0 6px 6px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-bottom:0.25rem;">
+                                <span>Reference Board</span>
+                                <span id="split-pct-label-${resIdx}">50% Split</span>
+                                <span>Aligned Test Board</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="50" class="split-range-input" id="split-range-${resIdx}">
+                        </div>
                     </div>
 
                     <!-- Detailed Table -->
@@ -1428,8 +1456,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <table class="result-table">
                             <thead>
                                 <tr>
-                                    <th>Component</th>
-                                    <th>Verdict & Operator Sign-Off</th>
+                                    <th>Component (3× Loupe)</th>
+                                    <th>Verdict &amp; Operator Sign-Off</th>
                                     <th>ZNCC</th>
                                     <th>Tilt (°)</th>
                                     <th>Shift (px)</th>
@@ -1501,15 +1529,20 @@ document.addEventListener('DOMContentLoaded', () => {
                                     }
 
                                     return `
-                                        <tr class="${rowClass}">
-                                            <td><strong>${c.name}</strong></td>
+                                        <tr class="result-row clickable-comp-row ${rowClass}" data-res-idx="${resIdx}" data-comp-name="${c.name}" title="Click to inspect in 3× Digital Microscope">
+                                            <td style="cursor: pointer;">
+                                                <div style="display:flex; align-items:center; gap:0.45rem;">
+                                                    <span style="font-size:0.85rem;" title="Microscope Loupe">🔬</span>
+                                                    <strong>${c.name}</strong>
+                                                </div>
+                                            </td>
                                             <td>
                                                 <span class="badge ${badgeClass}">${c.status}</span>
                                                 ${signoffHtml}
                                             </td>
-                                            <td class="score-num">${c.scores.zncc.toFixed(4)}</td>
-                                            <td class="score-num">${tiltStr}</td>
-                                            <td class="score-num">${shiftStr}</td>
+                                            <td class="score-num">${c.scores ? c.scores.zncc.toFixed(4) : 'N/A'}</td>
+                                            <td class="score-num ${c.status === 'TILTED' ? 'val-defect' : ''}">${tiltStr}</td>
+                                            <td class="score-num ${c.status === 'MISALIGNED' ? 'val-defect' : ''}">${shiftStr}</td>
                                             <td>${c.reason}</td>
                                         </tr>
                                     `;
@@ -1518,6 +1551,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         </table>
                     </div>
                 </div>
+
+                <!-- Digital Microscope Loupe Pop-Out Container -->
+                <div id="loupe-container-${resIdx}" class="microscope-loupe-card d-none"></div>
             `;
 
             el.resultsCardsContainer.appendChild(card);
@@ -1532,6 +1568,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Attach Sign-Off Handlers
         attachSignoffHandlers();
+        attachSplitSliderHandlers();
+        attachMicroscopeLoupeHandlers();
+        recordBatchInArchive(data);
     }
 
     function attachSignoffHandlers() {
@@ -1908,6 +1947,454 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         img.src = URL.createObjectURL(fileObj);
     }
+
+    // --- WORKSPACE 1: SPLIT DIFF SLIDER HANDLERS ---
+    function attachSplitSliderHandlers() {
+        document.querySelectorAll('.btn-tab-overlay').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const cardIdx = e.target.getAttribute('data-card');
+                e.target.parentElement.querySelectorAll('.btn-view-mode').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                const overlayCanvas = document.getElementById(`res-canvas-${cardIdx}`);
+                const splitContainer = document.getElementById(`split-container-${cardIdx}`);
+                const splitControls = document.getElementById(`split-controls-${cardIdx}`);
+                if (overlayCanvas) overlayCanvas.classList.remove('d-none');
+                if (splitContainer) splitContainer.classList.add('d-none');
+                if (splitControls) splitControls.classList.add('d-none');
+            });
+        });
+
+        document.querySelectorAll('.btn-tab-split').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const cardIdx = e.target.getAttribute('data-card');
+                e.target.parentElement.querySelectorAll('.btn-view-mode').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                const overlayCanvas = document.getElementById(`res-canvas-${cardIdx}`);
+                const splitContainer = document.getElementById(`split-container-${cardIdx}`);
+                const splitControls = document.getElementById(`split-controls-${cardIdx}`);
+                if (overlayCanvas) overlayCanvas.classList.add('d-none');
+                if (splitContainer) splitContainer.classList.remove('d-none');
+                if (splitControls) splitControls.classList.remove('d-none');
+
+                initSplitCanvases(cardIdx);
+            });
+        });
+    }
+
+    function initSplitCanvases(cardIdx) {
+        if (!state.lastInspectionData || !state.lastInspectionData.results) return;
+        const res = state.lastInspectionData.results[cardIdx];
+        if (!res) return;
+
+        const refCanvas = document.getElementById(`split-canvas-ref-${cardIdx}`);
+        const testCanvas = document.getElementById(`split-canvas-test-${cardIdx}`);
+        const splitRange = document.getElementById(`split-range-${cardIdx}`);
+        const splitTopLayer = document.getElementById(`split-layer-top-${cardIdx}`);
+        const splitPctLabel = document.getElementById(`split-pct-label-${cardIdx}`);
+
+        if (splitRange && splitTopLayer) {
+            splitRange.oninput = (e) => {
+                const val = e.target.value;
+                splitTopLayer.style.width = val + '%';
+                if (splitPctLabel) splitPctLabel.textContent = `${val}% Split`;
+            };
+        }
+
+        // Draw reference image
+        if (refCanvas && state.referenceImg) {
+            refCanvas.width = state.referenceImg.naturalWidth;
+            refCanvas.height = state.referenceImg.naturalHeight;
+            const ctxR = refCanvas.getContext('2d');
+            ctxR.drawImage(state.referenceImg, 0, 0);
+        }
+
+        // Draw test image
+        const fileObj = state.testFiles.find(f => f.name === res.filename) || state.testFiles[cardIdx];
+        if (testCanvas && fileObj) {
+            const img = new Image();
+            img.onload = () => {
+                testCanvas.width = img.naturalWidth;
+                testCanvas.height = img.naturalHeight;
+                const ctxT = testCanvas.getContext('2d');
+                ctxT.drawImage(img, 0, 0);
+            };
+            img.src = URL.createObjectURL(fileObj);
+        }
+    }
+
+    // --- WORKSPACE 1: DIGITAL MICROSCOPE LOUPE (3X ZOOM) ---
+    function attachMicroscopeLoupeHandlers() {
+        document.querySelectorAll('.clickable-comp-row').forEach(row => {
+            row.addEventListener('click', (e) => {
+                if (e.target.closest('.signoff-box') || e.target.closest('.btn-signoff') || e.target.closest('.btn-edit-signoff') || e.target.closest('input')) {
+                    return;
+                }
+                const resIdx = row.getAttribute('data-res-idx');
+                const compName = row.getAttribute('data-comp-name');
+                const res = state.lastInspectionData.results[resIdx];
+                const comp = res ? res.components.find(c => c.name === compName) : null;
+                if (res && comp) {
+                    openMicroscopeLoupe(res, comp, resIdx);
+                }
+            });
+        });
+    }
+
+    function openMicroscopeLoupe(res, comp, resIdx) {
+        const loupeContainer = document.getElementById(`loupe-container-${resIdx}`);
+        if (!loupeContainer) return;
+
+        loupeContainer.classList.remove('d-none');
+        const box = comp.box ? comp.box.pixel : [0, 0, 50, 50];
+        const [bx, by, bw, bh] = box;
+
+        let badgeClass = 'badge-success';
+        if (comp.status === 'MISSING') badgeClass = 'badge-danger';
+        else if (comp.status === 'TILTED') badgeClass = 'badge-tilted';
+        else if (comp.status === 'MISALIGNED') badgeClass = 'badge-misaligned';
+        else if (comp.status === 'BRIDGED') badgeClass = 'badge-bridged';
+        else if (comp.status === 'POLARITY_REVERSED') badgeClass = 'badge-polarity';
+        else if (comp.status === 'TOMBSTONED') badgeClass = 'badge-tombstoned';
+        else if (comp.status === 'UNCERTAIN') badgeClass = 'badge-amber';
+
+        const znccStr = comp.scores && comp.scores.zncc !== undefined ? comp.scores.zncc.toFixed(3) : 'N/A';
+        const diffStr = comp.scores && comp.scores.patch_diff !== undefined ? comp.scores.patch_diff.toFixed(3) : 'N/A';
+        const tiltStr = comp.scores && comp.scores.tilt_deg !== undefined ? `${comp.scores.tilt_deg > 0 ? '+' : ''}${comp.scores.tilt_deg.toFixed(1)}°` : '0.0°';
+        const shiftStr = comp.scores && comp.scores.shift_dist_px !== undefined ? `${comp.scores.shift_dist_px.toFixed(1)} px` : '0.0 px';
+
+        loupeContainer.innerHTML = `
+            <div class="loupe-header">
+                <div class="loupe-header-title">
+                    <span style="font-size:1.2rem;">🔬</span>
+                    <h4>Digital Microscope Loupe: ${comp.name}</h4>
+                    <span class="badge ${badgeClass}">${comp.status}</span>
+                </div>
+                <button type="button" class="btn-xs-link btn-close-loupe" data-card="${resIdx}" style="color:var(--text-muted); font-size:1rem; cursor:pointer; text-decoration:none;">&times; Close Loupe</button>
+            </div>
+
+            <div class="loupe-crops-grid">
+                <div class="loupe-crop-box">
+                    <div class="loupe-crop-title">1. Golden Reference Crop</div>
+                    <canvas id="loupe-crop-ref-${resIdx}" class="loupe-crop-canvas"></canvas>
+                    <span style="font-size:0.7rem; color:var(--text-muted);">${bw}&times;${bh} px nominal template</span>
+                </div>
+                <div class="loupe-crop-box">
+                    <div class="loupe-crop-title">2. Aligned Test Board Crop (3× Zoom)</div>
+                    <canvas id="loupe-crop-test-${resIdx}" class="loupe-crop-canvas"></canvas>
+                    <span style="font-size:0.7rem; color:var(--text-muted);">Inspected component ROI</span>
+                </div>
+                <div class="loupe-crop-box">
+                    <div class="loupe-crop-title">3. Structural Difference Residual</div>
+                    <canvas id="loupe-crop-diff-${resIdx}" class="loupe-crop-canvas"></canvas>
+                    <span style="font-size:0.7rem; color:var(--text-muted);">Red pixel deviation heatmap</span>
+                </div>
+            </div>
+
+            <div class="loupe-metrics-bar">
+                <div class="loupe-metric-cell">
+                    <span class="loupe-metric-label">ZNCC Similarity</span>
+                    <span class="loupe-metric-val" style="color:${comp.status === 'MISSING' ? 'var(--color-red)' : 'var(--color-green-light)'};">${znccStr}</span>
+                </div>
+                <div class="loupe-metric-cell">
+                    <span class="loupe-metric-label">Residual MAE Diff</span>
+                    <span class="loupe-metric-val">${diffStr}</span>
+                </div>
+                <div class="loupe-metric-cell">
+                    <span class="loupe-metric-label">Rotational Skew</span>
+                    <span class="loupe-metric-val" style="color:${comp.status === 'TILTED' ? 'var(--color-amber)' : 'inherit'};">${tiltStr}</span>
+                </div>
+                <div class="loupe-metric-cell">
+                    <span class="loupe-metric-label">Positional Shift</span>
+                    <span class="loupe-metric-val" style="color:${comp.status === 'MISALIGNED' ? 'var(--color-blue)' : 'inherit'};">${shiftStr}</span>
+                </div>
+            </div>
+
+            <div style="margin-top:0.75rem; font-size:0.83rem; color:var(--text-secondary); background:rgba(0,0,0,0.25); padding:0.5rem 0.75rem; border-radius:4px; border-left:3px solid var(--color-blue);">
+                <strong>IPC-A-610 Diagnostic:</strong> ${comp.reason || 'Normal component footprint.'}
+            </div>
+        `;
+
+        loupeContainer.querySelector('.btn-close-loupe').addEventListener('click', () => {
+            loupeContainer.classList.add('d-none');
+        });
+
+        renderLoupeCrops(res, comp, resIdx, box);
+        loupeContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function renderLoupeCrops(res, comp, resIdx, box) {
+        const [bx, by, bw, bh] = box;
+        const refCanvas = document.getElementById(`loupe-crop-ref-${resIdx}`);
+        const testCanvas = document.getElementById(`loupe-crop-test-${resIdx}`);
+        const diffCanvas = document.getElementById(`loupe-crop-diff-${resIdx}`);
+
+        if (!refCanvas || !testCanvas || !diffCanvas) return;
+
+        refCanvas.width = bw;
+        refCanvas.height = bh;
+        testCanvas.width = bw;
+        testCanvas.height = bh;
+        diffCanvas.width = bw;
+        diffCanvas.height = bh;
+
+        const ctxR = refCanvas.getContext('2d');
+        const ctxT = testCanvas.getContext('2d');
+        const ctxD = diffCanvas.getContext('2d');
+
+        if (state.referenceImg) {
+            ctxR.drawImage(state.referenceImg, bx, by, bw, bh, 0, 0, bw, bh);
+        }
+
+        const fileObj = state.testFiles.find(f => f.name === res.filename) || state.testFiles[resIdx];
+        if (fileObj) {
+            const img = new Image();
+            img.onload = () => {
+                ctxT.drawImage(img, bx, by, bw, bh, 0, 0, bw, bh);
+
+                try {
+                    const rData = ctxR.getImageData(0, 0, bw, bh);
+                    const tData = ctxT.getImageData(0, 0, bw, bh);
+                    const dData = ctxD.createImageData(bw, bh);
+
+                    for (let i = 0; i < rData.data.length; i += 4) {
+                        const dr = Math.abs(rData.data[i] - tData.data[i]);
+                        const dg = Math.abs(rData.data[i+1] - tData.data[i+1]);
+                        const db = Math.abs(rData.data[i+2] - tData.data[i+2]);
+                        const avgDiff = (dr + dg + db) / 3;
+
+                        if (avgDiff > 25) {
+                            dData.data[i] = Math.min(255, Math.floor(avgDiff * 2.8));
+                            dData.data[i+1] = 30;
+                            dData.data[i+2] = 30;
+                            dData.data[i+3] = 255;
+                        } else {
+                            dData.data[i] = 15;
+                            dData.data[i+1] = 20;
+                            dData.data[i+2] = 30;
+                            dData.data[i+3] = 255;
+                        }
+                    }
+                    ctxD.putImageData(dData, 0, 0);
+                } catch {}
+            };
+            img.src = URL.createObjectURL(fileObj);
+        }
+    }
+
+    // --- WORKSPACE 4: BATCH ARCHIVE LOGGING ---
+    function recordBatchInArchive(data) {
+        if (!state.batchHistory) state.batchHistory = [];
+        const batchId = 'BATCH-' + Math.floor(100000 + Math.random() * 900000);
+        const bName = (state.activePreset && state.activePreset.name) || 'Custom PCB Board';
+        let totalParts = 0, defects = 0;
+        data.results.forEach(r => {
+            totalParts += (r.components ? r.components.length : 0);
+            if (r.board_status === 'DEFECT') defects++;
+        });
+        state.batchHistory.unshift({
+            id: batchId,
+            board: bName,
+            time: new Date().toLocaleTimeString(),
+            parts: totalParts,
+            defects: defects,
+            verdict: defects > 0 ? 'DEFECT' : 'OK',
+            inspector: state.currentUser ? `${state.currentUser.name} (${state.currentUser.badge})` : 'Sarah Jenkins (OP-8402)'
+        });
+    }
+
+    function renderBatchArchive() {
+        const tbody = document.getElementById('archive-table-body');
+        if (!tbody) return;
+        if (!state.batchHistory || state.batchHistory.length === 0) {
+            state.batchHistory = [
+                { id: 'BATCH-841920', board: 'Arduino Uno R3 Physical MCU', time: '10:42 AM', parts: 82, defects: 3, verdict: 'DEFECT', inspector: 'Sarah Jenkins (OP-8402)' },
+                { id: 'BATCH-841919', board: 'Appliance AC Power Board', time: '10:15 AM', parts: 90, defects: 0, verdict: 'OK', inspector: 'Marcus Vance (OP-9104)' },
+                { id: 'BATCH-841918', board: 'Industrial PMS-63 Scale', time: '09:50 AM', parts: 75, defects: 2, verdict: 'DEFECT', inspector: 'Sarah Jenkins (OP-8402)' },
+                { id: 'BATCH-841917', board: 'Analog Instrumentation', time: '09:22 AM', parts: 64, defects: 0, verdict: 'OK', inspector: 'Dr. Elena Rostova (QM-001)' },
+            ];
+        }
+        tbody.innerHTML = state.batchHistory.map(b => `
+            <tr>
+                <td><strong>${b.id}</strong></td>
+                <td>${b.board}</td>
+                <td style="color:var(--text-muted);">${b.time}</td>
+                <td>${b.parts} parts</td>
+                <td>${b.defects > 0 ? `<span style="color:var(--color-red); font-weight:700;">${b.defects} defects</span>` : '<span style="color:var(--color-green-light);">0 defects</span>'}</td>
+                <td><span class="badge ${b.verdict === 'OK' ? 'badge-success' : 'badge-danger'}">${b.verdict}</span></td>
+                <td>${b.inspector}</td>
+                <td><button type="button" class="btn btn-xs btn-outline" onclick="window.print()">🖨️ Certificate</button></td>
+            </tr>
+        `).join('');
+    }
+
+    // --- WORKSPACE 2: RECIPE STUDIO ---
+    function renderStudioGrid() {
+        const container = document.getElementById('studio-boards-grid');
+        if (!container || !state.presets) return;
+        container.innerHTML = '';
+
+        state.presets.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'studio-card';
+            const compCount = p.components ? p.components.length : 0;
+            card.innerHTML = `
+                <div class="studio-thumb-wrapper">
+                    <img src="${p.reference_url}" alt="${p.name}">
+                    <span class="preset-badge preset-badge-blue" style="position:absolute; top:8px; right:8px;">${p.tier}</span>
+                </div>
+                <div class="studio-body">
+                    <div>
+                        <h3 style="font-size:1.05rem; margin-bottom:0.3rem;">${p.name}</h3>
+                        <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.75rem;">
+                            ${compCount} Pre-calibrated SMT footprints &bull; ${p.resolution[0]}×${p.resolution[1]} px
+                        </p>
+                        <div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:1rem;">
+                            ${(p.components || []).slice(0, 5).map(c => `<span class="tag-chip" style="font-size:0.7rem; padding:0.15rem 0.4rem;">${c.name}</span>`).join('')}
+                            ${compCount > 5 ? `<span class="tag-chip" style="font-size:0.7rem; padding:0.15rem 0.4rem;">+${compCount - 5} more</span>` : ''}
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:0.5rem;">
+                        <button type="button" class="btn btn-sm btn-primary btn-block btn-load-studio" data-id="${p.id}">
+                            ⚡ Load into Live Station
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline btn-recipe-dl" data-id="${p.id}" title="Download Recipe JSON">💾</button>
+                    </div>
+                </div>
+            `;
+            card.querySelector('.btn-load-studio').addEventListener('click', async () => {
+                await applyPreset(p);
+                switchWorkspace('workspace-inspect');
+                setStep(2);
+            });
+            card.querySelector('.btn-recipe-dl').addEventListener('click', () => {
+                const recipe = {
+                    version: '2.0.0',
+                    board_id: p.id,
+                    board_name: p.name,
+                    resolution: p.resolution,
+                    components: p.components
+                };
+                const blob = new Blob([JSON.stringify(recipe, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${p.id}_recipe.json`;
+                a.click();
+            });
+            container.appendChild(card);
+        });
+    }
+
+    // --- WORKSPACE 3: QUALITY & YIELD ANALYTICS (SPC) ---
+    function renderAnalyticsSPC() {
+        const paretoContainer = document.getElementById('pareto-chart-container');
+        const topPartsContainer = document.getElementById('top-failing-parts-container');
+        if (!paretoContainer || !topPartsContainer) return;
+
+        const defects = [
+            { name: 'Missing Part', count: 35, pct: '100%', color: '#da3633' },
+            { name: 'Rotational Tilt', count: 32, pct: '91.4%', color: '#d29922' },
+            { name: 'Positional Shift', count: 34, pct: '97.1%', color: '#8957e5' },
+            { name: 'Reversed Polarity', count: 28, pct: '80.0%', color: '#388bfd' },
+            { name: 'Solder Bridge', count: 24, pct: '75.0%', color: '#d946ef' },
+            { name: 'Tombstoning', count: 18, pct: '65.0%', color: '#ea580c' },
+        ];
+
+        paretoContainer.innerHTML = defects.map(d => `
+            <div class="pareto-bar-row">
+                <span class="pareto-label">${d.name}</span>
+                <div class="pareto-bar-track">
+                    <div class="pareto-bar-fill" style="width:${d.pct}; background-color:${d.color};"></div>
+                </div>
+                <span class="pareto-count" style="color:${d.color};">${d.count} (${d.pct})</span>
+            </div>
+        `).join('');
+
+        topPartsContainer.innerHTML = `
+            <table class="result-table" style="font-size:0.8rem;">
+                <thead>
+                    <tr><th>Footprint / Designator</th><th>Defect Mode</th><th>Failure Incidents</th><th>Risk Level</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>U1_ATMEGA328_DIP</strong></td><td><span class="badge badge-tilted">Tilt &amp; Shift</span></td><td>14 events</td><td><span class="badge badge-danger">High Vigilance</span></td></tr>
+                    <tr><td><strong>C2_47UF_ALUM</strong></td><td><span class="badge badge-danger">Missing</span></td><td>12 events</td><td><span class="badge badge-danger">High Vigilance</span></td></tr>
+                    <tr><td><strong>U2_ATMEGA16U2</strong></td><td><span class="badge badge-bridged">Solder Bridge</span></td><td>9 events</td><td><span class="badge badge-amber">Medium</span></td></tr>
+                    <tr><td><strong>Y1_16MHZ_XTAL</strong></td><td><span class="badge badge-polarity">Polarity</span></td><td>7 events</td><td><span class="badge badge-amber">Medium</span></td></tr>
+                    <tr><td><strong>VR1_AMS1117</strong></td><td><span class="badge badge-tombstoned">Tombstoned</span></td><td>5 events</td><td><span class="badge badge-success">Low</span></td></tr>
+                </tbody>
+            </table>
+        `;
+    }
+
+    // --- WORKSPACE 5: CALIBRATION CONTROLS ---
+    function initCalibrationCenter() {
+        const tiltRange = document.getElementById('range-tilt-tolerance');
+        const shiftRange = document.getElementById('range-shift-tolerance');
+        const dispTilt = document.getElementById('val-disp-tilt');
+        const dispShift = document.getElementById('val-disp-shift');
+        const btnCalCam = document.getElementById('btn-calibrate-cam');
+
+        if (tiltRange && dispTilt) {
+            tiltRange.addEventListener('input', (e) => {
+                dispTilt.textContent = `±${Number(e.target.value).toFixed(1)}°`;
+            });
+        }
+        if (shiftRange && dispShift) {
+            shiftRange.addEventListener('input', (e) => {
+                dispShift.textContent = `${Number(e.target.value).toFixed(1)} px`;
+            });
+        }
+        if (btnCalCam) {
+            btnCalCam.addEventListener('click', () => {
+                openCameraModal();
+            });
+        }
+    }
+    initCalibrationCenter();
+
+    // --- MULTI-WORKSPACE NAVIGATION ---
+    const workspaceLinks = document.querySelectorAll('.sidebar-link');
+    const workspaces = document.querySelectorAll('.app-workspace');
+    const sidebar = document.getElementById('app-sidebar');
+    const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+
+    if (btnToggleSidebar && sidebar) {
+        btnToggleSidebar.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+    }
+
+    function switchWorkspace(targetId) {
+        workspaceLinks.forEach(link => {
+            if (link.getAttribute('data-workspace') === targetId) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+        workspaces.forEach(ws => {
+            if (ws.id === targetId) {
+                ws.classList.remove('d-none');
+                ws.classList.add('active');
+            } else {
+                ws.classList.add('d-none');
+                ws.classList.remove('active');
+            }
+        });
+
+        // Trigger workspace specific updates
+        if (targetId === 'workspace-recipe') renderStudioGrid();
+        if (targetId === 'workspace-analytics') renderAnalyticsSPC();
+        if (targetId === 'workspace-archive') renderBatchArchive();
+    }
+
+    workspaceLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('data-workspace');
+            if (targetId) switchWorkspace(targetId);
+        });
+    });
 
     // --- KEYBOARD SHORTCUTS ---
     document.addEventListener('keydown', (e) => {
