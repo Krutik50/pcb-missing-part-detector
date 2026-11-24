@@ -1364,7 +1364,7 @@ document.addEventListener('DOMContentLoaded', () => {
             res.components.forEach(c => {
                 const sign = bSign[c.name];
                 const effStatus = sign ? sign.final_status : c.status;
-                if (['MISSING', 'TILTED', 'MISALIGNED'].includes(effStatus)) hasDefect = true;
+                if (['MISSING', 'TILTED', 'MISALIGNED', 'BRIDGED', 'POLARITY_REVERSED', 'TOMBSTONED'].includes(effStatus)) hasDefect = true;
                 else if (effStatus === 'UNCERTAIN') hasUncertain = true;
                 if (sign) hasSignoffs = true;
             });
@@ -1454,6 +1454,15 @@ document.addEventListener('DOMContentLoaded', () => {
                                     } else if (c.status === 'MISALIGNED') {
                                         badgeClass = 'badge-misaligned';
                                         rowClass = 'row-misaligned';
+                                    } else if (c.status === 'BRIDGED') {
+                                        badgeClass = 'badge-bridged';
+                                        rowClass = 'row-bridged';
+                                    } else if (c.status === 'POLARITY_REVERSED') {
+                                        badgeClass = 'badge-polarity';
+                                        rowClass = 'row-polarity';
+                                    } else if (c.status === 'TOMBSTONED') {
+                                        badgeClass = 'badge-tombstoned';
+                                        rowClass = 'row-tombstoned';
                                     } else if (c.status === 'UNCERTAIN') {
                                         badgeClass = 'badge-amber';
                                         rowClass = 'row-uncertain';
@@ -1730,7 +1739,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let hasDefect = false, hasUnc = false;
             res.components.forEach(c => {
                 const eff = (bSign[c.name] && bSign[c.name].final_status) || c.status;
-                if (['MISSING', 'TILTED', 'MISALIGNED'].includes(eff)) hasDefect = true;
+                if (['MISSING', 'TILTED', 'MISALIGNED', 'BRIDGED', 'POLARITY_REVERSED', 'TOMBSTONED'].includes(eff)) hasDefect = true;
                 else if (eff === 'UNCERTAIN') hasUnc = true;
             });
             if (!hasDefect && !hasUnc) finalOk++;
@@ -1745,7 +1754,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let hasDefect = false, hasUnc = false;
             res.components.forEach(c => {
                 const eff = (bSign[c.name] && bSign[c.name].final_status) || c.status;
-                if (['MISSING', 'TILTED', 'MISALIGNED'].includes(eff)) hasDefect = true;
+                if (['MISSING', 'TILTED', 'MISALIGNED', 'BRIDGED', 'POLARITY_REVERSED', 'TOMBSTONED'].includes(eff)) hasDefect = true;
                 else if (eff === 'UNCERTAIN') hasUnc = true;
             });
             const finalBStatus = hasDefect ? 'DEFECT' : (hasUnc ? 'REVIEW' : 'OK');
@@ -1865,6 +1874,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     fillColor = 'rgba(163, 113, 247, 0.35)';
                     const sDist = (comp.scores && comp.scores.shift_dist_px !== undefined) ? `${comp.scores.shift_dist_px}px` : '';
                     tagText = `${comp.name} [SHIFT ${sDist}]`;
+                } else if (comp.status === 'BRIDGED') {
+                    color = '#d2a8ff'; // Light purple/magenta for BRIDGED
+                    fillColor = 'rgba(210, 168, 255, 0.35)';
+                    tagText = `${comp.name} [BRIDGED]`;
+                } else if (comp.status === 'POLARITY_REVERSED') {
+                    color = '#38bdf8'; // Sky cyan for POLARITY_REVERSED
+                    fillColor = 'rgba(56, 189, 248, 0.35)';
+                    tagText = `${comp.name} [REV POLARITY]`;
+                } else if (comp.status === 'TOMBSTONED') {
+                    color = '#fb923c'; // Vivid orange for TOMBSTONED
+                    fillColor = 'rgba(251, 146, 60, 0.35)';
+                    tagText = `${comp.name} [TOMBSTONED]`;
                 } else if (comp.status === 'UNCERTAIN') {
                     color = '#e3b341'; // Amber for UNCERTAIN
                     fillColor = 'rgba(227, 179, 65, 0.25)';

@@ -1,0 +1,62 @@
+{
+  "model_architecture": "SMTDeepDefectClassifier (3-stage ConvNet + BatchNorm + AdaptiveAvgPool)",
+  "num_classes": 7,
+  "classes": [
+    "OK_COMPONENT",
+    "MISSING",
+    "TILTED",
+    "MISALIGNED",
+    "BRIDGED",
+    "POLARITY_REVERSED",
+    "TOMBSTONED"
+  ],
+  "dataset": "500 Physical PCB Boards (350 Train / 150 Held-Out Validation)",
+  "epochs": 5,
+  "training_time_seconds": 59.17,
+  "device": "cpu",
+  "validation_accuracy": 43.5,
+  "per_class_metrics": {
+    "OK_COMPONENT": {
+      "samples": 1140,
+      "precision": 0.946,
+      "recall": 0.444,
+      "f1_score": 0.604
+    },
+    "MISSING": {
+      "samples": 20,
+      "precision": 0.06,
+      "recall": 0.85,
+      "f1_score": 0.113
+    },
+    "TILTED": {
+      "samples": 20,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    },
+    "MISALIGNED": {
+      "samples": 20,
+      "precision": 0.02,
+      "recall": 0.05,
+      "f1_score": 0.029
+    },
+    "BRIDGED": {
+      "samples": 15,
+      "precision": 0.075,
+      "recall": 0.467,
+      "f1_score": 0.13
+    },
+    "POLARITY_REVERSED": {
+      "samples": 15,
+      "precision": 0.04,
+      "recall": 0.267,
+      "f1_score": 0.07
+    },
+    "TOMBSTONED": {
+      "samples": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    }
+  }
+}

@@ -99,6 +99,59 @@ class TestTiltAndShiftDetection(unittest.TestCase):
         self.assertIn("tilted", b_eval["summary"].lower())
         self.assertIn("shifted", b_eval["summary"].lower())
 
+    def test_solder_bridge_detection(self):
+        # Create test image with solder bridging across pins
+        test_img = self.ref_img.copy()
+        x, y, w, h = self.bbox
+        # Add bright solder bridge between pins on top lead zone
+        test_img[y:y+12, x:x+w] = (220, 220, 220)
+
+        insp = inspect_component(self.ref_img, test_img, self.bbox, search_margin_px=10)
+        dec = classify_component("U1", insp, self.config)
+
+        self.assertEqual(dec["status"], "BRIDGED")
+        self.assertIn("bridge", dec["reason"].lower())
+
+    def test_reversed_polarity_detection(self):
+        # Create an asymmetric component (e.g. IC with white orientation dot)
+        ref_asym = self.ref_img.copy()
+        x, y, w, h = self.bbox
+        # White orientation dot at top-left corner
+        ref_asym[y+12:y+20, x+12:x+20] = (245, 245, 245)
+
+        # In-place 180° inverted placement on footprint
+        test_asym = ref_asym.copy()
+        test_asym[y:y+h, x:x+w] = cv2.rotate(ref_asym[y:y+h, x:x+w], cv2.ROTATE_180)
+
+        insp = inspect_component(ref_asym, test_asym, self.bbox, search_margin_px=10)
+        dec = classify_component("U1", insp, self.config)
+
+        self.assertEqual(dec["status"], "POLARITY_REVERSED")
+        self.assertIn("reversed polarity", dec["reason"].lower())
+
+    def test_tombstone_detection(self):
+        # Passive chip component: left half is bare green soldermask, right half is lifted body
+        ref_chip = np.zeros((150, 150, 3), dtype=np.uint8)
+        ref_chip[:] = (34, 120, 34)
+        cbox = [40, 50, 70, 30] # 70x30 passive chip
+        cx, cy, cw, ch = cbox
+        ref_chip[cy:cy+ch, cx:cx+cw] = (40, 40, 40) # Black resistor body
+        ref_chip[cy:cy+ch, cx:cx+8] = (210, 210, 210) # Left silver cap
+        ref_chip[cy:cy+ch, cx+cw-8:cx+cw] = (210, 210, 210) # Right silver cap
+
+        test_tomb = ref_chip.copy()
+        # Lift left half completely off pad (exposed green PCB)
+        test_tomb[cy:cy+ch, cx:cx+cw//2] = (34, 120, 34)
+        # Right half has compressed vertical body
+        test_tomb[cy:cy+ch, cx+cw//2:cx+cw] = (20, 20, 20)
+        test_tomb[cy-5:cy+ch+5, cx+cw-12:cx+cw] = (220, 220, 220)
+
+        insp = inspect_component(ref_chip, test_tomb, cbox, search_margin_px=8)
+        dec = classify_component("R1", insp, self.config)
+
+        self.assertEqual(dec["status"], "TOMBSTONED")
+        self.assertIn("tombstoned", dec["reason"].lower())
+
 
 if __name__ == "__main__":
     unittest.main()

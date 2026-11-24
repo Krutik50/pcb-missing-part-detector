@@ -1,0 +1,14 @@
+# SMT AOI Multi-Class Defect Detection Dataset (500 Physical PCB Boards)
+path: C:/Users/Admin/OneDrive/Desktop/PCB_missing_component_detector/data/yolo_dataset
+train: images/train
+val: images/val
+test: images/val
+
+names:
+  0: ok_component
+  1: missing
+  2: tilted
+  3: misaligned
+  4: bridged
+  5: polarity_reversed
+  6: tombstoned

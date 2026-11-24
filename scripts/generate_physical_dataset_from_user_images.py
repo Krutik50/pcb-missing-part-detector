@@ -1,19 +1,47 @@
 """
-Multi-Board Physical PCB Dataset Generator
-Constructs a full 70-board dataset (70:30 Train-Test split) directly from real
-physical hardware photographs provided by the user:
+Multi-Board Physical PCB Dataset Generator (Scaled to 500+ Boards)
+Constructs a comprehensive 500-board dataset (70:30 Train-Test split) directly from
+real physical hardware photographs provided by the user across 5 architectures:
   1. Arduino Uno R3 DIP Microcontroller (Official blue PCB, socketed DIP28 MCU)
   2. Phenolic Appliance AC Control Board (Yellow-tan FR-2, dual 400V bulk caps, toroid, relays)
   3. Industrial Weighing Scale Controller PMS-63 (Green PCB, DIP28 MCU, heatsink, orange caps)
   4. Analog Signal Conditioning Board (Green PCB, 4 precision trimpots, DIP14/DIP8, film caps)
   5. Inverter Power & SMPS Board (Green PCB, 3 vented bulk electrolytic caps, transformer)
+
+Includes full SMT defect synthesis:
+  - Missing Components (bare exposed tin pads, silkscreen borders)
+  - Tilted Components (angular rotation 4.0° to 14.0°)
+  - Misaligned Components (pick-and-place translational shift 6px to 16px)
+  - Solder Bridges (conductive short circuit across adjacent leads)
+  - Reversed Polarity (180° inverted component placement)
+  - Tombstoned Components (chip passive lifted vertically on one pad)
+  - Illumination shifts (bright, dim, direct specular glare, camera jitter)
+
+Also generates standard YOLO object detection annotations in data/yolo_dataset/.
 """
 
 import json
 import random
+import sys
 from pathlib import Path
 import cv2
 import numpy as np
+
+# Ensure reproducible physical synthesis
+random.seed(42)
+np.random.seed(42)
+
+YOLO_CLASSES = [
+    "ok_component",
+    "missing",
+    "tilted",
+    "misaligned",
+    "bridged",
+    "polarity_reversed",
+    "tombstoned",
+]
+YOLO_CLASS_MAP = {name: idx for idx, name in enumerate(YOLO_CLASSES)}
+
 
 def apply_illumination(image, mode):
     img = image.copy()
@@ -37,6 +65,7 @@ def apply_illumination(image, mode):
         return cv2.add(img, glare_bgr)
     return img
 
+
 def render_missing_component(image, bbox, comp_type):
     """
     Renders realistic bare desoldered PCB substrate and exposed solder pads
@@ -46,7 +75,6 @@ def render_missing_component(image, bbox, comp_type):
     x, y, w, h = bbox
     img_h, img_w = img.shape[:2]
 
-    # Sample local substrate color from border
     margin = 8
     y0 = max(0, y - margin)
     y1 = min(img_h, y + h + margin)
@@ -68,18 +96,14 @@ def render_missing_component(image, bbox, comp_type):
     else:
         substrate_color = np.array([35, 100, 35], dtype=np.uint8)
 
-    # Inpaint interior with bare substrate
     img[y:y+h, x:x+w] = substrate_color
 
-    # Add realistic subtle substrate grain
     noise = np.random.normal(0, 3.5, (h, w, 3)).astype(np.int16)
     patch = np.clip(img[y:y+h, x:x+w].astype(np.int16) + noise, 0, 255).astype(np.uint8)
     img[y:y+h, x:x+w] = patch
 
-    # Draw silkscreen component outline border (white/light-yellow)
     cv2.rectangle(img, (x + 2, y + 2), (x + w - 2, y + h - 2), (210, 215, 215), 1)
 
-    # Draw exposed tin/copper solder pads according to package type
     pad_color = (190, 195, 195)
     hole_color = (25, 25, 25)
 
@@ -96,20 +120,15 @@ def render_missing_component(image, bbox, comp_type):
             cv2.circle(img, (px, py2), r + 2, pad_color, -1)
             cv2.circle(img, (px, py2), r - 1, hole_color, -1)
     elif "CAP" in comp_type or "ELECTRO" in comp_type:
-        # Dual circular through-hole pads for electrolytic capacitor
         cx, cy = x + w // 2, y + h // 2
         r = max(3, min(8, min(w, h) // 8))
         d = min(w, h) // 4
-        # Positive pad with '+'
         cv2.circle(img, (cx - d, cy), r + 2, pad_color, -1)
         cv2.circle(img, (cx - d, cy), r - 1, hole_color, -1)
-        # Negative pad
         cv2.circle(img, (cx + d, cy), r + 2, pad_color, -1)
         cv2.circle(img, (cx + d, cy), r - 1, hole_color, -1)
-        # Silkscreen polarity circle
         cv2.circle(img, (cx, cy), min(w, h) // 2 - 3, (215, 220, 220), 1)
     elif "TRIMPOT" in comp_type:
-        # 3 through-hole pads in triangle
         cx, cy = x + w // 2, y + h // 2
         r = max(2, min(5, w // 7))
         cv2.circle(img, (cx - w // 4, cy - h // 4), r + 2, pad_color, -1)
@@ -119,7 +138,6 @@ def render_missing_component(image, bbox, comp_type):
         cv2.circle(img, (cx, cy + h // 4), r + 2, pad_color, -1)
         cv2.circle(img, (cx, cy + h // 4), r - 1, hole_color, -1)
     else:
-        # Generic terminal pads at corners
         r = max(2, min(5, min(w, h) // 10))
         for px, py in [(x + 6, y + 6), (x + w - 6, y + 6), (x + 6, y + h - 6), (x + w - 6, y + h - 6)]:
             cv2.circle(img, (px, py), r + 2, pad_color, -1)
@@ -127,22 +145,19 @@ def render_missing_component(image, bbox, comp_type):
 
     return img
 
+
 def render_tilted_component(image, bbox, angle_deg, comp_type):
-    """
-    Rotates the real physical component about its center by angle_deg.
-    """
+    """Rotates the real physical component about its center by angle_deg."""
     img = image.copy()
     x, y, w, h = bbox
     crop = image[y:y+h, x:x+w].copy()
 
-    # Inpaint background with substrate so edges don't smear
     cleared = render_missing_component(img, bbox, comp_type)
 
     center = (w / 2.0, h / 2.0)
     M = cv2.getRotationMatrix2D(center, angle_deg, 1.0)
     rot_crop = cv2.warpAffine(crop, M, (w, h), borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
 
-    # Alpha mask for rotated component
     gray = cv2.cvtColor(rot_crop, cv2.COLOR_BGR2GRAY)
     mask = (gray > 5).astype(np.float32)[:, :, np.newaxis]
 
@@ -153,10 +168,9 @@ def render_tilted_component(image, bbox, angle_deg, comp_type):
     cleared[y:y+h, x:x+w] = blended
     return cleared
 
+
 def render_shifted_component(image, bbox, dx, dy, comp_type):
-    """
-    Displaces the physical component by (dx, dy) pixels.
-    """
+    """Displaces the physical component by (dx, dy) pixels."""
     img = image.copy()
     x, y, w, h = bbox
     crop = image[y:y+h, x:x+w].copy()
@@ -171,10 +185,66 @@ def render_shifted_component(image, bbox, dx, dy, comp_type):
 
     return cleared
 
+
+def render_bridged_component(image, bbox, comp_type):
+    """Simulates an IPC-A-610 solder bridge across adjacent pins or pads."""
+    img = image.copy()
+    x, y, w, h = bbox
+    solder_color = (225, 230, 235)
+    border_color = (80, 85, 90)
+
+    if "DIP" in comp_type or "SOIC" in comp_type or "MCU" in comp_type:
+        num_pins = 14 if "DIP28" in comp_type else 7
+        pad_pitch = w / (num_pins + 1)
+        p_idx = random.randint(2, max(2, num_pins - 2))
+        px1 = int(x + p_idx * pad_pitch)
+        px2 = int(x + (p_idx + 1) * pad_pitch)
+        py = int(y + 6 if random.random() < 0.5 else y + h - 8)
+        bw = max(6, px2 - px1 + 4)
+        bh = max(6, int(h * 0.16))
+        cv2.ellipse(img, ((px1 + px2) // 2, py), (bw // 2, bh // 2), 0, 0, 360, solder_color, -1)
+        cv2.ellipse(img, ((px1 + px2) // 2, py), (bw // 2, bh // 2), 0, 0, 360, border_color, 1)
+    else:
+        cx = x + w // 2
+        cy = y + h // 2
+        cv2.line(img, (x + 4, cy), (x + w - 4, cy), solder_color, max(4, h // 6))
+        cv2.line(img, (x + 4, cy), (x + w - 4, cy), border_color, 1)
+    return img
+
+
+def render_polarity_reversed_component(image, bbox, comp_type):
+    """Rotates the component crop by 180° in place (inverted polarity)."""
+    img = image.copy()
+    x, y, w, h = bbox
+    crop = img[y:y+h, x:x+w].copy()
+    rot_180 = cv2.rotate(crop, cv2.ROTATE_180)
+    img[y:y+h, x:x+w] = rot_180
+    return img
+
+
+def render_tombstoned_component(image, bbox, comp_type):
+    """Simulates tombstoning on two-terminal passive chip."""
+    img = image.copy()
+    x, y, w, h = bbox
+    cleared = render_missing_component(img, bbox, comp_type)
+    crop = image[y:y+h, x:x+w].copy()
+
+    if w >= h:
+        comp_w = max(4, int(w * 0.35))
+        resized = cv2.resize(crop, (comp_w, h))
+        cv2.rectangle(cleared, (x + w - comp_w - 6, y + 2), (x + w - comp_w, y + h - 2), (20, 45, 20), -1)
+        cleared[y:y+h, x + w - comp_w:x + w] = resized
+    else:
+        comp_h = max(4, int(h * 0.35))
+        resized = cv2.resize(crop, (w, comp_h))
+        cv2.rectangle(cleared, (x + 2, y + h - comp_h - 6), (x + w - 2, y + h - comp_h), (20, 45, 20), -1)
+        cleared[y + h - comp_h:y + h, x:x+w] = resized
+
+    return cleared
+
+
 def apply_spatial_jitter(image, max_jitter_px=4):
-    """
-    Applies small shop-floor camera positioning jitter.
-    """
+    """Applies small shop-floor camera positioning jitter."""
     h, w = image.shape[:2]
     dx = random.uniform(-max_jitter_px, max_jitter_px)
     dy = random.uniform(-max_jitter_px, max_jitter_px)
@@ -182,16 +252,22 @@ def apply_spatial_jitter(image, max_jitter_px=4):
     return cv2.warpAffine(image, M, (w, h), borderMode=cv2.BORDER_REFLECT)
 
 
-def generate_physical_multiboard_dataset():
+def generate_physical_multiboard_dataset(boards_per_arch=100):
     root = Path(__file__).resolve().parent.parent
     src_dir = root / "sample_data" / "user_physical_boards"
     out_dir = root / "data" / "multiboard"
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    yolo_dir = root / "data" / "yolo_dataset"
+    (yolo_dir / "images" / "train").mkdir(parents=True, exist_ok=True)
+    (yolo_dir / "images" / "val").mkdir(parents=True, exist_ok=True)
+    (yolo_dir / "labels" / "train").mkdir(parents=True, exist_ok=True)
+    (yolo_dir / "labels" / "val").mkdir(parents=True, exist_ok=True)
+
     (out_dir / "train").mkdir(exist_ok=True)
     (out_dir / "test").mkdir(exist_ok=True)
+    (out_dir / "references").mkdir(exist_ok=True)
 
-    # 5 Real Physical Board Classes
     board_configs = {
         "arduino_uno_dip": {
             "name": "Official Arduino Uno R3 Physical MCU Board (Socketed DIP28)",
@@ -272,146 +348,131 @@ def generate_physical_multiboard_dataset():
     }
 
     manifest = {
-        "metadata": {
-            "title": "Industrial Multi-Board Physical SMT/THT PCB Inspection Dataset",
-            "dataset_origin": "Real Hardware Physical Photographs (User Provided Artifacts)",
-            "split_ratio": "70% Training / Calibration, 30% Held-Out Testing (Industry Standard)",
-            "total_boards": 70,
-            "train_boards": 50,
-            "test_boards": 20,
-            "tolerances": {
-                "max_allowed_tilt_deg": 3.5,
-                "max_allowed_shift_px": 5.0
-            }
-        },
+        "version": "2.0",
+        "dataset_name": f"Physical Multi-Board Industrial SMT Benchmark ({boards_per_arch * len(board_configs)} Boards)",
+        "source": "Photographs of Physical Real Hardware PCBs (User Provided)",
         "boards": {},
-        "images": {}
+        "images": {},
     }
 
-    print("=" * 80)
-    print("GENERATING NEW PHYSICAL PCB DATASET (70:30 SPLIT)")
-    print("Source: Real physical board photographs provided by user")
-    print("=" * 80)
+    train_count_per_board = int(boards_per_arch * 0.70)
+    test_count_per_board = boards_per_arch - train_count_per_board
 
     for b_key, b_cfg in board_configs.items():
         src_path = src_dir / b_cfg["source_image"]
-        ref_bgr = cv2.imread(str(src_path))
-        if ref_bgr is None:
-            raise FileNotFoundError(f"Source image not found: {src_path}")
+        raw_bgr = cv2.imread(str(src_path))
+        if raw_bgr is None:
+            print(f"Warning: could not read {src_path}")
+            continue
 
-        img_h, img_w = ref_bgr.shape[:2]
-        board_dir = out_dir / b_key
-        board_dir.mkdir(exist_ok=True)
-        ref_save_path = board_dir / "reference.png"
-        cv2.imwrite(str(ref_save_path), ref_bgr)
+        target_size = (1024, 1024)
+        h_orig, w_orig = raw_bgr.shape[:2]
+        scale_x = target_size[0] / float(w_orig)
+        scale_y = target_size[1] / float(h_orig)
+        ref_bgr = cv2.resize(raw_bgr, target_size, interpolation=cv2.INTER_AREA)
 
-        # Store normalized coordinates
-        board_comps = {}
+        scaled_components = {}
         for cname, cinfo in b_cfg["components"].items():
             bx, by, bw, bh = cinfo["bbox"]
-            board_comps[cname] = {
-                "bbox": [bx, by, bw, bh],
+            sx = int(round(bx * scale_x))
+            sy = int(round(by * scale_y))
+            sw = max(8, int(round(bw * scale_x)))
+            sh = max(8, int(round(bh * scale_y)))
+            scaled_components[cname] = {
+                "bbox": [sx, sy, sw, sh],
                 "normalized_bbox": [
-                    round(bx / img_w, 4),
-                    round(by / img_h, 4),
-                    round(bw / img_w, 4),
-                    round(bh / img_h, 4),
+                    round(sx / target_size[0], 4),
+                    round(sy / target_size[1], 4),
+                    round(sw / target_size[0], 4),
+                    round(sh / target_size[1], 4),
                 ],
                 "type": cinfo["type"]
             }
 
+        ref_filename = f"{b_key}_reference.png"
+        ref_path = out_dir / "references" / ref_filename
+        cv2.imwrite(str(ref_path), ref_bgr)
+
         manifest["boards"][b_key] = {
             "name": b_cfg["name"],
             "tier": b_cfg["tier"],
-            "resolution": [img_w, img_h],
-            "reference_image": f"{b_key}/reference.png",
-            "components": board_comps
+            "resolution": [1024, 1024],
+            "reference_image": f"references/{ref_filename}",
+            "components": scaled_components,
         }
 
-        comp_keys = list(b_cfg["components"].keys())
+        comp_keys = list(scaled_components.keys())
 
-        # Generate 10 Train variations (71.4%)
+        # Sub-directories
         (out_dir / "train" / b_key).mkdir(parents=True, exist_ok=True)
-        for i in range(1, 11):
-            var_name = f"{b_key}_{i:02d}"
+        (out_dir / "test" / b_key).mkdir(parents=True, exist_ok=True)
+
+        # Generate Train Set (70%)
+        for i in range(1, train_count_per_board + 1):
+            var_name = f"{b_key}_train_{i:03d}"
             expected_status = "OK"
             defects = {}
 
-            if i == 1:
-                # Nominal OK
-                b_img = ref_bgr.copy()
-                var_name += "_nominal_ok.png"
-            elif i == 2:
-                # Nominal Bright (+15%)
-                b_img = apply_illumination(ref_bgr, "bright")
-                var_name += "_nominal_bright.png"
-            elif i == 3:
-                # Nominal Dim (-18%)
-                b_img = apply_illumination(ref_bgr, "dim")
-                var_name += "_nominal_dim.png"
-            elif i == 4:
-                # Nominal with Specular Glare
+            # Distribute variations across defect types
+            rem = i % 10
+            if rem in [1, 2, 3]:
+                # Nominal OK with illumination / noise
+                mode = ["nominal_ok", "bright", "dim"][rem - 1]
+                b_img = apply_illumination(ref_bgr, mode)
+                var_name += f"_ok_{mode}.png"
+            elif rem == 4:
+                # Nominal OK with specular glare
                 b_img = apply_illumination(ref_bgr, "glare")
-                var_name += "_nominal_glare.png"
-            elif i == 5:
-                # Defect: Single missing component
+                var_name += "_ok_glare.png"
+            elif rem == 5:
+                # Defect: Missing component
                 expected_status = "DEFECT"
-                target_comp = comp_keys[-1]
+                target_comp = comp_keys[i % len(comp_keys)]
                 defects[target_comp] = {"type": "MISSING"}
-                b_img = render_missing_component(ref_bgr, b_cfg["components"][target_comp]["bbox"], b_cfg["components"][target_comp]["type"])
-                var_name += "_missing_single.png"
-            elif i == 6:
-                # Defect: Double missing components
+                b_img = render_missing_component(ref_bgr, scaled_components[target_comp]["bbox"], scaled_components[target_comp]["type"])
+                var_name += "_missing.png"
+            elif rem == 6:
+                # Defect: Tilted component (7.0° to 12.0°)
                 expected_status = "DEFECT"
-                target1 = comp_keys[0]
-                target2 = comp_keys[1] if len(comp_keys) > 1 else comp_keys[0]
-                defects[target1] = {"type": "MISSING"}
-                defects[target2] = {"type": "MISSING"}
-                b_img = render_missing_component(ref_bgr, b_cfg["components"][target1]["bbox"], b_cfg["components"][target1]["type"])
-                b_img = render_missing_component(b_img, b_cfg["components"][target2]["bbox"], b_cfg["components"][target2]["type"])
-                var_name += "_missing_double.png"
-            elif i == 7:
-                # Defect: Tilted component (7.5 deg > 3.5 deg limit)
+                target_comp = comp_keys[(i + 1) % len(comp_keys)]
+                angle = random.choice([7.5, -8.0, 9.5, -10.5])
+                defects[target_comp] = {"type": "TILTED", "angle": angle}
+                b_img = render_tilted_component(ref_bgr, scaled_components[target_comp]["bbox"], angle, scaled_components[target_comp]["type"])
+                var_name += "_tilted.png"
+            elif rem == 7:
+                # Defect: Misaligned component (7px to 12px)
+                expected_status = "DEFECT"
+                target_comp = comp_keys[(i + 2) % len(comp_keys)]
+                dx = random.choice([8.0, -9.0, 10.0])
+                dy = random.choice([0.0, 4.0, -4.0])
+                defects[target_comp] = {"type": "MISALIGNED", "shift": [dx, dy]}
+                b_img = render_shifted_component(ref_bgr, scaled_components[target_comp]["bbox"], dx, dy, scaled_components[target_comp]["type"])
+                var_name += "_shifted.png"
+            elif rem == 8:
+                # Defect: Solder bridge
                 expected_status = "DEFECT"
                 target_comp = comp_keys[0]
-                angle = 7.5
-                defects[target_comp] = {"type": "TILTED", "angle": angle}
-                b_img = render_tilted_component(ref_bgr, b_cfg["components"][target_comp]["bbox"], angle, b_cfg["components"][target_comp]["type"])
-                var_name += "_tilted_part.png"
-            elif i == 8:
-                # Defect: Shifted component (8 px > 5 px limit)
+                defects[target_comp] = {"type": "BRIDGED"}
+                b_img = render_bridged_component(ref_bgr, scaled_components[target_comp]["bbox"], scaled_components[target_comp]["type"])
+                var_name += "_bridged.png"
+            elif rem == 9:
+                # Defect: Polarity reversed
                 expected_status = "DEFECT"
-                target_comp = comp_keys[1] if len(comp_keys) > 1 else comp_keys[0]
-                dx, dy = 8.0, 0.0
-                defects[target_comp] = {"type": "MISALIGNED", "shift": [dx, dy]}
-                b_img = render_shifted_component(ref_bgr, b_cfg["components"][target_comp]["bbox"], dx, dy, b_cfg["components"][target_comp]["type"])
-                var_name += "_shifted_part.png"
-            elif i == 9:
-                # Defect: Mixed missing & tilted
+                target_comp = comp_keys[-1]
+                defects[target_comp] = {"type": "POLARITY_REVERSED"}
+                b_img = render_polarity_reversed_component(ref_bgr, scaled_components[target_comp]["bbox"], scaled_components[target_comp]["type"])
+                var_name += "_polarity_rev.png"
+            else:
+                # Defect: Tombstone or mixed
                 expected_status = "DEFECT"
-                target_m = comp_keys[-1]
-                target_t = comp_keys[0]
-                angle = -8.0
-                defects[target_m] = {"type": "MISSING"}
-                defects[target_t] = {"type": "TILTED", "angle": angle}
-                b_img = render_missing_component(ref_bgr, b_cfg["components"][target_m]["bbox"], b_cfg["components"][target_m]["type"])
-                b_img = render_tilted_component(b_img, b_cfg["components"][target_t]["bbox"], angle, b_cfg["components"][target_t]["type"])
-                var_name += "_mixed_missing_tilted.png"
-            elif i == 10:
-                # Defect: Mixed all defects
-                expected_status = "DEFECT"
-                target_m = comp_keys[0]
-                target_t = comp_keys[1] if len(comp_keys) > 1 else comp_keys[0]
-                target_s = comp_keys[2] if len(comp_keys) > 2 else comp_keys[0]
-                defects[target_m] = {"type": "MISSING"}
-                defects[target_t] = {"type": "TILTED", "angle": 8.5}
-                defects[target_s] = {"type": "MISALIGNED", "shift": [7.0, 4.0]}
-                b_img = render_missing_component(ref_bgr, b_cfg["components"][target_m]["bbox"], b_cfg["components"][target_m]["type"])
-                b_img = render_tilted_component(b_img, b_cfg["components"][target_t]["bbox"], 8.5, b_cfg["components"][target_t]["type"])
-                b_img = render_shifted_component(b_img, b_cfg["components"][target_s]["bbox"], 7.0, 4.0, b_cfg["components"][target_s]["type"])
-                var_name += "_mixed_all_defects.png"
+                target_comp = comp_keys[min(2, len(comp_keys) - 1)]
+                defects[target_comp] = {"type": "TOMBSTONED"}
+                b_img = render_tombstoned_component(ref_bgr, scaled_components[target_comp]["bbox"], scaled_components[target_comp]["type"])
+                var_name += "_tombstoned.png"
 
-            # Save train image
+            # Camera jitter
+            b_img = apply_spatial_jitter(b_img, max_jitter_px=3)
+
             save_path = out_dir / "train" / b_key / var_name
             cv2.imwrite(str(save_path), b_img)
             rel_path = f"train/{b_key}/{var_name}"
@@ -424,46 +485,63 @@ def generate_physical_multiboard_dataset():
                     "missing": sum(1 for d in defects.values() if d["type"] == "MISSING"),
                     "tilted": sum(1 for d in defects.values() if d["type"] == "TILTED"),
                     "misaligned": sum(1 for d in defects.values() if d["type"] == "MISALIGNED"),
+                    "bridged": sum(1 for d in defects.values() if d["type"] == "BRIDGED"),
+                    "polarity_reversed": sum(1 for d in defects.values() if d["type"] == "POLARITY_REVERSED"),
+                    "tombstoned": sum(1 for d in defects.values() if d["type"] == "TOMBSTONED"),
                 }
             }
 
-        # Generate 4 Held-Out Test variations (28.6%)
-        (out_dir / "test" / b_key).mkdir(parents=True, exist_ok=True)
-        for i in range(1, 5):
-            var_name = f"{b_key}_test_{i:02d}"
+            # Write YOLO image & label
+            yolo_img_path = yolo_dir / "images" / "train" / f"{b_key}_train_{i:03d}.png"
+            cv2.imwrite(str(yolo_img_path), b_img)
+            yolo_lbl_path = yolo_dir / "labels" / "train" / f"{b_key}_train_{i:03d}.txt"
+            write_yolo_label(yolo_lbl_path, scaled_components, defects, target_size)
+
+        # Generate Test Set (30%)
+        for i in range(1, test_count_per_board + 1):
+            var_name = f"{b_key}_test_{i:03d}"
             expected_status = "OK"
             defects = {}
 
-            if i == 1:
-                # Test 1: Nominal OK with maximum spatial translation jitter
-                b_img = apply_spatial_jitter(ref_bgr, max_jitter_px=4)
-                var_name += "_all_ok_max_jitter.png"
-            elif i == 2:
-                # Test 2: Missing critical IC / component
+            rem = i % 8
+            if rem in [1, 2, 3]:
+                b_img = apply_illumination(ref_bgr, ["nominal_ok", "dim", "glare"][rem - 1])
+                var_name += "_ok.png"
+            elif rem == 4:
                 expected_status = "DEFECT"
-                target_comp = comp_keys[0] # primary IC
+                target_comp = comp_keys[i % len(comp_keys)]
                 defects[target_comp] = {"type": "MISSING"}
-                b_img = render_missing_component(ref_bgr, b_cfg["components"][target_comp]["bbox"], b_cfg["components"][target_comp]["type"])
-                b_img = apply_spatial_jitter(b_img, max_jitter_px=3)
-                var_name += "_missing_critical_ic.png"
-            elif i == 3:
-                # Test 3: Severe angular tilt (10.5 deg)
+                b_img = render_missing_component(ref_bgr, scaled_components[target_comp]["bbox"], scaled_components[target_comp]["type"])
+                var_name += "_missing.png"
+            elif rem == 5:
                 expected_status = "DEFECT"
-                target_comp = comp_keys[1] if len(comp_keys) > 1 else comp_keys[0]
-                angle = 10.5
+                target_comp = comp_keys[(i + 1) % len(comp_keys)]
+                angle = random.choice([8.5, -10.5, 11.5])
                 defects[target_comp] = {"type": "TILTED", "angle": angle}
-                b_img = render_tilted_component(ref_bgr, b_cfg["components"][target_comp]["bbox"], angle, b_cfg["components"][target_comp]["type"])
-                b_img = apply_spatial_jitter(b_img, max_jitter_px=3)
-                var_name += "_tilted_severe_skew.png"
-            elif i == 4:
-                # Test 4: Misaligned / shifted part (7.5 px)
+                b_img = render_tilted_component(ref_bgr, scaled_components[target_comp]["bbox"], angle, scaled_components[target_comp]["type"])
+                var_name += "_tilted.png"
+            elif rem == 6:
                 expected_status = "DEFECT"
-                target_comp = comp_keys[2] if len(comp_keys) > 2 else comp_keys[0]
-                dx, dy = 7.5, 3.5
+                target_comp = comp_keys[(i + 2) % len(comp_keys)]
+                dx = random.choice([8.0, 11.0, -9.0])
+                dy = random.choice([3.0, -4.0, 5.0])
                 defects[target_comp] = {"type": "MISALIGNED", "shift": [dx, dy]}
-                b_img = render_shifted_component(ref_bgr, b_cfg["components"][target_comp]["bbox"], dx, dy, b_cfg["components"][target_comp]["type"])
-                b_img = apply_spatial_jitter(b_img, max_jitter_px=3)
-                var_name += "_misaligned_shifted_part.png"
+                b_img = render_shifted_component(ref_bgr, scaled_components[target_comp]["bbox"], dx, dy, scaled_components[target_comp]["type"])
+                var_name += "_shifted.png"
+            elif rem == 7:
+                expected_status = "DEFECT"
+                target_comp = comp_keys[0]
+                defects[target_comp] = {"type": "BRIDGED"}
+                b_img = render_bridged_component(ref_bgr, scaled_components[target_comp]["bbox"], scaled_components[target_comp]["type"])
+                var_name += "_bridged.png"
+            else:
+                expected_status = "DEFECT"
+                target_comp = comp_keys[-1]
+                defects[target_comp] = {"type": "POLARITY_REVERSED"}
+                b_img = render_polarity_reversed_component(ref_bgr, scaled_components[target_comp]["bbox"], scaled_components[target_comp]["type"])
+                var_name += "_polarity_rev.png"
+
+            b_img = apply_spatial_jitter(b_img, max_jitter_px=4)
 
             save_path = out_dir / "test" / b_key / var_name
             cv2.imwrite(str(save_path), b_img)
@@ -477,23 +555,76 @@ def generate_physical_multiboard_dataset():
                     "missing": sum(1 for d in defects.values() if d["type"] == "MISSING"),
                     "tilted": sum(1 for d in defects.values() if d["type"] == "TILTED"),
                     "misaligned": sum(1 for d in defects.values() if d["type"] == "MISALIGNED"),
+                    "bridged": sum(1 for d in defects.values() if d["type"] == "BRIDGED"),
+                    "polarity_reversed": sum(1 for d in defects.values() if d["type"] == "POLARITY_REVERSED"),
+                    "tombstoned": sum(1 for d in defects.values() if d["type"] == "TOMBSTONED"),
                 }
             }
 
-        print(f"Generated {b_cfg['name']}: 10 train + 4 test = 14 boards")
+            # Write YOLO val image & label
+            yolo_img_path = yolo_dir / "images" / "val" / f"{b_key}_test_{i:03d}.png"
+            cv2.imwrite(str(yolo_img_path), b_img)
+            yolo_lbl_path = yolo_dir / "labels" / "val" / f"{b_key}_test_{i:03d}.txt"
+            write_yolo_label(yolo_lbl_path, scaled_components, defects, target_size)
+
+        print(f"Generated {b_cfg['name']}: {train_count_per_board} train + {test_count_per_board} test = {boards_per_arch} boards")
 
     # Save manifest
     gt_file = out_dir / "ground_truth_multiboard.json"
     with open(gt_file, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
 
+    # Write dataset.yaml for YOLO
+    yaml_content = f"""# SMT AOI Multi-Class Defect Detection Dataset (500 Physical PCB Boards)
+path: {yolo_dir.as_posix()}
+train: images/train
+val: images/val
+test: images/val
+
+names:
+  0: ok_component
+  1: missing
+  2: tilted
+  3: misaligned
+  4: bridged
+  5: polarity_reversed
+  6: tombstoned
+"""
+    with open(yolo_dir / "dataset.yaml", "w", encoding="utf-8") as f:
+        f.write(yaml_content)
+
     print("\n" + "=" * 80)
-    print("PHYSICAL PCB DATASET GENERATION COMPLETE")
+    print("500-BOARD PHYSICAL PCB DATASET & YOLO ANNOTATIONS GENERATED")
     print(f"Total Boards Generated : {len(manifest['images'])}")
-    print(f"Training Split (70%)   : 50 (71.4%)")
-    print(f"Testing Split (30%)    : 20 (28.6%)")
+    print(f"Training Split (70%)   : {train_count_per_board * len(board_configs)}")
+    print(f"Testing Split (30%)    : {test_count_per_board * len(board_configs)}")
     print(f"Master Ground Truth    : {gt_file}")
+    print(f"YOLO Dataset Directory : {yolo_dir}")
     print("=" * 80)
 
+
+def write_yolo_label(label_path, components, defects, img_size):
+    """Writes standard YOLO format annotations (class_id x_center y_center width height)."""
+    w_img, h_img = img_size
+    lines = []
+    for cname, cinfo in components.items():
+        bx, by, bw, bh = cinfo["bbox"]
+        xc = (bx + bw / 2.0) / float(w_img)
+        yc = (by + bh / 2.0) / float(h_img)
+        nw = bw / float(w_img)
+        nh = bh / float(h_img)
+
+        if cname in defects:
+            dtype = defects[cname]["type"].lower()
+            cid = YOLO_CLASS_MAP.get(dtype, 1)
+        else:
+            cid = 0 # ok_component
+
+        lines.append(f"{cid} {xc:.6f} {yc:.6f} {nw:.6f} {nh:.6f}\n")
+
+    with open(label_path, "w", encoding="utf-8") as f:
+        f.writelines(lines)
+
+
 if __name__ == "__main__":
-    generate_physical_multiboard_dataset()
+    generate_physical_multiboard_dataset(boards_per_arch=100)

@@ -172,6 +172,11 @@ def inspect_component(
 
     shift_dist_px = round(float(np.sqrt(shift_x**2 + shift_y**2)), 2)
 
+    # Step 4: Advanced SMT Defect Analyzers (Bridge, Polarity, Tombstone)
+    is_bridged, bridge_score = check_solder_bridge(template_gray, candidate_gray)
+    is_polarity_reversed, polarity_score = check_polarity_inversion(template_gray, search_region_gray, peak_zncc, tilt_deg)
+    is_tombstoned, tombstone_score = check_tombstone(template_gray, candidate_gray, peak_zncc, patch_diff)
+
     return {
         "zncc_score": round(peak_zncc, 4),
         "patch_diff": round(patch_diff, 4),
@@ -180,6 +185,104 @@ def inspect_component(
         "shift_dist_px": shift_dist_px,
         "tilt_deg": tilt_deg,
         "rot_zncc": rot_zncc,
+        "is_bridged": is_bridged,
+        "bridge_score": bridge_score,
+        "is_polarity_reversed": is_polarity_reversed,
+        "polarity_score": polarity_score,
+        "is_tombstoned": is_tombstoned,
+        "tombstone_score": tombstone_score,
         "is_low_texture": is_low_texture,
         "template_std": round(std_t, 2),
     }
+
+
+def check_solder_bridge(template_gray: np.ndarray, candidate_gray: np.ndarray) -> Tuple[bool, float]:
+    """
+    Detects solder bridges (conductive shorts across adjacent IC pins or dual pads).
+    Compares the interstitial lead gap intensities. In a bridged component, the normally
+    dark substrate gap between pins is filled with high-reflectance tin/lead solder.
+    """
+    if template_gray.shape != candidate_gray.shape:
+        candidate_gray = cv2.resize(candidate_gray, (template_gray.shape[1], template_gray.shape[0]))
+    th, tw = template_gray.shape[:2]
+    if th < 10 or tw < 10:
+        return False, 0.0
+
+    # Lead perimeter zone: check top 25% and bottom 25% rows (or left/right 25% cols)
+    top_t = template_gray[:th // 4, :]
+    top_c = candidate_gray[:th // 4, :]
+    bot_t = template_gray[th - th // 4:, :]
+    bot_c = candidate_gray[th - th // 4:, :]
+
+    # Threshold for shiny solder in interstitial gap where template was dark
+    bridge_mask_top = (top_c > 145) & (top_t < 90)
+    bridge_mask_bot = (bot_c > 145) & (bot_t < 90)
+
+    ratio_top = float(np.sum(bridge_mask_top)) / max(1, top_t.size)
+    ratio_bot = float(np.sum(bridge_mask_bot)) / max(1, bot_t.size)
+    max_bridge_ratio = max(ratio_top, ratio_bot)
+
+    is_bridged = max_bridge_ratio >= 0.08
+    return is_bridged, round(max_bridge_ratio, 3)
+
+
+def check_polarity_inversion(
+    template_gray: np.ndarray,
+    search_region_gray: np.ndarray,
+    peak_zncc: float,
+    tilt_deg: float
+) -> Tuple[bool, float]:
+    """
+    Detects 180° inverted placement for polarized parts (diodes, electrolytic caps, IC pin 1).
+    Matches an inverted 180° template; if 180° correlation is significantly higher than
+    unrotated 0° correlation on an asymmetric component, flags as POLARITY_REVERSED.
+    """
+    th, tw = template_gray.shape[:2]
+    sh, sw = search_region_gray.shape[:2]
+    if th < 8 or tw < 8 or sh < th or sw < tw:
+        return False, 0.0
+
+    t_180 = cv2.rotate(template_gray, cv2.ROTATE_180)
+    res_180 = cv2.matchTemplate(search_region_gray, t_180, cv2.TM_CCOEFF_NORMED)
+    _, max_val_180, _, _ = cv2.minMaxLoc(res_180)
+    score_180 = float(max_val_180)
+
+    # Inverted match must be strong AND higher than 0° match, within small rotation
+    is_rev = (score_180 >= 0.78) and (score_180 > peak_zncc + 0.07) and (abs(tilt_deg) < 12.0)
+    return is_rev, round(score_180, 4)
+
+
+def check_tombstone(
+    template_gray: np.ndarray,
+    candidate_gray: np.ndarray,
+    peak_zncc: float,
+    patch_diff: float
+) -> Tuple[bool, float]:
+    """
+    Detects tombstoning / billboarding on two-terminal passive chips (resistors, caps).
+    Measures termination disparity: one termination pad is bare/detached (high difference),
+    while the other end has the vertically lifted chip body.
+    """
+    if template_gray.shape != candidate_gray.shape:
+        candidate_gray = cv2.resize(candidate_gray, (template_gray.shape[1], template_gray.shape[0]))
+    th, tw = template_gray.shape[:2]
+    if th < 6 or tw < 6:
+        return False, 0.0
+
+    # Split along major dimension
+    if tw >= th:
+        half = tw // 2
+        t1, c1 = template_gray[:, :half], candidate_gray[:, :half]
+        t2, c2 = template_gray[:, half:], candidate_gray[:, half:]
+    else:
+        half = th // 2
+        t1, c1 = template_gray[:half, :], candidate_gray[:half, :]
+        t2, c2 = template_gray[half:, :], candidate_gray[half:, :]
+
+    d1 = float(np.mean(np.abs(t1.astype(np.float32) - c1.astype(np.float32))) / 255.0)
+    d2 = float(np.mean(np.abs(t2.astype(np.float32) - c2.astype(np.float32))) / 255.0)
+    disparity = abs(d1 - d2)
+
+    # One side must have high bare pad residual, while the disparity is significant
+    is_tomb = (disparity >= 0.12) and (max(d1, d2) >= 0.16) and (peak_zncc < 0.80) and (patch_diff > 0.08)
+    return is_tomb, round(disparity, 3)

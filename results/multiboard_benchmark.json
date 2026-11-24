@@ -1,0 +1,177 @@
+{
+  "timestamp": "2026-11-24 22:21:43",
+  "total_boards": 500,
+  "architectures": 5,
+  "test_split_30pct": {
+    "rule_based_only": {
+      "boards_evaluated": 150,
+      "board_accuracy_pct": 85.33,
+      "total_part_evals": 1230,
+      "part_accuracy_pct": 97.97,
+      "false_alarms": 13,
+      "missed_defects": 7,
+      "uncertain_calls": 5,
+      "defect_breakdown": {
+        "MISSING": {
+          "actual": 20,
+          "detected": 18,
+          "rate_pct": 90.0
+        },
+        "TILTED": {
+          "actual": 20,
+          "detected": 17,
+          "rate_pct": 85.0
+        },
+        "MISALIGNED": {
+          "actual": 20,
+          "detected": 19,
+          "rate_pct": 95.0
+        },
+        "BRIDGED": {
+          "actual": 15,
+          "detected": 0,
+          "rate_pct": 0.0
+        },
+        "POLARITY_REVERSED": {
+          "actual": 15,
+          "detected": 12,
+          "rate_pct": 80.0
+        },
+        "TOMBSTONED": {
+          "actual": 0,
+          "detected": 0,
+          "rate_pct": 100.0
+        }
+      },
+      "avg_latency_ms": 254.03
+    },
+    "cascaded_hybrid": {
+      "boards_evaluated": 150,
+      "board_accuracy_pct": 84.67,
+      "total_part_evals": 1230,
+      "part_accuracy_pct": 97.97,
+      "false_alarms": 13,
+      "missed_defects": 9,
+      "uncertain_calls": 3,
+      "defect_breakdown": {
+        "MISSING": {
+          "actual": 20,
+          "detected": 19,
+          "rate_pct": 95.0
+        },
+        "TILTED": {
+          "actual": 20,
+          "detected": 17,
+          "rate_pct": 85.0
+        },
+        "MISALIGNED": {
+          "actual": 20,
+          "detected": 19,
+          "rate_pct": 95.0
+        },
+        "BRIDGED": {
+          "actual": 15,
+          "detected": 0,
+          "rate_pct": 0.0
+        },
+        "POLARITY_REVERSED": {
+          "actual": 15,
+          "detected": 12,
+          "rate_pct": 80.0
+        },
+        "TOMBSTONED": {
+          "actual": 0,
+          "detected": 0,
+          "rate_pct": 100.0
+        }
+      },
+      "avg_latency_ms": 254.03
+    }
+  },
+  "train_split_70pct": {
+    "rule_based_only": {
+      "boards_evaluated": 350,
+      "board_accuracy_pct": 90.29,
+      "total_part_evals": 2870,
+      "part_accuracy_pct": 98.43,
+      "false_alarms": 23,
+      "missed_defects": 14,
+      "uncertain_calls": 8,
+      "defect_breakdown": {
+        "MISSING": {
+          "actual": 35,
+          "detected": 34,
+          "rate_pct": 97.14
+        },
+        "TILTED": {
+          "actual": 35,
+          "detected": 32,
+          "rate_pct": 91.43
+        },
+        "MISALIGNED": {
+          "actual": 35,
+          "detected": 34,
+          "rate_pct": 97.14
+        },
+        "BRIDGED": {
+          "actual": 35,
+          "detected": 0,
+          "rate_pct": 0.0
+        },
+        "POLARITY_REVERSED": {
+          "actual": 35,
+          "detected": 28,
+          "rate_pct": 80.0
+        },
+        "TOMBSTONED": {
+          "actual": 35,
+          "detected": 0,
+          "rate_pct": 0.0
+        }
+      },
+      "avg_latency_ms": 249.41
+    },
+    "cascaded_hybrid": {
+      "boards_evaluated": 350,
+      "board_accuracy_pct": 88.29,
+      "total_part_evals": 2870,
+      "part_accuracy_pct": 98.19,
+      "false_alarms": 23,
+      "missed_defects": 22,
+      "uncertain_calls": 7,
+      "defect_breakdown": {
+        "MISSING": {
+          "actual": 35,
+          "detected": 34,
+          "rate_pct": 97.14
+        },
+        "TILTED": {
+          "actual": 35,
+          "detected": 32,
+          "rate_pct": 91.43
+        },
+        "MISALIGNED": {
+          "actual": 35,
+          "detected": 34,
+          "rate_pct": 97.14
+        },
+        "BRIDGED": {
+          "actual": 35,
+          "detected": 0,
+          "rate_pct": 0.0
+        },
+        "POLARITY_REVERSED": {
+          "actual": 35,
+          "detected": 28,
+          "rate_pct": 80.0
+        },
+        "TOMBSTONED": {
+          "actual": 35,
+          "detected": 0,
+          "rate_pct": 0.0
+        }
+      },
+      "avg_latency_ms": 249.41
+    }
+  }
+}

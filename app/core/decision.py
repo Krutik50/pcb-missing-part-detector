@@ -38,13 +38,32 @@ def classify_component(
     shift_dist = inspection_result.get("shift_dist_px", 0.0)
     shift_x, shift_y = inspection_result.get("shift_px", (0, 0))
 
-    # Decision Rule Logic (Presence verified by nominal or rotated pattern match)
-    is_tilted_match = (abs(tilt_deg) > max_tilt) and (rot_zncc >= 0.75)
-    effective_zncc = max(zncc, rot_zncc)
-    is_present = ((effective_zncc >= z_high) and (diff <= d_low or rot_zncc >= z_high)) or is_tilted_match
-    is_missing = (not is_tilted_match) and ((effective_zncc < z_low) or (diff > d_high and rot_zncc < z_high))
+    # Advanced Defect Modes
+    is_bridged = inspection_result.get("is_bridged", False)
+    is_polarity_reversed = inspection_result.get("is_polarity_reversed", False)
+    is_tombstoned = inspection_result.get("is_tombstoned", False)
 
-    if is_missing:
+    effective_zncc = max(zncc, rot_zncc)
+    is_tilted_match = (abs(tilt_deg) > max_tilt) and (rot_zncc >= 0.75)
+
+    is_bridge_defect = is_bridged and (effective_zncc >= 0.45)
+    is_polarity_defect = is_polarity_reversed
+    is_tombstone_defect = is_tombstoned
+    is_special_defect = is_bridge_defect or is_polarity_defect or is_tombstone_defect or is_tilted_match
+
+    is_present = ((effective_zncc >= z_high) and (diff <= d_low or rot_zncc >= z_high)) or is_tilted_match
+    is_missing = (not is_special_defect) and ((effective_zncc < z_low) or (diff > d_high and rot_zncc < z_high))
+
+    if is_tombstone_defect:
+        status = "TOMBSTONED"
+        reason = f"Component tombstoned / lifted on end (Termination disparity: {inspection_result.get('tombstone_score', 0):.2f})"
+    elif is_polarity_defect:
+        status = "POLARITY_REVERSED"
+        reason = f"Reversed polarity detected (180° inverted match: {inspection_result.get('polarity_score', 0):.2f})"
+    elif is_bridge_defect:
+        status = "BRIDGED"
+        reason = f"Solder bridge / pin short detected across leads (Bridge ratio: {inspection_result.get('bridge_score', 0):.2f})"
+    elif is_missing:
         status = "MISSING"
         if zncc < z_low and diff > d_high:
             reason = f"Surface mismatch & high pad residual (ZNCC: {zncc:.2f} < {z_low:.2f}, Diff: {diff:.2f} > {d_high:.2f})"
@@ -91,10 +110,13 @@ def aggregate_board_status(component_results: List[Dict[str, Any]]) -> Dict[str,
     missing_parts = [p["name"] for p in component_results if p["status"] == "MISSING"]
     tilted_parts = [p["name"] for p in component_results if p["status"] == "TILTED"]
     misaligned_parts = [p["name"] for p in component_results if p["status"] == "MISALIGNED"]
+    bridged_parts = [p["name"] for p in component_results if p["status"] == "BRIDGED"]
+    polarity_parts = [p["name"] for p in component_results if p["status"] == "POLARITY_REVERSED"]
+    tombstoned_parts = [p["name"] for p in component_results if p["status"] == "TOMBSTONED"]
     uncertain_parts = [p["name"] for p in component_results if p["status"] == "UNCERTAIN"]
     present_parts = [p["name"] for p in component_results if p["status"] == "PRESENT"]
 
-    defect_parts = missing_parts + tilted_parts + misaligned_parts
+    defect_parts = missing_parts + tilted_parts + misaligned_parts + bridged_parts + polarity_parts + tombstoned_parts
     if len(defect_parts) > 0:
         board_status = "DEFECT"
         defect_details = []
@@ -104,6 +126,12 @@ def aggregate_board_status(component_results: List[Dict[str, Any]]) -> Dict[str,
             defect_details.append(f"{len(tilted_parts)} tilted: {', '.join(tilted_parts)}")
         if misaligned_parts:
             defect_details.append(f"{len(misaligned_parts)} shifted: {', '.join(misaligned_parts)}")
+        if bridged_parts:
+            defect_details.append(f"{len(bridged_parts)} bridged: {', '.join(bridged_parts)}")
+        if polarity_parts:
+            defect_details.append(f"{len(polarity_parts)} reversed polarity: {', '.join(polarity_parts)}")
+        if tombstoned_parts:
+            defect_details.append(f"{len(tombstoned_parts)} tombstoned: {', '.join(tombstoned_parts)}")
         summary_message = f"Defect detected: {'; '.join(defect_details)}"
     elif len(uncertain_parts) > 0:
         board_status = "REVIEW"
@@ -121,11 +149,17 @@ def aggregate_board_status(component_results: List[Dict[str, Any]]) -> Dict[str,
             "missing": len(missing_parts),
             "tilted": len(tilted_parts),
             "misaligned": len(misaligned_parts),
+            "bridged": len(bridged_parts),
+            "polarity_reversed": len(polarity_parts),
+            "tombstoned": len(tombstoned_parts),
             "uncertain": len(uncertain_parts),
         },
         "missing_components": missing_parts,
         "tilted_components": tilted_parts,
         "misaligned_components": misaligned_parts,
+        "bridged_components": bridged_parts,
+        "polarity_reversed_components": polarity_parts,
+        "tombstoned_components": tombstoned_parts,
         "uncertain_components": uncertain_parts,
         "present_components": present_parts,
         "parts": component_results,

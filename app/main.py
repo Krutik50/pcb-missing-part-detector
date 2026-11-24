@@ -458,6 +458,9 @@ async def inspect_test_images(
             missing_list = b_eval["missing_components"]
             tilted_list = b_eval.get("tilted_components", [])
             misaligned_list = b_eval.get("misaligned_components", [])
+            bridged_list = b_eval.get("bridged_components", [])
+            polarity_list = b_eval.get("polarity_reversed_components", [])
+            tombstoned_list = b_eval.get("tombstoned_components", [])
             uncertain_list = b_eval["uncertain_components"]
 
             t_elapsed_ms = round((time.perf_counter() - t_start) * 1000.0, 1)
@@ -478,6 +481,9 @@ async def inspect_test_images(
                 "missing_components": missing_list,
                 "tilted_components": tilted_list,
                 "misaligned_components": misaligned_list,
+                "bridged_components": bridged_list,
+                "polarity_reversed_components": polarity_list,
+                "tombstoned_components": tombstoned_list,
                 "uncertain_components": uncertain_list,
                 "components": comp_results,
             })

@@ -349,6 +349,36 @@ body {
     border: 1px solid rgba(163, 113, 247, 0.4);
 }
 
+.badge-bridged {
+    background-color: rgba(210, 168, 255, 0.18);
+    color: #d2a8ff;
+    border: 1px solid rgba(210, 168, 255, 0.45);
+}
+
+.badge-polarity {
+    background-color: rgba(56, 189, 248, 0.18);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.45);
+}
+
+.badge-tombstoned {
+    background-color: rgba(251, 146, 60, 0.18);
+    color: #fb923c;
+    border: 1px solid rgba(251, 146, 60, 0.45);
+}
+
+.row-bridged {
+    background-color: rgba(210, 168, 255, 0.05);
+}
+
+.row-polarity {
+    background-color: rgba(56, 189, 248, 0.05);
+}
+
+.row-tombstoned {
+    background-color: rgba(251, 146, 60, 0.05);
+}
+
 /* Upload Dropzones */
 .upload-dropzone {
     border: 2px dashed var(--border-color);

@@ -38,7 +38,12 @@ Thumbs.db
 uploads/
 *.log
 
-# Generated multi-board dataset variations (auto-generated via scripts/generate_physical_multiboard_dataset.py)
+# Generated multi-board dataset variations (auto-generated via scripts/generate_physical_dataset_from_user_images.py)
 data/multiboard/train/
 data/multiboard/test/
+data/yolo_dataset/images/
+data/yolo_dataset/labels/
+.ultralytics/
+runs/
+settings.json
 
