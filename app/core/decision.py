@@ -39,9 +39,10 @@ def classify_component(
     shift_x, shift_y = inspection_result.get("shift_px", (0, 0))
 
     # Decision Rule Logic (Presence verified by nominal or rotated pattern match)
+    is_tilted_match = (abs(tilt_deg) > max_tilt) and (rot_zncc >= 0.75)
     effective_zncc = max(zncc, rot_zncc)
-    is_present = (effective_zncc >= z_high) and (diff <= d_low or rot_zncc >= z_high)
-    is_missing = (effective_zncc < z_low) or (diff > d_high and rot_zncc < z_high)
+    is_present = ((effective_zncc >= z_high) and (diff <= d_low or rot_zncc >= z_high)) or is_tilted_match
+    is_missing = (not is_tilted_match) and ((effective_zncc < z_low) or (diff > d_high and rot_zncc < z_high))
 
     if is_missing:
         status = "MISSING"

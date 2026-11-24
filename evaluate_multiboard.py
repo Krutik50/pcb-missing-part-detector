@@ -35,8 +35,8 @@ def run_multiboard_benchmark(split_filter="test"):
     # Auto-generate dataset variations if not present locally
     if not gt_file.exists() or not (dataset_dir / "test").exists():
         import subprocess, sys
-        print("Dataset images not found. Auto-generating 70-board physical dataset via scripts/generate_physical_multiboard_dataset.py...")
-        subprocess.run([sys.executable, str(root / "scripts" / "generate_physical_multiboard_dataset.py")], check=True)
+        print("Dataset images not found. Auto-generating 70-board physical dataset via scripts/generate_physical_dataset_from_user_images.py...")
+        subprocess.run([sys.executable, str(root / "scripts" / "generate_physical_dataset_from_user_images.py")], check=True)
 
     with open(gt_file, "r", encoding="utf-8") as f:
         gt_data = json.load(f)

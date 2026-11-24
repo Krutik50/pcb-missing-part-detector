@@ -1,756 +1,691 @@
 {
   "metadata": {
-    "title": "Industrial Multi-Board Physical SMT Placement Dataset",
-    "split_ratio": "70% Training / Calibration, 30% Held-Out Testing",
-    "resolution": [
-      1920,
-      1080
-    ],
-    "ipc_tolerances": {
+    "title": "Industrial Multi-Board Physical SMT/THT PCB Inspection Dataset",
+    "dataset_origin": "Real Hardware Physical Photographs (User Provided Artifacts)",
+    "split_ratio": "70% Training / Calibration, 30% Held-Out Testing (Industry Standard)",
+    "total_boards": 70,
+    "train_boards": 50,
+    "test_boards": 20,
+    "tolerances": {
       "max_allowed_tilt_deg": 3.5,
       "max_allowed_shift_px": 5.0
     }
   },
   "boards": {
-    "arduino_uno": {
-      "name": "Arduino Uno R3 Physical Microcontroller",
-      "reference_image": "arduino_uno\\reference.png",
+    "arduino_uno_dip": {
+      "name": "Official Arduino Uno R3 Physical MCU Board (Socketed DIP28)",
+      "tier": "Tier 2 (Medium Microcontroller)",
+      "resolution": [
+        1024,
+        1024
+      ],
+      "reference_image": "arduino_uno_dip/reference.png",
       "components": {
-        "U1_ATMEGA328": {
+        "U1_ATMEGA328_DIP": {
           "bbox": [
-            560,
-            420,
-            160,
+            485,
+            575,
+            450,
+            115
+          ],
+          "normalized_bbox": [
+            0.4736,
+            0.5615,
+            0.4395,
+            0.1123
+          ],
+          "type": "DIP28_MCU"
+        },
+        "J1_USB_PORT": {
+          "bbox": [
+            38,
+            280,
+            240,
             160
           ],
           "normalized_bbox": [
-            0.2917,
-            0.3889,
-            0.0833,
-            0.1481
+            0.0371,
+            0.2734,
+            0.2344,
+            0.1562
           ],
-          "type": "QFP32"
+          "type": "USB_TYPE_B"
         },
-        "U2_CH340G": {
+        "J2_DC_JACK": {
           "bbox": [
-            320,
-            260,
-            120,
-            70
-          ],
-          "normalized_bbox": [
-            0.1667,
-            0.2407,
-            0.0625,
-            0.0648
-          ],
-          "type": "SOIC16"
-        },
-        "U3_AMS1117": {
-          "bbox": [
-            280,
-            420,
-            90,
-            70
-          ],
-          "normalized_bbox": [
-            0.1458,
-            0.3889,
-            0.0469,
-            0.0648
-          ],
-          "type": "SOT223"
-        },
-        "Y1_CRYSTAL_16M": {
-          "bbox": [
-            470,
-            480,
-            60,
-            30
-          ],
-          "normalized_bbox": [
-            0.2448,
-            0.4444,
-            0.0312,
-            0.0278
-          ],
-          "type": "XTAL"
-        },
-        "C1_BULK": {
-          "bbox": [
-            200,
-            360,
-            70,
-            70
-          ],
-          "normalized_bbox": [
-            0.1042,
-            0.3333,
-            0.0365,
-            0.0648
-          ],
-          "type": "CAP_CAN"
-        },
-        "C2_BULK": {
-          "bbox": [
-            200,
-            480,
-            70,
-            70
-          ],
-          "normalized_bbox": [
-            0.1042,
-            0.4444,
-            0.0365,
-            0.0648
-          ],
-          "type": "CAP_CAN"
-        },
-        "C3_DECOUP": {
-          "bbox": [
-            530,
-            410,
-            24,
-            40
-          ],
-          "normalized_bbox": [
-            0.276,
-            0.3796,
-            0.0125,
-            0.037
-          ],
-          "type": "C0805"
-        },
-        "C4_DECOUP": {
-          "bbox": [
-            730,
-            520,
-            24,
-            40
-          ],
-          "normalized_bbox": [
-            0.3802,
-            0.4815,
-            0.0125,
-            0.037
-          ],
-          "type": "C0805"
-        },
-        "R1_PULLUP": {
-          "bbox": [
-            490,
-            380,
-            24,
-            40
-          ],
-          "normalized_bbox": [
-            0.2552,
-            0.3519,
-            0.0125,
-            0.037
-          ],
-          "type": "R0805"
-        },
-        "R2_LED": {
-          "bbox": [
-            750,
-            420,
-            24,
-            40
-          ],
-          "normalized_bbox": [
-            0.3906,
-            0.3889,
-            0.0125,
-            0.037
-          ],
-          "type": "R0805"
-        },
-        "D1_LED_ON": {
-          "bbox": [
-            790,
-            420,
-            24,
-            40
-          ],
-          "normalized_bbox": [
-            0.4115,
-            0.3889,
-            0.0125,
-            0.037
-          ],
-          "type": "R0805"
-        }
-      }
-    },
-    "esp32_devkit": {
-      "name": "ESP32-WROOM-32 IoT Module",
-      "reference_image": "esp32_devkit\\reference.png",
-      "components": {
-        "U1_ESP32_MODULE": {
-          "bbox": [
-            600,
-            260,
-            260,
-            320
-          ],
-          "normalized_bbox": [
-            0.3125,
-            0.2407,
-            0.1354,
-            0.2963
-          ],
-          "type": "QFN_SHIELD"
-        },
-        "U2_CP2102": {
-          "bbox": [
-            420,
-            480,
-            90,
-            90
-          ],
-          "normalized_bbox": [
-            0.2188,
-            0.4444,
-            0.0469,
-            0.0833
-          ],
-          "type": "QFN28"
-        },
-        "U3_ME6211_LDO": {
-          "bbox": [
-            420,
-            360,
-            80,
-            60
-          ],
-          "normalized_bbox": [
-            0.2188,
-            0.3333,
-            0.0417,
-            0.0556
-          ],
-          "type": "SOT223"
-        },
-        "C1_RF_DECOUP": {
-          "bbox": [
-            570,
-            300,
-            20,
-            32
-          ],
-          "normalized_bbox": [
-            0.2969,
-            0.2778,
-            0.0104,
-            0.0296
-          ],
-          "type": "C0603"
-        },
-        "C2_RF_DECOUP": {
-          "bbox": [
-            570,
-            360,
-            20,
-            32
-          ],
-          "normalized_bbox": [
-            0.2969,
-            0.3333,
-            0.0104,
-            0.0296
-          ],
-          "type": "C0603"
-        },
-        "R1_BOOT_PULLUP": {
-          "bbox": [
-            540,
-            480,
-            20,
-            32
-          ],
-          "normalized_bbox": [
-            0.2812,
-            0.4444,
-            0.0104,
-            0.0296
-          ],
-          "type": "R0603"
-        },
-        "R2_TXD_RES": {
-          "bbox": [
-            540,
-            530,
-            20,
-            32
-          ],
-          "normalized_bbox": [
-            0.2812,
-            0.4907,
-            0.0104,
-            0.0296
-          ],
-          "type": "R0603"
-        },
-        "D1_PWR_LED": {
-          "bbox": [
-            360,
-            360,
-            20,
-            32
-          ],
-          "normalized_bbox": [
-            0.1875,
-            0.3333,
-            0.0104,
-            0.0296
-          ],
-          "type": "R0603"
-        }
-      }
-    },
-    "power_buck_lm2596": {
-      "name": "LM2596 High-Efficiency Step-Down Buck Converter",
-      "reference_image": "power_buck_lm2596\\reference.png",
-      "components": {
-        "U1_LM2596_SW": {
-          "bbox": [
-            480,
-            340,
-            160,
-            140
-          ],
-          "normalized_bbox": [
-            0.25,
-            0.3148,
-            0.0833,
-            0.1296
-          ],
-          "type": "TO263"
-        },
-        "L1_POWER_INDUCTOR": {
-          "bbox": [
+            92,
             680,
-            330,
-            140,
-            140
-          ],
-          "normalized_bbox": [
-            0.3542,
-            0.3056,
-            0.0729,
-            0.1296
-          ],
-          "type": "INDUCTOR"
-        },
-        "C1_INPUT_FILTER": {
-          "bbox": [
-            320,
-            340,
-            90,
-            90
-          ],
-          "normalized_bbox": [
-            0.1667,
-            0.3148,
-            0.0469,
-            0.0833
-          ],
-          "type": "CAP_CAN"
-        },
-        "C2_OUTPUT_FILTER": {
-          "bbox": [
-            860,
-            340,
-            90,
-            90
-          ],
-          "normalized_bbox": [
-            0.4479,
-            0.3148,
-            0.0469,
-            0.0833
-          ],
-          "type": "CAP_CAN"
-        },
-        "D1_SCHOTTKY": {
-          "bbox": [
-            520,
-            510,
-            80,
-            50
-          ],
-          "normalized_bbox": [
-            0.2708,
-            0.4722,
-            0.0417,
-            0.0463
-          ],
-          "type": "SMC_DIODE"
-        },
-        "R1_FEEDBACK": {
-          "bbox": [
-            670,
-            500,
-            30,
-            45
-          ],
-          "normalized_bbox": [
-            0.349,
-            0.463,
-            0.0156,
-            0.0417
-          ],
-          "type": "R0805"
-        },
-        "C3_FEEDBACK_CAP": {
-          "bbox": [
-            720,
-            500,
-            30,
-            45
-          ],
-          "normalized_bbox": [
-            0.375,
-            0.463,
-            0.0156,
-            0.0417
-          ],
-          "type": "C0805"
-        }
-      }
-    },
-    "sensor_mpu6050": {
-      "name": "MPU-6050 6-Axis MotionTracking IMU",
-      "reference_image": "sensor_mpu6050\\reference.png",
-      "components": {
-        "U1_MPU6050": {
-          "bbox": [
-            500,
-            380,
-            110,
-            110
-          ],
-          "normalized_bbox": [
-            0.2604,
-            0.3519,
-            0.0573,
-            0.1019
-          ],
-          "type": "QFN24"
-        },
-        "U2_KB33_LDO": {
-          "bbox": [
-            360,
-            390,
-            75,
-            60
-          ],
-          "normalized_bbox": [
-            0.1875,
-            0.3611,
-            0.0391,
-            0.0556
-          ],
-          "type": "SOT223"
-        },
-        "C1_CHARGE_PUMP": {
-          "bbox": [
-            630,
-            390,
-            20,
-            30
-          ],
-          "normalized_bbox": [
-            0.3281,
-            0.3611,
-            0.0104,
-            0.0278
-          ],
-          "type": "C0603"
-        },
-        "C2_VLOGIC": {
-          "bbox": [
-            630,
-            440,
-            20,
-            30
-          ],
-          "normalized_bbox": [
-            0.3281,
-            0.4074,
-            0.0104,
-            0.0278
-          ],
-          "type": "C0603"
-        },
-        "R1_I2C_SCL": {
-          "bbox": [
-            460,
-            340,
-            30,
-            20
-          ],
-          "normalized_bbox": [
-            0.2396,
-            0.3148,
-            0.0156,
-            0.0185
-          ],
-          "type": "R0603"
-        },
-        "R2_I2C_SDA": {
-          "bbox": [
-            510,
-            340,
-            30,
-            20
-          ],
-          "normalized_bbox": [
-            0.2656,
-            0.3148,
-            0.0156,
-            0.0185
-          ],
-          "type": "R0603"
-        },
-        "D1_POWER_LED": {
-          "bbox": [
-            320,
-            390,
-            20,
-            30
-          ],
-          "normalized_bbox": [
-            0.1667,
-            0.3611,
-            0.0104,
-            0.0278
-          ],
-          "type": "R0603"
-        }
-      }
-    },
-    "industrial_sensor_controller": {
-      "name": "Industrial Sensor Controller Rev 2.1 (Full Suite)",
-      "reference_image": "industrial_sensor_controller\\reference.png",
-      "components": {
-        "U1_MCU": {
-          "bbox": [
-            580,
-            400,
             200,
-            200
+            120
           ],
           "normalized_bbox": [
-            0.3021,
-            0.3704,
-            0.1042,
-            0.1852
+            0.0898,
+            0.6641,
+            0.1953,
+            0.1172
           ],
-          "type": "QFP32"
+          "type": "DC_BARREL_JACK"
         },
-        "U2_REG": {
+        "SW1_RESET_BTN": {
           "bbox": [
-            940,
-            440,
-            140,
-            100
+            150,
+            190,
+            100,
+            85
           ],
           "normalized_bbox": [
-            0.4896,
-            0.4074,
-            0.0729,
-            0.0926
+            0.1465,
+            0.1855,
+            0.0977,
+            0.083
           ],
-          "type": "SOT223"
+          "type": "TACTILE_SWITCH"
         },
-        "U3_EEPROM": {
+        "C1_47UF_ALUM": {
           "bbox": [
-            940,
-            620,
-            120,
-            90
-          ],
-          "normalized_bbox": [
-            0.4896,
-            0.5741,
-            0.0625,
-            0.0833
-          ],
-          "type": "SOIC8"
-        },
-        "C1_DECOUP": {
-          "bbox": [
-            470,
-            430,
-            24,
-            30
-          ],
-          "normalized_bbox": [
-            0.2448,
-            0.3981,
-            0.0125,
-            0.0278
-          ],
-          "type": "C0805"
-        },
-        "C2_DECOUP": {
-          "bbox": [
-            470,
-            520,
-            24,
-            30
-          ],
-          "normalized_bbox": [
-            0.2448,
-            0.4815,
-            0.0125,
-            0.0278
-          ],
-          "type": "C0805"
-        },
-        "C3_DECOUP": {
-          "bbox": [
-            830,
-            430,
-            24,
-            30
-          ],
-          "normalized_bbox": [
-            0.4323,
-            0.3981,
-            0.0125,
-            0.0278
-          ],
-          "type": "C0805"
-        },
-        "C4_BULK": {
-          "bbox": [
-            1130,
-            470,
-            36,
-            45
-          ],
-          "normalized_bbox": [
-            0.5885,
-            0.4352,
-            0.0187,
-            0.0417
-          ],
-          "type": "C1206"
-        },
-        "R1_PULLUP": {
-          "bbox": [
-            880,
-            420,
-            24,
-            48
-          ],
-          "normalized_bbox": [
-            0.4583,
-            0.3889,
-            0.0125,
-            0.0444
-          ],
-          "type": "R0805"
-        },
-        "R2_PULLUP": {
-          "bbox": [
-            880,
-            490,
-            24,
-            48
-          ],
-          "normalized_bbox": [
-            0.4583,
-            0.4537,
-            0.0125,
-            0.0444
-          ],
-          "type": "R0805"
-        },
-        "R3_PULLUP": {
-          "bbox": [
-            880,
-            560,
-            24,
-            48
-          ],
-          "normalized_bbox": [
-            0.4583,
-            0.5185,
-            0.0125,
-            0.0444
-          ],
-          "type": "R0805"
-        },
-        "R4_PULLUP": {
-          "bbox": [
-            880,
-            630,
-            24,
-            48
-          ],
-          "normalized_bbox": [
-            0.4583,
-            0.5833,
-            0.0125,
-            0.0444
-          ],
-          "type": "R0805"
-        },
-        "R5_SHUNTR": {
-          "bbox": [
-            880,
-            700,
-            24,
-            48
-          ],
-          "normalized_bbox": [
-            0.4583,
-            0.6481,
-            0.0125,
-            0.0444
-          ],
-          "type": "R0805"
-        },
-        "D1_LED": {
-          "bbox": [
-            500,
-            670,
-            24,
-            35
-          ],
-          "normalized_bbox": [
-            0.2604,
-            0.6204,
-            0.0125,
-            0.0324
-          ],
-          "type": "LED0805"
-        },
-        "Y1_XTAL": {
-          "bbox": [
-            440,
-            460,
-            40,
+            310,
+            685,
+            80,
             80
           ],
           "normalized_bbox": [
-            0.2292,
-            0.4259,
-            0.0208,
-            0.0741
+            0.3027,
+            0.6689,
+            0.0781,
+            0.0781
           ],
-          "type": "XTAL"
+          "type": "SMD_ELECTRO_CAP"
+        },
+        "C2_47UF_ALUM": {
+          "bbox": [
+            395,
+            685,
+            80,
+            80
+          ],
+          "normalized_bbox": [
+            0.3857,
+            0.6689,
+            0.0781,
+            0.0781
+          ],
+          "type": "SMD_ELECTRO_CAP"
+        },
+        "Y1_16MHZ_XTAL": {
+          "bbox": [
+            300,
+            488,
+            135,
+            60
+          ],
+          "normalized_bbox": [
+            0.293,
+            0.4766,
+            0.1318,
+            0.0586
+          ],
+          "type": "HC49S_CRYSTAL"
+        },
+        "U2_ATMEGA16U2": {
+          "bbox": [
+            340,
+            380,
+            75,
+            75
+          ],
+          "normalized_bbox": [
+            0.332,
+            0.3711,
+            0.0732,
+            0.0732
+          ],
+          "type": "QFN32_USB_IC"
+        },
+        "VR1_AMS1117": {
+          "bbox": [
+            170,
+            595,
+            80,
+            70
+          ],
+          "normalized_bbox": [
+            0.166,
+            0.5811,
+            0.0781,
+            0.0684
+          ],
+          "type": "SOT223_LDO"
+        }
+      }
+    },
+    "phenolic_appliance_board": {
+      "name": "Appliance AC Power & Control Board (Yellow Phenolic FR-2)",
+      "tier": "Tier 1 (High-Voltage Power Supply)",
+      "resolution": [
+        1000,
+        1000
+      ],
+      "reference_image": "phenolic_appliance_board/reference.png",
+      "components": {
+        "C1_400V_BULK": {
+          "bbox": [
+            260,
+            0,
+            130,
+            185
+          ],
+          "normalized_bbox": [
+            0.26,
+            0.0,
+            0.13,
+            0.185
+          ],
+          "type": "RADIAL_400V_CAP"
+        },
+        "C2_400V_BULK": {
+          "bbox": [
+            380,
+            0,
+            120,
+            185
+          ],
+          "normalized_bbox": [
+            0.38,
+            0.0,
+            0.12,
+            0.185
+          ],
+          "type": "RADIAL_400V_CAP"
+        },
+        "L1_TOROID_COIL": {
+          "bbox": [
+            560,
+            70,
+            130,
+            130
+          ],
+          "normalized_bbox": [
+            0.56,
+            0.07,
+            0.13,
+            0.13
+          ],
+          "type": "TOROIDAL_INDUCTOR"
+        },
+        "K1_POWER_RELAY": {
+          "bbox": [
+            535,
+            190,
+            200,
+            155
+          ],
+          "normalized_bbox": [
+            0.535,
+            0.19,
+            0.2,
+            0.155
+          ],
+          "type": "POWER_RELAY"
+        },
+        "K2_RELAY_BLOCK": {
+          "bbox": [
+            750,
+            25,
+            140,
+            290
+          ],
+          "normalized_bbox": [
+            0.75,
+            0.025,
+            0.14,
+            0.29
+          ],
+          "type": "HV_RELAY_MODULE"
+        },
+        "U103_DIP8": {
+          "bbox": [
+            280,
+            520,
+            60,
+            60
+          ],
+          "normalized_bbox": [
+            0.28,
+            0.52,
+            0.06,
+            0.06
+          ],
+          "type": "DIP8_POWER_IC"
+        },
+        "MOV_Y1_BLUE": {
+          "bbox": [
+            425,
+            335,
+            55,
+            45
+          ],
+          "normalized_bbox": [
+            0.425,
+            0.335,
+            0.055,
+            0.045
+          ],
+          "type": "BLUE_DISC_MOV"
+        },
+        "CONN_WHITE_HDR": {
+          "bbox": [
+            775,
+            545,
+            105,
+            125
+          ],
+          "normalized_bbox": [
+            0.775,
+            0.545,
+            0.105,
+            0.125
+          ],
+          "type": "TERMINAL_HEADER"
+        }
+      }
+    },
+    "industrial_weighing_pms63": {
+      "name": "Industrial Weighing Scale Indicator Controller (PMS-63)",
+      "tier": "Tier 2 (Industrial Mixed-Signal Controller)",
+      "resolution": [
+        500,
+        500
+      ],
+      "reference_image": "industrial_weighing_pms63/reference.png",
+      "components": {
+        "U1_MCU_DIP28": {
+          "bbox": [
+            170,
+            75,
+            65,
+            205
+          ],
+          "normalized_bbox": [
+            0.34,
+            0.15,
+            0.13,
+            0.41
+          ],
+          "type": "DIP28_MCU"
+        },
+        "U2_OPAMP_DIP8": {
+          "bbox": [
+            60,
+            255,
+            60,
+            60
+          ],
+          "normalized_bbox": [
+            0.12,
+            0.51,
+            0.12,
+            0.12
+          ],
+          "type": "DIP8_OPAMP"
+        },
+        "Q8_HEATSINK": {
+          "bbox": [
+            340,
+            230,
+            110,
+            80
+          ],
+          "normalized_bbox": [
+            0.68,
+            0.46,
+            0.22,
+            0.16
+          ],
+          "type": "TO220_HEATSINK"
+        },
+        "C2_ORANGE_CAP": {
+          "bbox": [
+            365,
+            310,
+            80,
+            70
+          ],
+          "normalized_bbox": [
+            0.73,
+            0.62,
+            0.16,
+            0.14
+          ],
+          "type": "RADIAL_ELECTRO_CAP"
+        },
+        "C9_ORANGE_CAP": {
+          "bbox": [
+            95,
+            215,
+            55,
+            50
+          ],
+          "normalized_bbox": [
+            0.19,
+            0.43,
+            0.11,
+            0.1
+          ],
+          "type": "RADIAL_ELECTRO_CAP"
+        },
+        "C10_ORANGE_CAP": {
+          "bbox": [
+            110,
+            295,
+            60,
+            55
+          ],
+          "normalized_bbox": [
+            0.22,
+            0.59,
+            0.12,
+            0.11
+          ],
+          "type": "RADIAL_ELECTRO_CAP"
+        },
+        "HDR_DISPLAY": {
+          "bbox": [
+            415,
+            95,
+            35,
+            100
+          ],
+          "normalized_bbox": [
+            0.83,
+            0.19,
+            0.07,
+            0.2
+          ],
+          "type": "DISPLAY_HEADER"
+        },
+        "R_ARRAY1": {
+          "bbox": [
+            260,
+            70,
+            70,
+            220
+          ],
+          "normalized_bbox": [
+            0.52,
+            0.14,
+            0.14,
+            0.44
+          ],
+          "type": "RESISTOR_ARRAY"
+        }
+      }
+    },
+    "analog_instrumentation": {
+      "name": "Analog Precision Signal Conditioning & Test PCB",
+      "tier": "Tier 3 (Precision Analog Instrumentation)",
+      "resolution": [
+        500,
+        500
+      ],
+      "reference_image": "analog_instrumentation/reference.png",
+      "components": {
+        "U1_DIP14": {
+          "bbox": [
+            390,
+            250,
+            75,
+            40
+          ],
+          "normalized_bbox": [
+            0.78,
+            0.5,
+            0.15,
+            0.08
+          ],
+          "type": "DIP14_ANALOG_IC"
+        },
+        "U2_DIP8": {
+          "bbox": [
+            135,
+            265,
+            45,
+            45
+          ],
+          "normalized_bbox": [
+            0.27,
+            0.53,
+            0.09,
+            0.09
+          ],
+          "type": "DIP8_OPAMP"
+        },
+        "VR1_TRIMPOT": {
+          "bbox": [
+            335,
+            130,
+            40,
+            45
+          ],
+          "normalized_bbox": [
+            0.67,
+            0.26,
+            0.08,
+            0.09
+          ],
+          "type": "BOURNS_TRIMPOT"
+        },
+        "VR2_TRIMPOT": {
+          "bbox": [
+            420,
+            185,
+            40,
+            45
+          ],
+          "normalized_bbox": [
+            0.84,
+            0.37,
+            0.08,
+            0.09
+          ],
+          "type": "BOURNS_TRIMPOT"
+        },
+        "VR3_TRIMPOT": {
+          "bbox": [
+            198,
+            225,
+            40,
+            45
+          ],
+          "normalized_bbox": [
+            0.396,
+            0.45,
+            0.08,
+            0.09
+          ],
+          "type": "BOURNS_TRIMPOT"
+        },
+        "VR4_TRIMPOT": {
+          "bbox": [
+            68,
+            255,
+            40,
+            45
+          ],
+          "normalized_bbox": [
+            0.136,
+            0.51,
+            0.08,
+            0.09
+          ],
+          "type": "BOURNS_TRIMPOT"
+        },
+        "C6_ELECTRO": {
+          "bbox": [
+            175,
+            105,
+            45,
+            55
+          ],
+          "normalized_bbox": [
+            0.35,
+            0.21,
+            0.09,
+            0.11
+          ],
+          "type": "RADIAL_ELECTRO_CAP"
+        },
+        "C36_FILM": {
+          "bbox": [
+            330,
+            275,
+            75,
+            30
+          ],
+          "normalized_bbox": [
+            0.66,
+            0.55,
+            0.15,
+            0.06
+          ],
+          "type": "BOX_FILM_CAP"
+        },
+        "D35_LED": {
+          "bbox": [
+            240,
+            265,
+            20,
+            25
+          ],
+          "normalized_bbox": [
+            0.48,
+            0.53,
+            0.04,
+            0.05
+          ],
+          "type": "3MM_RED_LED"
+        },
+        "Q1_TO220": {
+          "bbox": [
+            245,
+            88,
+            40,
+            40
+          ],
+          "normalized_bbox": [
+            0.49,
+            0.176,
+            0.08,
+            0.08
+          ],
+          "type": "TO220_REGULATOR"
+        }
+      }
+    },
+    "inverter_power_board": {
+      "name": "Inverter & SMPS Power Controller PCB",
+      "tier": "Tier 1 (Power Inverter & Motor Driver)",
+      "resolution": [
+        500,
+        500
+      ],
+      "reference_image": "inverter_power_board/reference.png",
+      "components": {
+        "C1_BULK_VENT": {
+          "bbox": [
+            205,
+            280,
+            70,
+            70
+          ],
+          "normalized_bbox": [
+            0.41,
+            0.56,
+            0.14,
+            0.14
+          ],
+          "type": "VENTED_ELECTRO_CAP"
+        },
+        "C2_BULK_VENT": {
+          "bbox": [
+            275,
+            265,
+            80,
+            75
+          ],
+          "normalized_bbox": [
+            0.55,
+            0.53,
+            0.16,
+            0.15
+          ],
+          "type": "VENTED_ELECTRO_CAP"
+        },
+        "C3_BULK_VENT": {
+          "bbox": [
+            230,
+            350,
+            80,
+            75
+          ],
+          "normalized_bbox": [
+            0.46,
+            0.7,
+            0.16,
+            0.15
+          ],
+          "type": "VENTED_ELECTRO_CAP"
+        },
+        "T1_TRANSFORMER": {
+          "bbox": [
+            100,
+            250,
+            65,
+            45
+          ],
+          "normalized_bbox": [
+            0.2,
+            0.5,
+            0.13,
+            0.09
+          ],
+          "type": "SMPS_TRANSFORMER"
+        },
+        "K1_RELAY": {
+          "bbox": [
+            60,
+            155,
+            45,
+            80
+          ],
+          "normalized_bbox": [
+            0.12,
+            0.31,
+            0.09,
+            0.16
+          ],
+          "type": "POWER_RELAY"
+        },
+        "U1_MCU": {
+          "bbox": [
+            210,
+            130,
+            35,
+            35
+          ],
+          "normalized_bbox": [
+            0.42,
+            0.26,
+            0.07,
+            0.07
+          ],
+          "type": "QFP32_PWM_MCU"
         }
       }
     }
   },
   "images": {
-    "train\\arduino_uno\\arduino_uno_01_nominal_ok.png": {
-      "board_type": "arduino_uno",
+    "train/arduino_uno_dip/arduino_uno_dip_01_nominal_ok.png": {
+      "board_type": "arduino_uno_dip",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -760,8 +695,8 @@
         "misaligned": 0
       }
     },
-    "train\\arduino_uno\\arduino_uno_02_nominal_bright.png": {
-      "board_type": "arduino_uno",
+    "train/arduino_uno_dip/arduino_uno_dip_02_nominal_bright.png": {
+      "board_type": "arduino_uno_dip",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -771,8 +706,8 @@
         "misaligned": 0
       }
     },
-    "train\\arduino_uno\\arduino_uno_03_nominal_dim.png": {
-      "board_type": "arduino_uno",
+    "train/arduino_uno_dip/arduino_uno_dip_03_nominal_dim.png": {
+      "board_type": "arduino_uno_dip",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -782,8 +717,8 @@
         "misaligned": 0
       }
     },
-    "train\\arduino_uno\\arduino_uno_04_nominal_glare.png": {
-      "board_type": "arduino_uno",
+    "train/arduino_uno_dip/arduino_uno_dip_04_nominal_glare.png": {
+      "board_type": "arduino_uno_dip",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -793,12 +728,12 @@
         "misaligned": 0
       }
     },
-    "train\\arduino_uno\\arduino_uno_05_missing_single.png": {
-      "board_type": "arduino_uno",
+    "train/arduino_uno_dip/arduino_uno_dip_05_missing_single.png": {
+      "board_type": "arduino_uno_dip",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_BULK": {
+        "VR1_AMS1117": {
           "type": "MISSING"
         }
       },
@@ -808,15 +743,15 @@
         "misaligned": 0
       }
     },
-    "train\\arduino_uno\\arduino_uno_06_missing_double.png": {
-      "board_type": "arduino_uno",
+    "train/arduino_uno_dip/arduino_uno_dip_06_missing_double.png": {
+      "board_type": "arduino_uno_dip",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C1_BULK": {
+        "U1_ATMEGA328_DIP": {
           "type": "MISSING"
         },
-        "C3_DECOUP": {
+        "J1_USB_PORT": {
           "type": "MISSING"
         }
       },
@@ -826,12 +761,12 @@
         "misaligned": 0
       }
     },
-    "train\\arduino_uno\\arduino_uno_07_tilted_part.png": {
-      "board_type": "arduino_uno",
+    "train/arduino_uno_dip/arduino_uno_dip_07_tilted_part.png": {
+      "board_type": "arduino_uno_dip",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_BULK": {
+        "U1_ATMEGA328_DIP": {
           "type": "TILTED",
           "angle": 7.5
         }
@@ -842,16 +777,16 @@
         "misaligned": 0
       }
     },
-    "train\\arduino_uno\\arduino_uno_08_shifted_part.png": {
-      "board_type": "arduino_uno",
+    "train/arduino_uno_dip/arduino_uno_dip_08_shifted_part.png": {
+      "board_type": "arduino_uno_dip",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C3_DECOUP": {
+        "J1_USB_PORT": {
           "type": "MISALIGNED",
           "shift": [
-            9,
-            3
+            8.0,
+            0.0
           ]
         }
       },
@@ -861,17 +796,17 @@
         "misaligned": 1
       }
     },
-    "train\\arduino_uno\\arduino_uno_09_mixed_missing_tilted.png": {
-      "board_type": "arduino_uno",
+    "train/arduino_uno_dip/arduino_uno_dip_09_mixed_missing_tilted.png": {
+      "board_type": "arduino_uno_dip",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C1_BULK": {
+        "VR1_AMS1117": {
+          "type": "MISSING"
+        },
+        "U1_ATMEGA328_DIP": {
           "type": "TILTED",
           "angle": -8.0
-        },
-        "Y1_CRYSTAL_16M": {
-          "type": "MISSING"
         }
       },
       "defect_counts": {
@@ -880,23 +815,23 @@
         "misaligned": 0
       }
     },
-    "train\\arduino_uno\\arduino_uno_10_mixed_all_defects.png": {
-      "board_type": "arduino_uno",
+    "train/arduino_uno_dip/arduino_uno_dip_10_mixed_all_defects.png": {
+      "board_type": "arduino_uno_dip",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_BULK": {
+        "U1_ATMEGA328_DIP": {
           "type": "MISSING"
         },
-        "C3_DECOUP": {
+        "J1_USB_PORT": {
           "type": "TILTED",
-          "angle": 6.5
+          "angle": 8.5
         },
-        "C4_DECOUP": {
+        "J2_DC_JACK": {
           "type": "MISALIGNED",
           "shift": [
-            -8,
-            6
+            7.0,
+            4.0
           ]
         }
       },
@@ -906,8 +841,8 @@
         "misaligned": 1
       }
     },
-    "test\\arduino_uno\\arduino_uno_test_01_all_ok_max_jitter.png": {
-      "board_type": "arduino_uno",
+    "test/arduino_uno_dip/arduino_uno_dip_test_01_all_ok_max_jitter.png": {
+      "board_type": "arduino_uno_dip",
       "split": "test",
       "expected_board_status": "OK",
       "defects": {},
@@ -917,12 +852,12 @@
         "misaligned": 0
       }
     },
-    "test\\arduino_uno\\arduino_uno_test_02_missing_critical_ic.png": {
-      "board_type": "arduino_uno",
+    "test/arduino_uno_dip/arduino_uno_dip_test_02_missing_critical_ic.png": {
+      "board_type": "arduino_uno_dip",
       "split": "test",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C1_BULK": {
+        "U1_ATMEGA328_DIP": {
           "type": "MISSING"
         }
       },
@@ -932,12 +867,12 @@
         "misaligned": 0
       }
     },
-    "test\\arduino_uno\\arduino_uno_test_03_tilted_severe_skew.png": {
-      "board_type": "arduino_uno",
+    "test/arduino_uno_dip/arduino_uno_dip_test_03_tilted_severe_skew.png": {
+      "board_type": "arduino_uno_dip",
       "split": "test",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_BULK": {
+        "J1_USB_PORT": {
           "type": "TILTED",
           "angle": 10.5
         }
@@ -948,16 +883,16 @@
         "misaligned": 0
       }
     },
-    "test\\arduino_uno\\arduino_uno_test_04_misaligned_shifted_part.png": {
-      "board_type": "arduino_uno",
+    "test/arduino_uno_dip/arduino_uno_dip_test_04_misaligned_shifted_part.png": {
+      "board_type": "arduino_uno_dip",
       "split": "test",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C3_DECOUP": {
+        "J2_DC_JACK": {
           "type": "MISALIGNED",
           "shift": [
-            12,
-            -4
+            7.5,
+            3.5
           ]
         }
       },
@@ -967,8 +902,8 @@
         "misaligned": 1
       }
     },
-    "train\\esp32_devkit\\esp32_devkit_01_nominal_ok.png": {
-      "board_type": "esp32_devkit",
+    "train/phenolic_appliance_board/phenolic_appliance_board_01_nominal_ok.png": {
+      "board_type": "phenolic_appliance_board",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -978,8 +913,8 @@
         "misaligned": 0
       }
     },
-    "train\\esp32_devkit\\esp32_devkit_02_nominal_bright.png": {
-      "board_type": "esp32_devkit",
+    "train/phenolic_appliance_board/phenolic_appliance_board_02_nominal_bright.png": {
+      "board_type": "phenolic_appliance_board",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -989,8 +924,8 @@
         "misaligned": 0
       }
     },
-    "train\\esp32_devkit\\esp32_devkit_03_nominal_dim.png": {
-      "board_type": "esp32_devkit",
+    "train/phenolic_appliance_board/phenolic_appliance_board_03_nominal_dim.png": {
+      "board_type": "phenolic_appliance_board",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -1000,8 +935,8 @@
         "misaligned": 0
       }
     },
-    "train\\esp32_devkit\\esp32_devkit_04_nominal_glare.png": {
-      "board_type": "esp32_devkit",
+    "train/phenolic_appliance_board/phenolic_appliance_board_04_nominal_glare.png": {
+      "board_type": "phenolic_appliance_board",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -1011,12 +946,12 @@
         "misaligned": 0
       }
     },
-    "train\\esp32_devkit\\esp32_devkit_05_missing_single.png": {
-      "board_type": "esp32_devkit",
+    "train/phenolic_appliance_board/phenolic_appliance_board_05_missing_single.png": {
+      "board_type": "phenolic_appliance_board",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_RF_DECOUP": {
+        "CONN_WHITE_HDR": {
           "type": "MISSING"
         }
       },
@@ -1026,15 +961,15 @@
         "misaligned": 0
       }
     },
-    "train\\esp32_devkit\\esp32_devkit_06_missing_double.png": {
-      "board_type": "esp32_devkit",
+    "train/phenolic_appliance_board/phenolic_appliance_board_06_missing_double.png": {
+      "board_type": "phenolic_appliance_board",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C1_RF_DECOUP": {
+        "C1_400V_BULK": {
           "type": "MISSING"
         },
-        "D1_PWR_LED": {
+        "C2_400V_BULK": {
           "type": "MISSING"
         }
       },
@@ -1044,12 +979,12 @@
         "misaligned": 0
       }
     },
-    "train\\esp32_devkit\\esp32_devkit_07_tilted_part.png": {
-      "board_type": "esp32_devkit",
+    "train/phenolic_appliance_board/phenolic_appliance_board_07_tilted_part.png": {
+      "board_type": "phenolic_appliance_board",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_RF_DECOUP": {
+        "C1_400V_BULK": {
           "type": "TILTED",
           "angle": 7.5
         }
@@ -1060,16 +995,16 @@
         "misaligned": 0
       }
     },
-    "train\\esp32_devkit\\esp32_devkit_08_shifted_part.png": {
-      "board_type": "esp32_devkit",
+    "train/phenolic_appliance_board/phenolic_appliance_board_08_shifted_part.png": {
+      "board_type": "phenolic_appliance_board",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "D1_PWR_LED": {
+        "C2_400V_BULK": {
           "type": "MISALIGNED",
           "shift": [
-            9,
-            3
+            8.0,
+            0.0
           ]
         }
       },
@@ -1079,17 +1014,17 @@
         "misaligned": 1
       }
     },
-    "train\\esp32_devkit\\esp32_devkit_09_mixed_missing_tilted.png": {
-      "board_type": "esp32_devkit",
+    "train/phenolic_appliance_board/phenolic_appliance_board_09_mixed_missing_tilted.png": {
+      "board_type": "phenolic_appliance_board",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C1_RF_DECOUP": {
+        "CONN_WHITE_HDR": {
+          "type": "MISSING"
+        },
+        "C1_400V_BULK": {
           "type": "TILTED",
           "angle": -8.0
-        },
-        "U3_ME6211_LDO": {
-          "type": "MISSING"
         }
       },
       "defect_counts": {
@@ -1098,23 +1033,23 @@
         "misaligned": 0
       }
     },
-    "train\\esp32_devkit\\esp32_devkit_10_mixed_all_defects.png": {
-      "board_type": "esp32_devkit",
+    "train/phenolic_appliance_board/phenolic_appliance_board_10_mixed_all_defects.png": {
+      "board_type": "phenolic_appliance_board",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_RF_DECOUP": {
+        "C1_400V_BULK": {
           "type": "MISSING"
         },
-        "D1_PWR_LED": {
+        "C2_400V_BULK": {
           "type": "TILTED",
-          "angle": 6.5
+          "angle": 8.5
         },
-        "R1_BOOT_PULLUP": {
+        "L1_TOROID_COIL": {
           "type": "MISALIGNED",
           "shift": [
-            -8,
-            6
+            7.0,
+            4.0
           ]
         }
       },
@@ -1124,8 +1059,8 @@
         "misaligned": 1
       }
     },
-    "test\\esp32_devkit\\esp32_devkit_test_01_all_ok_max_jitter.png": {
-      "board_type": "esp32_devkit",
+    "test/phenolic_appliance_board/phenolic_appliance_board_test_01_all_ok_max_jitter.png": {
+      "board_type": "phenolic_appliance_board",
       "split": "test",
       "expected_board_status": "OK",
       "defects": {},
@@ -1135,12 +1070,12 @@
         "misaligned": 0
       }
     },
-    "test\\esp32_devkit\\esp32_devkit_test_02_missing_critical_ic.png": {
-      "board_type": "esp32_devkit",
+    "test/phenolic_appliance_board/phenolic_appliance_board_test_02_missing_critical_ic.png": {
+      "board_type": "phenolic_appliance_board",
       "split": "test",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C1_RF_DECOUP": {
+        "C1_400V_BULK": {
           "type": "MISSING"
         }
       },
@@ -1150,12 +1085,12 @@
         "misaligned": 0
       }
     },
-    "test\\esp32_devkit\\esp32_devkit_test_03_tilted_severe_skew.png": {
-      "board_type": "esp32_devkit",
+    "test/phenolic_appliance_board/phenolic_appliance_board_test_03_tilted_severe_skew.png": {
+      "board_type": "phenolic_appliance_board",
       "split": "test",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_RF_DECOUP": {
+        "C2_400V_BULK": {
           "type": "TILTED",
           "angle": 10.5
         }
@@ -1166,16 +1101,16 @@
         "misaligned": 0
       }
     },
-    "test\\esp32_devkit\\esp32_devkit_test_04_misaligned_shifted_part.png": {
-      "board_type": "esp32_devkit",
+    "test/phenolic_appliance_board/phenolic_appliance_board_test_04_misaligned_shifted_part.png": {
+      "board_type": "phenolic_appliance_board",
       "split": "test",
       "expected_board_status": "DEFECT",
       "defects": {
-        "D1_PWR_LED": {
+        "L1_TOROID_COIL": {
           "type": "MISALIGNED",
           "shift": [
-            12,
-            -4
+            7.5,
+            3.5
           ]
         }
       },
@@ -1185,8 +1120,8 @@
         "misaligned": 1
       }
     },
-    "train\\power_buck_lm2596\\power_buck_lm2596_01_nominal_ok.png": {
-      "board_type": "power_buck_lm2596",
+    "train/industrial_weighing_pms63/industrial_weighing_pms63_01_nominal_ok.png": {
+      "board_type": "industrial_weighing_pms63",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -1196,8 +1131,8 @@
         "misaligned": 0
       }
     },
-    "train\\power_buck_lm2596\\power_buck_lm2596_02_nominal_bright.png": {
-      "board_type": "power_buck_lm2596",
+    "train/industrial_weighing_pms63/industrial_weighing_pms63_02_nominal_bright.png": {
+      "board_type": "industrial_weighing_pms63",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -1207,8 +1142,8 @@
         "misaligned": 0
       }
     },
-    "train\\power_buck_lm2596\\power_buck_lm2596_03_nominal_dim.png": {
-      "board_type": "power_buck_lm2596",
+    "train/industrial_weighing_pms63/industrial_weighing_pms63_03_nominal_dim.png": {
+      "board_type": "industrial_weighing_pms63",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -1218,8 +1153,8 @@
         "misaligned": 0
       }
     },
-    "train\\power_buck_lm2596\\power_buck_lm2596_04_nominal_glare.png": {
-      "board_type": "power_buck_lm2596",
+    "train/industrial_weighing_pms63/industrial_weighing_pms63_04_nominal_glare.png": {
+      "board_type": "industrial_weighing_pms63",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -1229,12 +1164,12 @@
         "misaligned": 0
       }
     },
-    "train\\power_buck_lm2596\\power_buck_lm2596_05_missing_single.png": {
-      "board_type": "power_buck_lm2596",
+    "train/industrial_weighing_pms63/industrial_weighing_pms63_05_missing_single.png": {
+      "board_type": "industrial_weighing_pms63",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_OUTPUT_FILTER": {
+        "R_ARRAY1": {
           "type": "MISSING"
         }
       },
@@ -1244,15 +1179,15 @@
         "misaligned": 0
       }
     },
-    "train\\power_buck_lm2596\\power_buck_lm2596_06_missing_double.png": {
-      "board_type": "power_buck_lm2596",
+    "train/industrial_weighing_pms63/industrial_weighing_pms63_06_missing_double.png": {
+      "board_type": "industrial_weighing_pms63",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C1_INPUT_FILTER": {
+        "U1_MCU_DIP28": {
           "type": "MISSING"
         },
-        "C3_FEEDBACK_CAP": {
+        "U2_OPAMP_DIP8": {
           "type": "MISSING"
         }
       },
@@ -1262,12 +1197,12 @@
         "misaligned": 0
       }
     },
-    "train\\power_buck_lm2596\\power_buck_lm2596_07_tilted_part.png": {
-      "board_type": "power_buck_lm2596",
+    "train/industrial_weighing_pms63/industrial_weighing_pms63_07_tilted_part.png": {
+      "board_type": "industrial_weighing_pms63",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_OUTPUT_FILTER": {
+        "U1_MCU_DIP28": {
           "type": "TILTED",
           "angle": 7.5
         }
@@ -1278,16 +1213,16 @@
         "misaligned": 0
       }
     },
-    "train\\power_buck_lm2596\\power_buck_lm2596_08_shifted_part.png": {
-      "board_type": "power_buck_lm2596",
+    "train/industrial_weighing_pms63/industrial_weighing_pms63_08_shifted_part.png": {
+      "board_type": "industrial_weighing_pms63",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C3_FEEDBACK_CAP": {
+        "U2_OPAMP_DIP8": {
           "type": "MISALIGNED",
           "shift": [
-            9,
-            3
+            8.0,
+            0.0
           ]
         }
       },
@@ -1297,17 +1232,17 @@
         "misaligned": 1
       }
     },
-    "train\\power_buck_lm2596\\power_buck_lm2596_09_mixed_missing_tilted.png": {
-      "board_type": "power_buck_lm2596",
+    "train/industrial_weighing_pms63/industrial_weighing_pms63_09_mixed_missing_tilted.png": {
+      "board_type": "industrial_weighing_pms63",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C1_INPUT_FILTER": {
+        "R_ARRAY1": {
+          "type": "MISSING"
+        },
+        "U1_MCU_DIP28": {
           "type": "TILTED",
           "angle": -8.0
-        },
-        "U1_LM2596_SW": {
-          "type": "MISSING"
         }
       },
       "defect_counts": {
@@ -1316,23 +1251,23 @@
         "misaligned": 0
       }
     },
-    "train\\power_buck_lm2596\\power_buck_lm2596_10_mixed_all_defects.png": {
-      "board_type": "power_buck_lm2596",
+    "train/industrial_weighing_pms63/industrial_weighing_pms63_10_mixed_all_defects.png": {
+      "board_type": "industrial_weighing_pms63",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_OUTPUT_FILTER": {
+        "U1_MCU_DIP28": {
           "type": "MISSING"
         },
-        "C3_FEEDBACK_CAP": {
+        "U2_OPAMP_DIP8": {
           "type": "TILTED",
-          "angle": 6.5
+          "angle": 8.5
         },
-        "D1_SCHOTTKY": {
+        "Q8_HEATSINK": {
           "type": "MISALIGNED",
           "shift": [
-            -8,
-            6
+            7.0,
+            4.0
           ]
         }
       },
@@ -1342,8 +1277,8 @@
         "misaligned": 1
       }
     },
-    "test\\power_buck_lm2596\\power_buck_lm2596_test_01_all_ok_max_jitter.png": {
-      "board_type": "power_buck_lm2596",
+    "test/industrial_weighing_pms63/industrial_weighing_pms63_test_01_all_ok_max_jitter.png": {
+      "board_type": "industrial_weighing_pms63",
       "split": "test",
       "expected_board_status": "OK",
       "defects": {},
@@ -1353,12 +1288,12 @@
         "misaligned": 0
       }
     },
-    "test\\power_buck_lm2596\\power_buck_lm2596_test_02_missing_critical_ic.png": {
-      "board_type": "power_buck_lm2596",
+    "test/industrial_weighing_pms63/industrial_weighing_pms63_test_02_missing_critical_ic.png": {
+      "board_type": "industrial_weighing_pms63",
       "split": "test",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C1_INPUT_FILTER": {
+        "U1_MCU_DIP28": {
           "type": "MISSING"
         }
       },
@@ -1368,12 +1303,12 @@
         "misaligned": 0
       }
     },
-    "test\\power_buck_lm2596\\power_buck_lm2596_test_03_tilted_severe_skew.png": {
-      "board_type": "power_buck_lm2596",
+    "test/industrial_weighing_pms63/industrial_weighing_pms63_test_03_tilted_severe_skew.png": {
+      "board_type": "industrial_weighing_pms63",
       "split": "test",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_OUTPUT_FILTER": {
+        "U2_OPAMP_DIP8": {
           "type": "TILTED",
           "angle": 10.5
         }
@@ -1384,16 +1319,16 @@
         "misaligned": 0
       }
     },
-    "test\\power_buck_lm2596\\power_buck_lm2596_test_04_misaligned_shifted_part.png": {
-      "board_type": "power_buck_lm2596",
+    "test/industrial_weighing_pms63/industrial_weighing_pms63_test_04_misaligned_shifted_part.png": {
+      "board_type": "industrial_weighing_pms63",
       "split": "test",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C3_FEEDBACK_CAP": {
+        "Q8_HEATSINK": {
           "type": "MISALIGNED",
           "shift": [
-            12,
-            -4
+            7.5,
+            3.5
           ]
         }
       },
@@ -1403,8 +1338,8 @@
         "misaligned": 1
       }
     },
-    "train\\sensor_mpu6050\\sensor_mpu6050_01_nominal_ok.png": {
-      "board_type": "sensor_mpu6050",
+    "train/analog_instrumentation/analog_instrumentation_01_nominal_ok.png": {
+      "board_type": "analog_instrumentation",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -1414,8 +1349,8 @@
         "misaligned": 0
       }
     },
-    "train\\sensor_mpu6050\\sensor_mpu6050_02_nominal_bright.png": {
-      "board_type": "sensor_mpu6050",
+    "train/analog_instrumentation/analog_instrumentation_02_nominal_bright.png": {
+      "board_type": "analog_instrumentation",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -1425,8 +1360,8 @@
         "misaligned": 0
       }
     },
-    "train\\sensor_mpu6050\\sensor_mpu6050_03_nominal_dim.png": {
-      "board_type": "sensor_mpu6050",
+    "train/analog_instrumentation/analog_instrumentation_03_nominal_dim.png": {
+      "board_type": "analog_instrumentation",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -1436,8 +1371,8 @@
         "misaligned": 0
       }
     },
-    "train\\sensor_mpu6050\\sensor_mpu6050_04_nominal_glare.png": {
-      "board_type": "sensor_mpu6050",
+    "train/analog_instrumentation/analog_instrumentation_04_nominal_glare.png": {
+      "board_type": "analog_instrumentation",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -1447,12 +1382,12 @@
         "misaligned": 0
       }
     },
-    "train\\sensor_mpu6050\\sensor_mpu6050_05_missing_single.png": {
-      "board_type": "sensor_mpu6050",
+    "train/analog_instrumentation/analog_instrumentation_05_missing_single.png": {
+      "board_type": "analog_instrumentation",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_VLOGIC": {
+        "Q1_TO220": {
           "type": "MISSING"
         }
       },
@@ -1462,15 +1397,15 @@
         "misaligned": 0
       }
     },
-    "train\\sensor_mpu6050\\sensor_mpu6050_06_missing_double.png": {
-      "board_type": "sensor_mpu6050",
+    "train/analog_instrumentation/analog_instrumentation_06_missing_double.png": {
+      "board_type": "analog_instrumentation",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C1_CHARGE_PUMP": {
+        "U1_DIP14": {
           "type": "MISSING"
         },
-        "D1_POWER_LED": {
+        "U2_DIP8": {
           "type": "MISSING"
         }
       },
@@ -1480,12 +1415,12 @@
         "misaligned": 0
       }
     },
-    "train\\sensor_mpu6050\\sensor_mpu6050_07_tilted_part.png": {
-      "board_type": "sensor_mpu6050",
+    "train/analog_instrumentation/analog_instrumentation_07_tilted_part.png": {
+      "board_type": "analog_instrumentation",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_VLOGIC": {
+        "U1_DIP14": {
           "type": "TILTED",
           "angle": 7.5
         }
@@ -1496,16 +1431,16 @@
         "misaligned": 0
       }
     },
-    "train\\sensor_mpu6050\\sensor_mpu6050_08_shifted_part.png": {
-      "board_type": "sensor_mpu6050",
+    "train/analog_instrumentation/analog_instrumentation_08_shifted_part.png": {
+      "board_type": "analog_instrumentation",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "D1_POWER_LED": {
+        "U2_DIP8": {
           "type": "MISALIGNED",
           "shift": [
-            9,
-            3
+            8.0,
+            0.0
           ]
         }
       },
@@ -1515,17 +1450,17 @@
         "misaligned": 1
       }
     },
-    "train\\sensor_mpu6050\\sensor_mpu6050_09_mixed_missing_tilted.png": {
-      "board_type": "sensor_mpu6050",
+    "train/analog_instrumentation/analog_instrumentation_09_mixed_missing_tilted.png": {
+      "board_type": "analog_instrumentation",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C1_CHARGE_PUMP": {
+        "Q1_TO220": {
+          "type": "MISSING"
+        },
+        "U1_DIP14": {
           "type": "TILTED",
           "angle": -8.0
-        },
-        "U2_KB33_LDO": {
-          "type": "MISSING"
         }
       },
       "defect_counts": {
@@ -1534,23 +1469,23 @@
         "misaligned": 0
       }
     },
-    "train\\sensor_mpu6050\\sensor_mpu6050_10_mixed_all_defects.png": {
-      "board_type": "sensor_mpu6050",
+    "train/analog_instrumentation/analog_instrumentation_10_mixed_all_defects.png": {
+      "board_type": "analog_instrumentation",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_VLOGIC": {
+        "U1_DIP14": {
           "type": "MISSING"
         },
-        "D1_POWER_LED": {
+        "U2_DIP8": {
           "type": "TILTED",
-          "angle": 6.5
+          "angle": 8.5
         },
-        "R1_I2C_SCL": {
+        "VR1_TRIMPOT": {
           "type": "MISALIGNED",
           "shift": [
-            -8,
-            6
+            7.0,
+            4.0
           ]
         }
       },
@@ -1560,8 +1495,8 @@
         "misaligned": 1
       }
     },
-    "test\\sensor_mpu6050\\sensor_mpu6050_test_01_all_ok_max_jitter.png": {
-      "board_type": "sensor_mpu6050",
+    "test/analog_instrumentation/analog_instrumentation_test_01_all_ok_max_jitter.png": {
+      "board_type": "analog_instrumentation",
       "split": "test",
       "expected_board_status": "OK",
       "defects": {},
@@ -1571,12 +1506,12 @@
         "misaligned": 0
       }
     },
-    "test\\sensor_mpu6050\\sensor_mpu6050_test_02_missing_critical_ic.png": {
-      "board_type": "sensor_mpu6050",
+    "test/analog_instrumentation/analog_instrumentation_test_02_missing_critical_ic.png": {
+      "board_type": "analog_instrumentation",
       "split": "test",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C1_CHARGE_PUMP": {
+        "U1_DIP14": {
           "type": "MISSING"
         }
       },
@@ -1586,12 +1521,12 @@
         "misaligned": 0
       }
     },
-    "test\\sensor_mpu6050\\sensor_mpu6050_test_03_tilted_severe_skew.png": {
-      "board_type": "sensor_mpu6050",
+    "test/analog_instrumentation/analog_instrumentation_test_03_tilted_severe_skew.png": {
+      "board_type": "analog_instrumentation",
       "split": "test",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_VLOGIC": {
+        "U2_DIP8": {
           "type": "TILTED",
           "angle": 10.5
         }
@@ -1602,16 +1537,16 @@
         "misaligned": 0
       }
     },
-    "test\\sensor_mpu6050\\sensor_mpu6050_test_04_misaligned_shifted_part.png": {
-      "board_type": "sensor_mpu6050",
+    "test/analog_instrumentation/analog_instrumentation_test_04_misaligned_shifted_part.png": {
+      "board_type": "analog_instrumentation",
       "split": "test",
       "expected_board_status": "DEFECT",
       "defects": {
-        "D1_POWER_LED": {
+        "VR1_TRIMPOT": {
           "type": "MISALIGNED",
           "shift": [
-            12,
-            -4
+            7.5,
+            3.5
           ]
         }
       },
@@ -1621,8 +1556,8 @@
         "misaligned": 1
       }
     },
-    "train\\industrial_sensor_controller\\industrial_sensor_controller_01_nominal_ok.png": {
-      "board_type": "industrial_sensor_controller",
+    "train/inverter_power_board/inverter_power_board_01_nominal_ok.png": {
+      "board_type": "inverter_power_board",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -1632,8 +1567,8 @@
         "misaligned": 0
       }
     },
-    "train\\industrial_sensor_controller\\industrial_sensor_controller_02_nominal_bright.png": {
-      "board_type": "industrial_sensor_controller",
+    "train/inverter_power_board/inverter_power_board_02_nominal_bright.png": {
+      "board_type": "inverter_power_board",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -1643,8 +1578,8 @@
         "misaligned": 0
       }
     },
-    "train\\industrial_sensor_controller\\industrial_sensor_controller_03_nominal_dim.png": {
-      "board_type": "industrial_sensor_controller",
+    "train/inverter_power_board/inverter_power_board_03_nominal_dim.png": {
+      "board_type": "inverter_power_board",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -1654,8 +1589,8 @@
         "misaligned": 0
       }
     },
-    "train\\industrial_sensor_controller\\industrial_sensor_controller_04_nominal_glare.png": {
-      "board_type": "industrial_sensor_controller",
+    "train/inverter_power_board/inverter_power_board_04_nominal_glare.png": {
+      "board_type": "inverter_power_board",
       "split": "train",
       "expected_board_status": "OK",
       "defects": {},
@@ -1665,12 +1600,12 @@
         "misaligned": 0
       }
     },
-    "train\\industrial_sensor_controller\\industrial_sensor_controller_05_missing_single.png": {
-      "board_type": "industrial_sensor_controller",
+    "train/inverter_power_board/inverter_power_board_05_missing_single.png": {
+      "board_type": "inverter_power_board",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_DECOUP": {
+        "U1_MCU": {
           "type": "MISSING"
         }
       },
@@ -1680,15 +1615,15 @@
         "misaligned": 0
       }
     },
-    "train\\industrial_sensor_controller\\industrial_sensor_controller_06_missing_double.png": {
-      "board_type": "industrial_sensor_controller",
+    "train/inverter_power_board/inverter_power_board_06_missing_double.png": {
+      "board_type": "inverter_power_board",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C1_DECOUP": {
+        "C1_BULK_VENT": {
           "type": "MISSING"
         },
-        "C3_DECOUP": {
+        "C2_BULK_VENT": {
           "type": "MISSING"
         }
       },
@@ -1698,12 +1633,12 @@
         "misaligned": 0
       }
     },
-    "train\\industrial_sensor_controller\\industrial_sensor_controller_07_tilted_part.png": {
-      "board_type": "industrial_sensor_controller",
+    "train/inverter_power_board/inverter_power_board_07_tilted_part.png": {
+      "board_type": "inverter_power_board",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_DECOUP": {
+        "C1_BULK_VENT": {
           "type": "TILTED",
           "angle": 7.5
         }
@@ -1714,16 +1649,16 @@
         "misaligned": 0
       }
     },
-    "train\\industrial_sensor_controller\\industrial_sensor_controller_08_shifted_part.png": {
-      "board_type": "industrial_sensor_controller",
+    "train/inverter_power_board/inverter_power_board_08_shifted_part.png": {
+      "board_type": "inverter_power_board",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C3_DECOUP": {
+        "C2_BULK_VENT": {
           "type": "MISALIGNED",
           "shift": [
-            9,
-            3
+            8.0,
+            0.0
           ]
         }
       },
@@ -1733,17 +1668,17 @@
         "misaligned": 1
       }
     },
-    "train\\industrial_sensor_controller\\industrial_sensor_controller_09_mixed_missing_tilted.png": {
-      "board_type": "industrial_sensor_controller",
+    "train/inverter_power_board/inverter_power_board_09_mixed_missing_tilted.png": {
+      "board_type": "inverter_power_board",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C1_DECOUP": {
+        "U1_MCU": {
+          "type": "MISSING"
+        },
+        "C1_BULK_VENT": {
           "type": "TILTED",
           "angle": -8.0
-        },
-        "Y1_XTAL": {
-          "type": "MISSING"
         }
       },
       "defect_counts": {
@@ -1752,23 +1687,23 @@
         "misaligned": 0
       }
     },
-    "train\\industrial_sensor_controller\\industrial_sensor_controller_10_mixed_all_defects.png": {
-      "board_type": "industrial_sensor_controller",
+    "train/inverter_power_board/inverter_power_board_10_mixed_all_defects.png": {
+      "board_type": "inverter_power_board",
       "split": "train",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_DECOUP": {
+        "C1_BULK_VENT": {
           "type": "MISSING"
         },
-        "C3_DECOUP": {
+        "C2_BULK_VENT": {
           "type": "TILTED",
-          "angle": 6.5
+          "angle": 8.5
         },
-        "C4_BULK": {
+        "C3_BULK_VENT": {
           "type": "MISALIGNED",
           "shift": [
-            -8,
-            6
+            7.0,
+            4.0
           ]
         }
       },
@@ -1778,8 +1713,8 @@
         "misaligned": 1
       }
     },
-    "test\\industrial_sensor_controller\\industrial_sensor_controller_test_01_all_ok_max_jitter.png": {
-      "board_type": "industrial_sensor_controller",
+    "test/inverter_power_board/inverter_power_board_test_01_all_ok_max_jitter.png": {
+      "board_type": "inverter_power_board",
       "split": "test",
       "expected_board_status": "OK",
       "defects": {},
@@ -1789,12 +1724,12 @@
         "misaligned": 0
       }
     },
-    "test\\industrial_sensor_controller\\industrial_sensor_controller_test_02_missing_critical_ic.png": {
-      "board_type": "industrial_sensor_controller",
+    "test/inverter_power_board/inverter_power_board_test_02_missing_critical_ic.png": {
+      "board_type": "inverter_power_board",
       "split": "test",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C1_DECOUP": {
+        "C1_BULK_VENT": {
           "type": "MISSING"
         }
       },
@@ -1804,12 +1739,12 @@
         "misaligned": 0
       }
     },
-    "test\\industrial_sensor_controller\\industrial_sensor_controller_test_03_tilted_severe_skew.png": {
-      "board_type": "industrial_sensor_controller",
+    "test/inverter_power_board/inverter_power_board_test_03_tilted_severe_skew.png": {
+      "board_type": "inverter_power_board",
       "split": "test",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C2_DECOUP": {
+        "C2_BULK_VENT": {
           "type": "TILTED",
           "angle": 10.5
         }
@@ -1820,16 +1755,16 @@
         "misaligned": 0
       }
     },
-    "test\\industrial_sensor_controller\\industrial_sensor_controller_test_04_misaligned_shifted_part.png": {
-      "board_type": "industrial_sensor_controller",
+    "test/inverter_power_board/inverter_power_board_test_04_misaligned_shifted_part.png": {
+      "board_type": "inverter_power_board",
       "split": "test",
       "expected_board_status": "DEFECT",
       "defects": {
-        "C3_DECOUP": {
+        "C3_BULK_VENT": {
           "type": "MISALIGNED",
           "shift": [
-            12,
-            -4
+            7.5,
+            3.5
           ]
         }
       },
