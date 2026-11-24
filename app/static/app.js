@@ -293,6 +293,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             card.innerHTML = `
                 <div>
+                    <div class="preset-thumb-wrapper">
+                        <img src="${preset.reference_url}" class="preset-thumb" alt="${preset.name}" loading="lazy">
+                    </div>
                     <span class="preset-badge ${tierBadgeClass}">${preset.tier}</span>
                     <div class="preset-title">${preset.name}</div>
                     <div class="preset-meta">${compCount} Pre-Calibrated Parts &bull; ${preset.resolution[0]}×${preset.resolution[1]} px</div>
@@ -1888,6 +1891,24 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         img.src = URL.createObjectURL(fileObj);
     }
+
+    // --- KEYBOARD SHORTCUTS ---
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (el.authModal && !el.authModal.classList.contains('d-none')) {
+                el.authModal.classList.add('d-none');
+            }
+            if (el.cameraModal && !el.cameraModal.classList.contains('d-none')) {
+                closeCameraModal();
+            }
+            if (el.printModal && !el.printModal.classList.contains('d-none')) {
+                el.printModal.classList.add('d-none');
+            }
+            if (el.nameModal && !el.nameModal.classList.contains('d-none')) {
+                el.nameModal.classList.add('d-none');
+            }
+        }
+    });
 
     // --- RESET WORKFLOW ---
     el.btnReset.addEventListener('click', () => {

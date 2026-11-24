@@ -1440,6 +1440,30 @@ body {
     background: rgba(46, 160, 67, 0.08);
 }
 
+.preset-thumb-wrapper {
+    width: 100%;
+    height: 115px;
+    background: #0d1117;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-subtle);
+}
+
+.preset-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.25s ease;
+}
+
+.preset-card:hover .preset-thumb {
+    transform: scale(1.06);
+}
+
 .preset-badge {
     font-size: 0.7rem;
     padding: 0.15rem 0.4rem;
