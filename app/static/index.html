@@ -19,6 +19,12 @@
             </div>
             <div class="header-actions">
                 <span class="offline-tag">100% Offline Mode</span>
+                <div class="operator-profile-pill" id="operator-profile-pill" title="Click to switch operator or role">
+                    <span class="operator-icon">👤</span>
+                    <span class="operator-name-text" id="header-operator-name">Sarah Jenkins</span>
+                    <span class="operator-badge-tag" id="header-operator-badge">OP-8402</span>
+                    <button type="button" class="btn-xs-link" id="btn-open-auth-modal" title="Switch Operator or Role">Switch</button>
+                </div>
                 <button type="button" class="btn btn-outline" id="btn-open-camera" title="Open Live Camera"><span class="btn-icon-label">📹</span> Live Camera</button>
                 <button type="button" class="btn btn-outline" id="btn-reset" title="Start over with a new board">Start Over / Reset</button>
             </div>
@@ -76,11 +82,25 @@
                     <button type="button" class="btn btn-outline" id="btn-camera-ref"><span class="btn-icon-label">📹</span> Capture with Camera</button>
                 </div>
 
+                <!-- Instant Physical Board Presets -->
+                <div class="presets-section">
+                    <div class="presets-header">
+                        <span class="badge badge-success">⚡ Instant Golden Presets</span>
+                        <h3 style="margin: 0.3rem 0; font-size: 1.05rem;">Select a Pre-Calibrated Physical PCB Board:</h3>
+                    </div>
+                    <p class="presets-sub" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.8rem;">
+                        Instantly load real hardware photographs with pre-calibrated component bounding boxes (from user-provided physical boards):
+                    </p>
+                    <div class="presets-grid" id="presets-container">
+                        <!-- Rendered dynamically from /api/presets -->
+                    </div>
+                </div>
+
                 <details class="sample-details">
-                    <summary class="sample-summary">🧪 Sample data for testing</summary>
+                    <summary class="sample-summary">🧪 Legacy sample reference (synthetic)</summary>
                     <div class="sample-details-content">
-                        <span class="sample-hint">Testing without your own PCB files? Use bundled calibration images:</span>
-                        <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-ref">Load Sample Reference (sample_data/reference.png)</button>
+                        <span class="sample-hint">Testing without physical boards? Use legacy synthetic reference:</span>
+                        <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-ref">Load Synthetic Reference (sample_data/reference.png)</button>
                     </div>
                 </details>
             </div>
@@ -174,11 +194,16 @@
                         <div class="action-row-step3">
                             <button type="button" class="btn btn-sm btn-outline" id="btn-camera-test"><span class="btn-icon-label">📹</span> Capture Test Photo with Camera</button>
                         </div>
-                        <details class="sample-details">
-                            <summary class="sample-summary">🧪 Sample data for testing</summary>
+                        <div class="preset-test-batch-box" id="preset-test-batch-box" style="margin-top: 0.6rem;">
+                            <button type="button" class="btn btn-sm btn-success-outline btn-block" id="btn-load-preset-batch">
+                                📦 Load Physical Test Batch for This Board (Nominal, Missing, Tilted, Shifted)
+                            </button>
+                        </div>
+                        <details class="sample-details" style="margin-top: 0.6rem;">
+                            <summary class="sample-summary">🧪 Legacy sample data (synthetic)</summary>
                             <div class="sample-details-content">
-                                <span class="sample-hint">Load sample batch (1 OK, 2 Defective):</span>
-                                <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-batch">Load Sample Batch</button>
+                                <span class="sample-hint">Load legacy synthetic batch (1 OK, 2 Defective):</span>
+                                <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-batch">Load Legacy Batch</button>
                             </div>
                         </details>
                     </div>
@@ -378,6 +403,58 @@
             <div id="printable-report-content" class="printable-area">
                 <!-- Dynamically generated printable inspection report -->
             </div>
+        </div>
+    </div>
+
+    <!-- Operator Authentication & RBAC Modal -->
+    <div id="auth-modal" class="modal-backdrop d-none">
+        <div class="modal-card modal-card-auth">
+            <div class="modal-camera-header">
+                <div class="camera-title-group">
+                    <span class="report-icon">🔐</span>
+                    <h3>Operator Sign-In & Role Authorization</h3>
+                </div>
+                <button type="button" class="btn-icon" id="btn-close-auth">&times;</button>
+            </div>
+            <p class="modal-sub">Log in with an operator badge ID to ensure traceability across all inspection runs, overrides, and ISO quality sign-offs.</p>
+
+            <div class="auth-profiles-section" style="margin-bottom: 1.2rem;">
+                <label class="control-label-sm" style="font-weight:600; color:var(--text-primary); margin-bottom:0.5rem; display:block;">Select Fast 1-Click Demo Profile:</label>
+                <div class="auth-profiles-grid" id="auth-profiles-list" style="display:flex; flex-direction:column; gap:0.5rem;">
+                    <!-- Populated via /api/auth/profiles -->
+                </div>
+            </div>
+
+            <div class="auth-divider" style="text-align:center; position:relative; margin:1rem 0; border-top:1px solid var(--border-color);">
+                <span style="position:relative; top:-0.7rem; background:var(--bg-card); padding:0 0.8rem; font-size:0.75rem; color:var(--text-muted); font-weight:600;">OR ENTER CUSTOM OPERATOR BADGE</span>
+            </div>
+
+            <form id="custom-auth-form" class="custom-auth-form">
+                <div class="form-group-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin-bottom:0.8rem;">
+                    <div class="form-col">
+                        <label for="input-op-badge" class="control-label-sm" style="display:block; margin-bottom:0.3rem;">Badge ID / Operator ID:</label>
+                        <input type="text" id="input-op-badge" class="text-input" placeholder="e.g. OP-9012" required style="width:100%;">
+                    </div>
+                    <div class="form-col">
+                        <label for="input-op-name" class="control-label-sm" style="display:block; margin-bottom:0.3rem;">Full Name:</label>
+                        <input type="text" id="input-op-name" class="text-input" placeholder="e.g. Jane Doe" required style="width:100%;">
+                    </div>
+                </div>
+                <div class="form-group-row" style="margin-bottom:0.8rem;">
+                    <div class="form-col">
+                        <label for="select-op-role" class="control-label-sm" style="display:block; margin-bottom:0.3rem;">Assigned Role:</label>
+                        <select id="select-op-role" class="device-select" style="width:100%;">
+                            <option value="INSPECTOR">Quality Inspector (Visual inspection, review verifications)</option>
+                            <option value="SUPERVISOR">Line Supervisor (Discrepancy overrides, batch sign-off)</option>
+                            <option value="ADMIN">Plant Quality Manager (Full audit logs, tolerance configuration)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-actions" style="margin-top:1rem; display:flex; justify-content:flex-end; gap:0.5rem;">
+                    <button type="button" class="btn btn-outline" id="btn-cancel-auth">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-confirm-auth">Sign In Operator</button>
+                </div>
+            </form>
         </div>
     </div>
 

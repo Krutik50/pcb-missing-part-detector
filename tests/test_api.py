@@ -410,6 +410,60 @@ class TestBackendAPI(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("between 0.0 and 1.0", response.json()["detail"])
 
+    def test_get_physical_presets(self):
+        response = client.get("/api/presets")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("presets", data)
+        presets = data["presets"]
+        self.assertGreaterEqual(len(presets), 5)
+        preset_ids = [p["id"] for p in presets]
+        self.assertIn("arduino_uno_dip", preset_ids)
+        self.assertIn("phenolic_appliance_board", preset_ids)
+        self.assertIn("industrial_weighing_pms63", preset_ids)
+
+        # Check first preset attributes
+        p0 = presets[0]
+        self.assertIn("reference_url", p0)
+        self.assertIn("components", p0)
+        self.assertGreater(len(p0["components"]), 0)
+        self.assertIn("sample_tests", p0)
+
+    def test_get_auth_profiles(self):
+        response = client.get("/api/auth/profiles")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("profiles", data)
+        profiles = data["profiles"]
+        self.assertGreaterEqual(len(profiles), 3)
+        op_ids = [p["operator_id"] for p in profiles]
+        self.assertIn("OP-8402", op_ids)
+        self.assertIn("LEAD-104", op_ids)
+        self.assertIn("QA-DIR-01", op_ids)
+
+    def test_operator_login_flow(self):
+        # 1. Login with existing profile
+        resp = client.post("/api/auth/login", json={"operator_id": "OP-8402"})
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertTrue(data["success"])
+        self.assertEqual(data["user"]["name"], "Sarah Jenkins")
+        self.assertEqual(data["user"]["role"], "INSPECTOR")
+        self.assertIn("session_token", data["user"])
+
+        # 2. Login with custom operator
+        resp_custom = client.post(
+            "/api/auth/login",
+            json={"operator_id": "TECH-505", "name": "Alex Mercer", "role": "SUPERVISOR"}
+        )
+        self.assertEqual(resp_custom.status_code, 200)
+        data_custom = resp_custom.json()
+        self.assertTrue(data_custom["success"])
+        self.assertEqual(data_custom["user"]["operator_id"], "TECH-505")
+        self.assertEqual(data_custom["user"]["name"], "Alex Mercer")
+        self.assertEqual(data_custom["user"]["role"], "SUPERVISOR")
+
+
 
 if __name__ == "__main__":
     unittest.main()

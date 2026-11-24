@@ -16,6 +16,15 @@ document.addEventListener('DOMContentLoaded', () => {
         referenceFingerprint: null,
         lastInspectionData: null,
         signoffs: {}, // filename -> { compName: { final_status, operator_id, note, timestamp } }
+        currentUser: {
+            operator_id: 'OP-8402',
+            name: 'Sarah Jenkins',
+            role: 'INSPECTOR',
+            role_label: 'Senior AOI Inspector',
+            badge: 'OP-8402',
+        },
+        presets: [],
+        activePreset: null,
     };
 
     // --- DOM Elements ---
@@ -23,6 +32,24 @@ document.addEventListener('DOMContentLoaded', () => {
         statusDot: document.getElementById('status-dot'),
         btnReset: document.getElementById('btn-reset'),
         globalAlert: document.getElementById('global-alert'),
+
+        // Operator Profile & Authentication
+        operatorProfilePill: document.getElementById('operator-profile-pill'),
+        headerOperatorName: document.getElementById('header-operator-name'),
+        headerOperatorBadge: document.getElementById('header-operator-badge'),
+        btnOpenAuthModal: document.getElementById('btn-open-auth-modal'),
+        authModal: document.getElementById('auth-modal'),
+        btnCloseAuth: document.getElementById('btn-close-auth'),
+        btnCancelAuth: document.getElementById('btn-cancel-auth'),
+        authProfilesList: document.getElementById('auth-profiles-list'),
+        customAuthForm: document.getElementById('custom-auth-form'),
+        inputOpBadge: document.getElementById('input-op-badge'),
+        inputOpName: document.getElementById('input-op-name'),
+        selectOpRole: document.getElementById('select-op-role'),
+
+        // Presets
+        presetsContainer: document.getElementById('presets-container'),
+        btnLoadPresetBatch: document.getElementById('btn-load-preset-batch'),
 
         // Step Navigation
         stepNav1: document.getElementById('step-nav-1'),
@@ -131,6 +158,212 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     checkHealth();
+
+    // --- OPERATOR AUTHENTICATION & RBAC ---
+    function updateOperatorHeader(user) {
+        if (!user) return;
+        state.currentUser = user;
+        if (el.headerOperatorName) el.headerOperatorName.textContent = user.name;
+        if (el.headerOperatorBadge) el.headerOperatorBadge.textContent = `${user.badge} (${user.role})`;
+    }
+
+    async function loadAuthProfiles() {
+        try {
+            const res = await fetch('/api/auth/profiles');
+            if (!res.ok) return;
+            const data = await res.json();
+            renderAuthProfiles(data.profiles || []);
+        } catch (e) {
+            console.warn('Failed to load operator profiles:', e);
+        }
+    }
+
+    function renderAuthProfiles(profiles) {
+        if (!el.authProfilesList) return;
+        el.authProfilesList.innerHTML = '';
+        profiles.forEach(p => {
+            const item = document.createElement('div');
+            item.className = 'auth-profile-card';
+            const roleColor = p.role === 'ADMIN' ? 'preset-badge-amber' : (p.role === 'SUPERVISOR' ? 'preset-badge-blue' : 'preset-badge-green');
+            item.innerHTML = `
+                <div class="auth-profile-left">
+                    <span style="font-size:1.2rem;">👤</span>
+                    <div>
+                        <div class="auth-profile-name">${p.name}</div>
+                        <div class="auth-profile-role">${p.role_label || p.role}</div>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <span class="preset-badge ${roleColor}">${p.badge}</span>
+                    <span style="font-size:0.8rem; color:var(--color-blue); font-weight:600;">Sign In →</span>
+                </div>
+            `;
+            item.addEventListener('click', () => {
+                handleLogin({ operator_id: p.operator_id, name: p.name, role: p.role });
+            });
+            el.authProfilesList.appendChild(item);
+        });
+    }
+
+    async function handleLogin(credentials) {
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(credentials)
+            });
+            if (!res.ok) throw new Error('Authentication failed');
+            const data = await res.json();
+            if (data.success && data.user) {
+                updateOperatorHeader(data.user);
+                if (el.authModal) el.authModal.classList.add('d-none');
+                showAlert(`Operator verified: ${data.user.name} (${data.user.role_label || data.user.role}) [${data.user.badge}]`, 'success');
+            }
+        } catch (err) {
+            showAlert(`Login error: ${err.message}`, 'danger');
+        }
+    }
+
+    if (el.btnOpenAuthModal) {
+        el.btnOpenAuthModal.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (el.authModal) el.authModal.classList.remove('d-none');
+        });
+    }
+    if (el.operatorProfilePill) {
+        el.operatorProfilePill.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'BUTTON' && el.authModal) {
+                el.authModal.classList.remove('d-none');
+            }
+        });
+    }
+    if (el.btnCloseAuth) {
+        el.btnCloseAuth.addEventListener('click', () => {
+            if (el.authModal) el.authModal.classList.add('d-none');
+        });
+    }
+    if (el.btnCancelAuth) {
+        el.btnCancelAuth.addEventListener('click', () => {
+            if (el.authModal) el.authModal.classList.add('d-none');
+        });
+    }
+    if (el.customAuthForm) {
+        el.customAuthForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const badge = el.inputOpBadge.value.trim();
+            const name = el.inputOpName.value.trim();
+            const role = el.selectOpRole.value;
+            if (!badge || !name) return;
+            handleLogin({ operator_id: badge, name: name, role: role });
+        });
+    }
+
+    loadAuthProfiles();
+
+    // --- PHYSICAL BOARD PRESETS ---
+    async function loadPhysicalPresets() {
+        try {
+            const res = await fetch('/api/presets');
+            if (!res.ok) return;
+            const data = await res.json();
+            state.presets = data.presets || [];
+            renderPresets(state.presets);
+        } catch (e) {
+            console.warn('Failed to load physical presets:', e);
+        }
+    }
+
+    function renderPresets(presets) {
+        if (!el.presetsContainer) return;
+        el.presetsContainer.innerHTML = '';
+        if (!presets || presets.length === 0) {
+            el.presetsContainer.innerHTML = '<div style="color:var(--text-muted); font-size:0.85rem;">No physical board presets found on server.</div>';
+            return;
+        }
+
+        presets.forEach(preset => {
+            const card = document.createElement('div');
+            card.className = 'preset-card';
+            if (state.activePreset && state.activePreset.id === preset.id) {
+                card.classList.add('active');
+            }
+
+            const compCount = preset.components ? preset.components.length : 0;
+            const tierBadgeClass = preset.tier === 'High Density' ? 'preset-badge-amber' : (preset.tier === 'Industrial' ? 'preset-badge-blue' : 'preset-badge-green');
+
+            card.innerHTML = `
+                <div>
+                    <span class="preset-badge ${tierBadgeClass}">${preset.tier}</span>
+                    <div class="preset-title">${preset.name}</div>
+                    <div class="preset-meta">${compCount} Pre-Calibrated Parts &bull; ${preset.resolution[0]}×${preset.resolution[1]} px</div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline preset-btn-load" data-preset-id="${preset.id}">
+                    Load Golden Preset →
+                </button>
+            `;
+
+            card.addEventListener('click', () => {
+                applyPreset(preset);
+            });
+
+            el.presetsContainer.appendChild(card);
+        });
+    }
+
+    async function applyPreset(preset) {
+        try {
+            showAlert(`Loading golden physical preset "${preset.name}"...`, 'info');
+            const refRes = await fetch(preset.reference_url);
+            if (!refRes.ok) throw new Error(`Failed to load preset reference image (${refRes.statusText})`);
+            const blob = await refRes.blob();
+            const fname = `${preset.id}_reference.png`;
+            const file = new File([blob], fname, { type: 'image/png' });
+
+            await handleReferenceFile(file);
+
+            state.components = preset.components.map((c, i) => {
+                const [x, y, w, h] = c.bbox;
+                return {
+                    id: 'preset_comp_' + i,
+                    name: c.name,
+                    bbox: [x, y, w, h],
+                    warning: getBoxWarning(w, h, state.workingDim.width, state.workingDim.height),
+                    normalized: c.normalized_bbox || [
+                        Number((x / state.workingDim.width).toFixed(4)),
+                        Number((y / state.workingDim.height).toFixed(4)),
+                        Number((w / state.workingDim.width).toFixed(4)),
+                        Number((h / state.workingDim.height).toFixed(4)),
+                    ]
+                };
+            });
+
+            state.activePreset = preset;
+
+            if (state.sessionId && state.components.length > 0) {
+                await fetch(`/api/sessions/${state.sessionId}/components`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        components: state.components.map(c => ({
+                            name: c.name,
+                            bbox: c.bbox,
+                            is_normalized: false,
+                        })),
+                    }),
+                });
+            }
+
+            renderAnnotationCanvas();
+            renderComponentsList();
+            renderPresets(state.presets);
+
+            showAlert(`Golden Preset "${preset.name}" loaded with ${state.components.length} pre-calibrated SMT components! Ready to inspect.`, 'success');
+        } catch (err) {
+            showAlert(`Failed to load preset "${preset.name}": ${err.message}`, 'danger');
+        }
+    }
+
+    loadPhysicalPresets();
 
     // --- Helper Utilities ---
     function showAlert(msg, type = 'danger') {
@@ -1004,6 +1237,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // 1-Click Load Physical Test Batch for Active Preset
+    if (el.btnLoadPresetBatch) {
+        el.btnLoadPresetBatch.addEventListener('click', async () => {
+            let preset = state.activePreset;
+            if (!preset && state.presets && state.presets.length > 0) {
+                preset = state.presets[0];
+            }
+            if (!preset || !preset.sample_tests || preset.sample_tests.length === 0) {
+                showAlert('No pre-configured physical test batch found for this board. Please select a golden board preset first.', 'warning');
+                return;
+            }
+
+            try {
+                el.btnLoadPresetBatch.disabled = true;
+                el.btnLoadPresetBatch.textContent = 'Loading physical test boards...';
+
+                const loadedFiles = [];
+                for (const item of preset.sample_tests) {
+                    const res = await fetch(item.url);
+                    if (res.ok) {
+                        const blob = await res.blob();
+                        const file = new File([blob], item.name, { type: 'image/png' });
+                        loadedFiles.push(file);
+                    }
+                }
+                if (loadedFiles.length > 0) {
+                    addTestFiles(loadedFiles);
+                    showAlert(`Loaded ${loadedFiles.length} physical test boards (nominal, missing, tilted, shifted) for "${preset.name}"!`, 'success');
+                } else {
+                    showAlert('Could not load physical test images from server.', 'danger');
+                }
+            } catch (err) {
+                showAlert(`Failed to load physical test batch: ${err.message}`, 'danger');
+            } finally {
+                el.btnLoadPresetBatch.disabled = false;
+                el.btnLoadPresetBatch.textContent = '📦 Load Physical Test Batch for This Board (Nominal, Missing, Tilted, Shifted)';
+            }
+        });
+    }
+
     // Sensitivity radio selection
     document.querySelectorAll('input[name="sensitivity"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
@@ -1209,7 +1482,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                                 <div class="signoff-box">
                                                     <div class="signoff-header-text">⚠ Operator Sign-Off Required for This Part</div>
                                                     <div class="signoff-controls-row">
-                                                        <input type="text" class="signoff-input signoff-input-badge" id="badge-${resIdx}-${c.name}" placeholder="Badge ID" value="OP-1">
+                                                        <input type="text" class="signoff-input signoff-input-badge" id="badge-${resIdx}-${c.name}" placeholder="Badge ID" value="${state.currentUser ? state.currentUser.badge : 'OP-8402'}">
                                                         <input type="text" class="signoff-input signoff-input-note" id="note-${resIdx}-${c.name}" placeholder="Optional note (e.g. glare on lead)">
                                                         <button type="button" class="btn btn-sm btn-success btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="PRESENT">✓ Verify Present</button>
                                                         <button type="button" class="btn btn-sm btn-danger btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="MISSING">✗ Confirm Defect</button>
@@ -1504,6 +1777,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div style="text-align:right;">
                     <p><strong>Inspection Date:</strong> ${new Date().toLocaleString()}</p>
                     <p><strong>Session ID:</strong> ${state.sessionId || 'N/A'}</p>
+                    <p><strong>Certified Lead:</strong> ${state.currentUser ? `${state.currentUser.name} (${state.currentUser.badge} &bull; ${state.currentUser.role})` : 'Sarah Jenkins (OP-8402)'}</p>
                 </div>
             </div>
             <div class="print-meta-grid">
@@ -1530,9 +1804,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tbody>
             </table>
             <div class="print-footer-sign">
-                <div><strong>Lead Inspector:</strong> ______________________</div>
-                <div><strong>Line Supervisor:</strong> ______________________</div>
-                <div><strong>Date:</strong> ______________________</div>
+                <div><strong>Certified Inspector:</strong> ${state.currentUser ? state.currentUser.name : 'Sarah Jenkins'} [ID: ${state.currentUser ? state.currentUser.badge : 'OP-8402'}]</div>
+                <div><strong>Line Supervisor:</strong> ______________________ (QA Verification)</div>
+                <div><strong>Audit Date:</strong> ${new Date().toISOString().slice(0, 10)}</div>
             </div>
         `;
 
@@ -1623,6 +1897,8 @@ document.addEventListener('DOMContentLoaded', () => {
             state.referenceImg = null;
             state.components = [];
             state.testFiles = [];
+            state.activePreset = null;
+            if (state.presets) renderPresets(state.presets);
             el.testFileList.innerHTML = '';
             el.resultsCardsContainer.innerHTML = '';
             el.inspectionResultsArea.classList.add('d-none');

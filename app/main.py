@@ -50,6 +50,11 @@ SAMPLE_DIR = BASE_DIR.parent / "sample_data"
 if SAMPLE_DIR.exists():
     app.mount("/sample_data", StaticFiles(directory=str(SAMPLE_DIR)), name="sample_data")
 
+# Mount data directory for multi-board physical datasets and presets
+DATA_DIR = BASE_DIR.parent / "data"
+if DATA_DIR.exists():
+    app.mount("/data", StaticFiles(directory=str(DATA_DIR)), name="data")
+
 
 class ComponentDef(BaseModel):
     name: str
@@ -506,6 +511,121 @@ async def inspect_test_images(
         "total_images_inspected": len(test_images),
         "results": results,
     }
+
+
+# --- AUTH & OPERATOR RBAC ---
+
+DEFAULT_OPERATORS = [
+    {
+        "operator_id": "OP-8402",
+        "name": "Sarah Jenkins",
+        "role": "INSPECTOR",
+        "role_label": "Senior AOI Inspector",
+        "badge": "OP-8402",
+        "pin": "1234",
+    },
+    {
+        "operator_id": "LEAD-104",
+        "name": "Marcus Vance",
+        "role": "SUPERVISOR",
+        "role_label": "SMT Quality Line Lead",
+        "badge": "LEAD-104",
+        "pin": "5678",
+    },
+    {
+        "operator_id": "QA-DIR-01",
+        "name": "Dr. Elena Rostova",
+        "role": "ADMIN",
+        "role_label": "Plant Quality Manager",
+        "badge": "QA-DIR-01",
+        "pin": "9999",
+    },
+]
+
+class LoginRequest(BaseModel):
+    operator_id: str
+    name: Optional[str] = None
+    role: Optional[str] = "INSPECTOR"
+    pin: Optional[str] = None
+
+
+@app.get("/api/auth/profiles")
+async def get_auth_profiles():
+    """Returns preset operator profiles for fast demo sign-in."""
+    return {"profiles": DEFAULT_OPERATORS}
+
+
+@app.post("/api/auth/login")
+async def operator_login(req: LoginRequest):
+    """Logs in an operator and returns authenticated session token."""
+    matching = next((u for u in DEFAULT_OPERATORS if u["operator_id"].lower() == req.operator_id.lower()), None)
+    if matching:
+        user_data = dict(matching)
+        if req.name:
+            user_data["name"] = req.name
+    else:
+        user_data = {
+            "operator_id": req.operator_id,
+            "name": req.name or f"Operator {req.operator_id}",
+            "role": req.role or "INSPECTOR",
+            "role_label": "Quality Inspector" if req.role == "INSPECTOR" else (req.role or "Operator"),
+            "badge": req.operator_id,
+        }
+    token = f"tok_{uuid.uuid4().hex[:12]}"
+    user_data["session_token"] = token
+    return {"success": True, "user": user_data}
+
+
+@app.get("/api/presets")
+async def get_physical_presets():
+    """
+    Returns all 5 real physical board presets from ground_truth_multiboard.json,
+    complete with reference image URLs, component boxes, and sample test images.
+    """
+    gt_file = BASE_DIR.parent / "data" / "multiboard" / "ground_truth_multiboard.json"
+    if not gt_file.exists():
+        return {"presets": []}
+
+    try:
+        with open(gt_file, "r", encoding="utf-8") as f:
+            gt_data = json.load(f)
+        boards = gt_data.get("boards", {})
+        images = gt_data.get("images", {})
+
+        presets = []
+        for b_id, b_meta in boards.items():
+            comps = []
+            for cname, cinfo in b_meta.get("components", {}).items():
+                comps.append({
+                    "name": cname,
+                    "bbox": cinfo["bbox"],
+                    "normalized_bbox": cinfo.get("normalized_bbox"),
+                    "type": cinfo.get("type", "GENERIC")
+                })
+
+            sample_tests = []
+            for img_rel, img_info in images.items():
+                if img_info.get("board_type") == b_id and img_info.get("split") == "test":
+                    fname = Path(img_rel).name
+                    sample_tests.append({
+                        "name": fname,
+                        "url": f"/data/multiboard/{img_rel}",
+                        "expected_status": img_info.get("expected_board_status", "OK"),
+                        "defects": img_info.get("defects", {})
+                    })
+
+            presets.append({
+                "id": b_id,
+                "name": b_meta.get("name", b_id),
+                "tier": b_meta.get("tier", "Standard"),
+                "resolution": b_meta.get("resolution", [1024, 1024]),
+                "reference_url": f"/data/multiboard/{b_meta['reference_image']}",
+                "components": comps,
+                "sample_tests": sample_tests
+            })
+        return {"presets": presets}
+    except Exception as e:
+        return {"presets": [], "error": str(e)}
 
 
 # --- RECIPE MANAGEMENT & OPERATOR SIGNOFF ENDPOINTS ---

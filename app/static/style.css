@@ -1341,3 +1341,188 @@ body {
         display: none !important;
     }
 }
+
+/* ==========================================================================
+   Operator Profile Pill & Authentication Styling
+   ========================================================================== */
+.operator-profile-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-card-subtle);
+    border: 1px solid var(--border-color);
+    padding: 0.25rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+}
+
+.operator-icon {
+    font-size: 0.95rem;
+}
+
+.operator-name-text {
+    font-weight: 600;
+}
+
+.operator-badge-tag {
+    background: var(--color-blue-bg);
+    color: var(--color-blue);
+    border: 1px solid rgba(56, 139, 253, 0.3);
+    padding: 0.1rem 0.4rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+}
+
+.btn-xs-link {
+    background: none;
+    border: none;
+    color: var(--color-blue);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0 0.2rem;
+    text-decoration: underline;
+}
+
+.btn-xs-link:hover {
+    color: #79c0ff;
+}
+
+.btn-success-outline {
+    background: transparent;
+    border: 1px solid var(--color-green-border);
+    color: var(--color-green-light);
+}
+
+.btn-success-outline:hover:not(:disabled) {
+    background: var(--color-green-bg);
+    border-color: var(--color-green-light);
+}
+
+/* ==========================================================================
+   Physical Board Presets Grid
+   ========================================================================== */
+.presets-section {
+    background: var(--bg-card-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.2rem;
+    margin: 1.2rem 0;
+}
+
+.presets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 0.8rem;
+}
+
+.preset-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.preset-card:hover {
+    border-color: var(--color-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.preset-card.active {
+    border-color: var(--color-green);
+    background: rgba(46, 160, 67, 0.08);
+}
+
+.preset-badge {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    align-self: flex-start;
+}
+
+.preset-badge-blue {
+    background: var(--color-blue-bg);
+    color: var(--color-blue);
+    border: 1px solid rgba(56, 139, 253, 0.3);
+}
+
+.preset-badge-amber {
+    background: var(--color-amber-bg);
+    color: var(--color-amber-light);
+    border: 1px solid var(--color-amber-border);
+}
+
+.preset-badge-green {
+    background: var(--color-green-bg);
+    color: var(--color-green-light);
+    border: 1px solid var(--color-green-border);
+}
+
+.preset-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0.2rem 0 0.4rem 0;
+    line-height: 1.25;
+}
+
+.preset-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.preset-btn-load {
+    margin-top: 0.6rem;
+    width: 100%;
+}
+
+/* ==========================================================================
+   Operator Auth Modal
+   ========================================================================== */
+.modal-card-auth {
+    max-width: 520px;
+}
+
+.auth-profile-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-card-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.65rem 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.auth-profile-card:hover {
+    border-color: var(--color-blue);
+    background: rgba(56, 139, 253, 0.05);
+}
+
+.auth-profile-left {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.auth-profile-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.auth-profile-role {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
