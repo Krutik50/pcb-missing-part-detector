@@ -1,7 +1,7 @@
 {
   "endpoint": "POST /api/inspect",
   "request": {
-    "session_id": "bf57aaad38784c7e92fc45bca34b8418",
+    "session_id": "0d1d953469474c32babfee028a962112",
     "sensitivity": "balanced",
     "test_images_count": 4,
     "filenames": [

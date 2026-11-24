@@ -16,7 +16,7 @@ from typing import Dict, Any, List, Optional
 
 import cv2
 import numpy as np
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, status
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, status, Query, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
@@ -26,6 +26,7 @@ from app.core.image_loader import load_image_with_exif, normalize_to_reference
 from app.core.aligner import align_test_to_reference
 from app.core.detector import inspect_component
 from app.core.decision import classify_component, aggregate_board_status
+from app.core.dl_verifier import get_dl_verifier
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -92,269 +93,6 @@ async def get_sample_components():
     return {"components": {}}
 
 
-class RecipeComponent(BaseModel):
-    name: str
-    normalized_bbox: Optional[List[float]] = None
-    pixel_bbox: Optional[List[float]] = None
-
-
-class RecipeImageSize(BaseModel):
-    width: int
-    height: int
-    aspect_ratio: Optional[float] = None
-
-
-class RecipePayload(BaseModel):
-    recipe_version: Optional[str] = "1.0"
-    board_name: str
-    image_size: Optional[RecipeImageSize] = None
-    image_fingerprint: Optional[str] = None
-    sensitivity: Optional[str] = "balanced"
-    components: List[RecipeComponent]
-
-
-@app.get("/api/sample-recipe")
-async def get_sample_recipe():
-    """Generates a downloadable sample recipe JSON from ground truth definitions."""
-    gt_file = BASE_DIR.parent / "sample_data" / "ground_truth.json"
-    if not gt_file.exists():
-        raise HTTPException(status_code=404, detail="Ground truth sample data not found.")
-    with open(gt_file, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    raw_comps = data.get("components", {})
-    components_list = []
-    for cid, info in raw_comps.items():
-        components_list.append({
-            "name": cid,
-            "normalized_bbox": info.get("normalized_bbox"),
-            "pixel_bbox": info.get("pixel_bbox"),
-        })
-    return {
-        "recipe_version": "1.0",
-        "board_name": "PCB_SAMPLE_MAIN_BOARD",
-        "image_size": {"width": 1920, "height": 1080, "aspect_ratio": round(1920 / 1080, 4)},
-        "image_fingerprint": "a1b2c3d4e5f60718",
-        "sensitivity": "balanced",
-        "components": components_list,
-    }
-
-
-@app.post("/api/recipes/validate")
-async def validate_recipe(
-    recipe: RecipePayload,
-    expected_width: Optional[int] = None,
-    expected_height: Optional[int] = None,
-    expected_fingerprint: Optional[str] = None,
-):
-    """
-    Validates a board recipe JSON schema, verifies components,
-    and checks if aspect ratio and reference fingerprint match.
-    """
-    if not recipe.board_name or not recipe.board_name.strip():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Recipe must specify a non-empty board_name.",
-        )
-    if not recipe.components or len(recipe.components) == 0:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Recipe contains zero components. At least one component is required.",
-        )
-
-    # Check sensitivity profile
-    if recipe.sensitivity not in ("strict", "balanced", "lenient"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid sensitivity '{recipe.sensitivity}'. Must be one of: strict, balanced, lenient.",
-        )
-
-    # Validate aspect ratio match instead of exact pixel dimensions
-    aspect_ratio_mismatch = False
-    aspect_ratio_warning = None
-    if recipe.image_size and expected_width and expected_height:
-        expected_ar = expected_width / float(expected_height)
-        recipe_ar = recipe.image_size.aspect_ratio or (recipe.image_size.width / float(recipe.image_size.height))
-        if abs(expected_ar - recipe_ar) > 0.02:
-            aspect_ratio_mismatch = True
-            aspect_ratio_warning = (
-                f"Aspect ratio warning: Recipe aspect ratio is {recipe_ar:.3f} "
-                f"({recipe.image_size.width}x{recipe.image_size.height}), but current reference board is "
-                f"{expected_ar:.3f} ({expected_width}x{expected_height}). Normalized boxes may stretch."
-            )
-
-    # Validate image fingerprint if provided
-    fingerprint_mismatch = False
-    fingerprint_warning = None
-    if recipe.image_fingerprint and expected_fingerprint:
-        if recipe.image_fingerprint != expected_fingerprint:
-            fingerprint_mismatch = True
-            fingerprint_warning = (
-                "Reference board mismatch warning: Recipe fingerprint does not match the active reference image. "
-                "Boxes may belong to a different PCB model."
-            )
-
-    # Validate individual components
-    validated_components = []
-    for comp in recipe.components:
-        if not comp.name or not comp.name.strip():
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Component missing name in recipe.",
-            )
-        if not comp.normalized_bbox and not comp.pixel_bbox:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Component '{comp.name}' must have either normalized_bbox or pixel_bbox.",
-            )
-        if comp.normalized_bbox:
-            if len(comp.normalized_bbox) != 4:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Component '{comp.name}' normalized_bbox must have 4 elements [x, y, w, h].",
-                )
-            for val in comp.normalized_bbox:
-                if val < 0.0 or val > 1.0:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=f"Component '{comp.name}' normalized_bbox values must be between 0.0 and 1.0.",
-                    )
-        validated_components.append(comp.model_dump() if hasattr(comp, "model_dump") else comp.dict())
-
-    return {
-        "valid": True,
-        "board_name": recipe.board_name,
-        "sensitivity": recipe.sensitivity,
-        "components_count": len(validated_components),
-        "aspect_ratio_mismatch": aspect_ratio_mismatch,
-        "aspect_ratio_warning": aspect_ratio_warning,
-        "dimension_mismatch": aspect_ratio_mismatch,
-        "dimension_warning": aspect_ratio_warning,
-        "fingerprint_mismatch": fingerprint_mismatch,
-        "fingerprint_warning": fingerprint_warning,
-        "components": validated_components,
-    }
-
-
-class SignoffRequest(BaseModel):
-    filename: str
-    component_name: str
-    final_status: str  # "PRESENT" or "MISSING"
-    operator_id: str
-    note: Optional[str] = ""
-
-
-@app.post("/api/sessions/{session_id}/signoff")
-async def record_signoff(session_id: str, signoff: SignoffRequest):
-    """Records human operator review verdict for an uncertain component."""
-    if session_id not in SESSIONS:
-        raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found.")
-    session = SESSIONS[session_id]
-    if "signoffs" not in session:
-        session["signoffs"] = {}
-
-    board_key = signoff.filename
-    if board_key not in session["signoffs"]:
-        session["signoffs"][board_key] = {}
-
-    session["signoffs"][board_key][signoff.component_name] = {
-        "final_status": signoff.final_status,
-        "operator_id": signoff.operator_id,
-        "note": signoff.note,
-        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
-    }
-
-    return {
-        "status": "success",
-        "session_id": session_id,
-        "filename": signoff.filename,
-        "component_name": signoff.component_name,
-        "final_status": signoff.final_status,
-        "operator_id": signoff.operator_id,
-        "note": signoff.note,
-    }
-
-
-@app.get("/api/sessions/{session_id}/report.csv")
-async def export_csv_report(session_id: str):
-    """Exports batch inspection results as a CSV report."""
-    if session_id not in SESSIONS:
-        raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found.")
-    session = SESSIONS[session_id]
-    inspection_results = session.get("last_inspection_results", [])
-
-    import io
-    import csv
-    from fastapi.responses import Response
-
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow([
-        "Timestamp",
-        "Session_ID",
-        "Board_Filename",
-        "Board_Machine_Status",
-        "Board_Final_Status",
-        "Component_Name",
-        "Machine_Status",
-        "Final_Status",
-        "ZNCC_Score",
-        "Patch_Diff",
-        "Operator_ID",
-        "Operator_Note",
-        "Diagnostic_Reason",
-    ])
-
-    signoffs = session.get("signoffs", {})
-    ts = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
-
-    for res in inspection_results:
-        fname = res.get("filename", "")
-        m_bstatus = res.get("board_status", "")
-        b_signoffs = signoffs.get(fname, {})
-
-        # Compute board final status
-        has_missing = any(
-            c.get("status") == "MISSING" or b_signoffs.get(c.get("name"), {}).get("final_status") == "MISSING"
-            for c in res.get("components", [])
-        )
-        has_uncertain = any(
-            c.get("status") == "UNCERTAIN" and c.get("name") not in b_signoffs
-            for c in res.get("components", [])
-        )
-        final_bstatus = "DEFECT" if has_missing else ("REVIEW" if has_uncertain else "OK")
-
-        for c in res.get("components", []):
-            cname = c.get("name", "")
-            m_status = c.get("status", "")
-            c_sign = b_signoffs.get(cname, {})
-            f_status = c_sign.get("final_status", m_status)
-            op_id = c_sign.get("operator_id", "")
-            op_note = c_sign.get("note", "")
-
-            writer.writerow([
-                ts,
-                session_id,
-                fname,
-                m_bstatus,
-                final_bstatus,
-                cname,
-                m_status,
-                f_status,
-                round(c.get("scores", {}).get("zncc", 0.0), 4),
-                round(c.get("scores", {}).get("patch_diff", 0.0), 4),
-                op_id,
-                op_note,
-                c.get("reason", ""),
-            ])
-
-    csv_bytes = output.getvalue().encode("utf-8")
-    return Response(
-        content=csv_bytes,
-        media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename=aoi_report_{session_id[:8]}.csv"},
-    )
-
-
 def _validate_and_decode_image(file_bytes: bytes, filename: str) -> np.ndarray:
     """Validates file size and decodes into a BGR OpenCV image."""
     if len(file_bytes) == 0:
@@ -406,6 +144,8 @@ async def upload_reference_image(file: UploadFile = File(...)):
         "filename": file.filename,
         "components": {},  # name -> {name, pixel_bbox, normalized_bbox}
         "created_at": time.time(),
+        "signoffs": {},
+        "last_inspection_results": [],
     }
 
     return {
@@ -518,6 +258,7 @@ async def get_session_info(session_id: str):
 async def inspect_test_images(
     session_id: str = Form(...),
     sensitivity: str = Form("balanced"),
+    enable_cascade: bool = Form(True),
     components_json: Optional[str] = Form(None),
     test_images: List[UploadFile] = File(...),
 ):
@@ -667,7 +408,26 @@ async def inspect_test_images(
 
                 dec = classify_component(cname, insp, cfg)
 
-                comp_results.append({
+                # Stage 2 Deep Learning Triage on Uncertain / Glare / Footprint edge cases
+                dl_info = None
+                if enable_cascade:
+                    dl_v = get_dl_verifier()
+                    x, y, w, h = px_box
+                    ref_crop = ref_norm[y:y+h, x:x+w]
+                    test_crop = aligned_test[y:y+h, x:x+w]
+                    has_glare = dl_v.detect_glare_saturation(test_crop)
+                    core_check = dl_v.evaluate_package_mold_core(ref_crop, test_crop)
+                    is_empty_footprint = (dec["status"] == "PRESENT" and core_check["core_delta_e"] > 35.0 and not has_glare)
+                    is_glare_fa = (dec["status"] == "MISSING" and has_glare)
+
+                    if dec["status"] == "UNCERTAIN" or is_empty_footprint or is_glare_fa:
+                        dl_res = dl_v.verify(ref_crop, test_crop, insp, component_type=cinfo.get("type", "GENERIC"))
+                        dl_info = dl_res
+                        if dl_res["status"] != "UNCERTAIN":
+                            dec["status"] = dl_res["status"]
+                            dec["reason"] = dl_res["reason"]
+
+                comp_dict = {
                     "name": cname,
                     "status": dec["status"],
                     "scores": {
@@ -679,7 +439,11 @@ async def inspect_test_images(
                         "pixel": px_box,
                         "normalized": norm_box,
                     },
-                })
+                }
+                if dl_info:
+                    comp_dict["dl_triage"] = dl_info
+
+                comp_results.append(comp_dict)
 
             # Aggregate board status
             b_eval = aggregate_board_status(comp_results)
@@ -743,3 +507,165 @@ async def inspect_test_images(
         "total_images_inspected": len(test_images),
         "results": results,
     }
+
+
+# --- RECIPE MANAGEMENT & OPERATOR SIGNOFF ENDPOINTS ---
+
+class SignoffRequest(BaseModel):
+    filename: str
+    component_name: str
+    final_status: str
+    operator_id: str
+    note: Optional[str] = ""
+
+
+@app.get("/api/sample-recipe")
+async def get_sample_recipe():
+    """Returns canonical reference board recipe for rapid testing & import."""
+    gt_file = BASE_DIR.parent / "sample_data" / "ground_truth.json"
+    comps = []
+    if gt_file.exists():
+        with open(gt_file, "r", encoding="utf-8") as f:
+            gt_data = json.load(f)
+        for cname, cinfo in gt_data.get("components", {}).items():
+            comps.append({
+                "name": cname,
+                "normalized_bbox": cinfo["normalized_bbox"],
+                "type": cinfo.get("type", "GENERIC"),
+            })
+    return {
+        "recipe_version": "1.0",
+        "board_name": "PCB_SAMPLE_MAIN_BOARD",
+        "image_size": {
+            "width": 1920,
+            "height": 1080,
+            "aspect_ratio": 1.7778,
+        },
+        "image_fingerprint": "sample_fp_1920_ref",
+        "sensitivity": "balanced",
+        "components": comps,
+    }
+
+
+@app.post("/api/recipes/validate")
+async def validate_recipe(
+    recipe: Dict[str, Any],
+    expected_width: Optional[int] = Query(None),
+    expected_height: Optional[int] = Query(None),
+    expected_fingerprint: Optional[str] = Query(None),
+):
+    """Validates an uploaded or imported PCB inspection recipe."""
+    comps = recipe.get("components")
+    if not comps or len(comps) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Recipe contains zero components. Define at least one component.",
+        )
+
+    for comp in comps:
+        if "normalized_bbox" in comp:
+            nb = comp["normalized_bbox"]
+            if any(v < 0.0 or v > 1.0 for v in nb):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Normalized coordinates must be between 0.0 and 1.0",
+                )
+
+    dim_mismatch = False
+    dim_warning = None
+    ar_mismatch = False
+    ar_warning = None
+    fp_mismatch = False
+    fp_warning = None
+
+    img_size = recipe.get("image_size", {})
+    rw = img_size.get("width")
+    rh = img_size.get("height")
+
+    if expected_width and expected_height and rw and rh:
+        if rw != expected_width or rh != expected_height:
+            dim_mismatch = True
+        r_ar = img_size.get("aspect_ratio") or (rw / rh)
+        exp_ar = expected_width / expected_height
+        if abs(r_ar - exp_ar) > 0.05:
+            ar_mismatch = True
+            ar_warning = f"Aspect ratio warning: Recipe AR ({r_ar:.3f}) differs from reference image AR ({exp_ar:.3f})."
+            dim_warning = ar_warning
+
+    if expected_fingerprint and recipe.get("image_fingerprint"):
+        if recipe["image_fingerprint"] != expected_fingerprint:
+            fp_mismatch = True
+            fp_warning = f"Reference image fingerprint does not match recipe fingerprint."
+
+    return {
+        "valid": True,
+        "board_name": recipe.get("board_name", "UNKNOWN"),
+        "components_count": len(comps),
+        "dimension_mismatch": dim_mismatch,
+        "dimension_warning": dim_warning,
+        "aspect_ratio_mismatch": ar_mismatch,
+        "aspect_ratio_warning": ar_warning,
+        "fingerprint_mismatch": fp_mismatch,
+        "fingerprint_warning": fp_warning,
+        "components": comps,
+    }
+
+
+@app.post("/api/sessions/{session_id}/signoff")
+async def record_operator_signoff(session_id: str, signoff: SignoffRequest):
+    """Logs human operator manual sign-off on borderline / uncertain parts for ISO 9001 compliance."""
+    if session_id not in SESSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session '{session_id}' not found.",
+        )
+    sess = SESSIONS[session_id]
+    sess.setdefault("signoffs", {})
+    key = f"{signoff.filename}::{signoff.component_name}"
+    sess["signoffs"][key] = {
+        "filename": signoff.filename,
+        "component_name": signoff.component_name,
+        "final_status": signoff.final_status,
+        "operator_id": signoff.operator_id,
+        "note": signoff.note,
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
+    }
+    return {"status": "success", "message": "Signoff recorded successfully"}
+
+
+@app.get("/api/sessions/{session_id}/report.csv")
+async def export_inspection_csv(session_id: str):
+    """Exports inspection results and operator sign-offs as an ISO 9001 audit CSV certificate."""
+    if session_id not in SESSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session '{session_id}' not found.",
+        )
+    sess = SESSIONS[session_id]
+    rows = ["Timestamp,Session_ID,Board_Filename,Component,Status,ZNCC,Diff,Operator_ID,Note"]
+    ts = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+    signoffs = sess.get("signoffs", {})
+    results = sess.get("last_inspection_results", [])
+    for res in results:
+        fname = res.get("filename", "unknown.png")
+        for comp in res.get("components", []):
+            cname = comp["name"]
+            stat = comp["status"]
+            scores = comp.get("scores", {})
+            zncc = scores.get("zncc", 0.0)
+            diff = scores.get("patch_diff", 0.0)
+            s_key = f"{fname}::{cname}"
+            op_id = ""
+            note = ""
+            if s_key in signoffs:
+                sign = signoffs[s_key]
+                stat = sign.get("final_status", stat)
+                op_id = sign.get("operator_id", "")
+                note = sign.get("note", "")
+            rows.append(f"{ts},{session_id},{fname},{cname},{stat},{zncc:.4f},{diff:.4f},{op_id},{note}")
+    csv_content = "\n".join(rows)
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=inspection_report_{session_id}.csv"},
+    )

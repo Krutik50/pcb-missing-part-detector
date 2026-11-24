@@ -1026,6 +1026,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData();
         formData.append('session_id', state.sessionId);
         formData.append('sensitivity', state.activeSensitivity);
+        const chkCascade = document.getElementById('chk-enable-cascade');
+        formData.append('enable_cascade', chkCascade ? chkCascade.checked : true);
 
         state.testFiles.forEach(file => {
             formData.append('test_images', file);
