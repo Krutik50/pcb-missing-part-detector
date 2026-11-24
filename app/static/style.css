@@ -2245,3 +2245,125 @@ body {
     border-radius: 4px;
 }
 
+/* ==========================================================================
+   ROLE-BASED ACCESS CONTROL (RBAC) STYLING
+   ========================================================================== */
+.rbac-notice-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 0.9rem;
+    background: #182232;
+    border: 1px solid #28374d;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 0.9rem;
+}
+
+.rbac-notice-banner.rbac-locked {
+    background: #201815;
+    border-color: #612f1a;
+    color: #fdba74;
+}
+
+.rbac-notice-banner.rbac-authorized {
+    background: #0d281e;
+    border-color: #14532d;
+    color: #86efac;
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.45rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    border-radius: 2px;
+    text-transform: uppercase;
+}
+
+.role-badge.role-inspector {
+    background: #064e3b;
+    border: 1px solid #059669;
+    color: #34d399;
+}
+
+.role-badge.role-supervisor {
+    background: #1e3a8a;
+    border: 1px solid #2563eb;
+    color: #93c5fd;
+}
+
+.role-badge.role-admin {
+    background: #451a03;
+    border: 1px solid #d97706;
+    color: #fbbf24;
+}
+
+.override-box {
+    background: #101726;
+    border: 1px solid #2563eb;
+    border-radius: 4px;
+    padding: 0.65rem 0.8rem;
+    margin-top: 0.45rem;
+}
+
+.override-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #38bdf8;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.45rem;
+}
+
+.override-controls-row {
+    display: flex;
+    gap: 0.45rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.btn-trigger-override {
+    font-size: 0.75rem;
+    color: #38bdf8;
+    margin-left: 0.5rem;
+    background: none;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    padding: 0.15rem 0.45rem;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.12s ease;
+}
+
+.btn-trigger-override:hover {
+    color: #ffffff;
+    background: rgba(56, 189, 248, 0.2);
+    border-color: #38bdf8;
+}
+
+.badge-override-active {
+    background: #1e293b;
+    border: 1px solid #38bdf8;
+    color: #38bdf8;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.15rem 0.4rem;
+    border-radius: 2px;
+}
+
+.canvas-locked {
+    cursor: not-allowed !important;
+}
+
+.slider-locked {
+    opacity: 0.45;
+    pointer-events: none;
+}
+

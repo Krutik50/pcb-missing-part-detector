@@ -270,6 +270,12 @@
                                 </div>
                             </div>
 
+                            <!-- RBAC Footprint Authoring Banner -->
+                            <div class="rbac-notice-banner rbac-locked" id="step2-rbac-banner">
+                                <svg class="ui-icon"><use href="#icon-alert"></use></svg>
+                                <span id="step2-rbac-text"><strong>Read-Only Layout Mode:</strong> Component footprint authoring is restricted to SMT Supervisors and QA Admins. Line Inspectors have view-only access.</span>
+                            </div>
+
                             <div class="annotation-layout">
                                 <!-- Left: Interactive Canvas -->
                                 <div class="canvas-wrapper">
@@ -577,6 +583,12 @@
                                     <svg class="ui-icon btn-svg-icon"><use href="#icon-camera"></use></svg> Test Alignment Feed
                                 </button>
                             </div>
+                        </div>
+
+                        <!-- RBAC Optical Calibration Banner -->
+                        <div class="rbac-notice-banner rbac-locked" id="settings-rbac-banner" style="margin-top: 1rem; margin-bottom: 0;">
+                            <svg class="ui-icon"><use href="#icon-alert"></use></svg>
+                            <span id="settings-rbac-text"><strong>Tolerances Locked:</strong> Machine vision placement tolerances and optical calibration are restricted to QA Administrators. Read-only for Inspectors and Supervisors.</span>
                         </div>
 
                         <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:1.5rem; margin-top:1rem;">

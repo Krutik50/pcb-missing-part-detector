@@ -25,6 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         presets: [],
         activePreset: null,
+        activeTolerances: {
+            max_tilt_deg: 3.5,
+            max_shift_px: 5.0,
+        },
     };
 
     // --- DOM Elements ---
@@ -160,11 +164,131 @@ document.addEventListener('DOMContentLoaded', () => {
     checkHealth();
 
     // --- OPERATOR AUTHENTICATION & RBAC ---
+    function getUserRole() {
+        return (state.currentUser && state.currentUser.role) ? state.currentUser.role.toUpperCase() : 'INSPECTOR';
+    }
+
+    function isInspector() {
+        return getUserRole() === 'INSPECTOR';
+    }
+
+    function isSupervisor() {
+        return getUserRole() === 'SUPERVISOR';
+    }
+
+    function isAdmin() {
+        return getUserRole() === 'ADMIN';
+    }
+
+    function canAuthorFootprints() {
+        return !isInspector();
+    }
+
+    function canOverrideDefects() {
+        return !isInspector();
+    }
+
+    function canTuneTolerances() {
+        return isAdmin();
+    }
+
+    function applyRBACPermissions() {
+        const role = getUserRole();
+        const roleLabel = state.currentUser ? (state.currentUser.role_label || role) : role;
+
+        // Step 2 Footprint Authoring Controls & Banner
+        const step2Banner = document.getElementById('step2-rbac-banner');
+        const canvasContainer = el.canvasContainer || document.getElementById('canvas-container');
+
+        if (canAuthorFootprints()) {
+            if (step2Banner) {
+                step2Banner.className = 'rbac-notice-banner rbac-authorized';
+                step2Banner.innerHTML = `
+                    <svg class="ui-icon"><use href="#icon-check"></use></svg>
+                    <span id="step2-rbac-text"><strong>Layout Modification Authorized:</strong> Footprint authoring and component geometry editing unlocked for ${roleLabel}.</span>
+                `;
+            }
+            if (canvasContainer) canvasContainer.classList.remove('canvas-locked');
+            if (el.btnClearComps) el.btnClearComps.disabled = false;
+            if (el.btnLoadSampleComps) el.btnLoadSampleComps.disabled = false;
+            if (el.btnImportRecipe) el.btnImportRecipe.disabled = false;
+        } else {
+            if (step2Banner) {
+                step2Banner.className = 'rbac-notice-banner rbac-locked';
+                step2Banner.innerHTML = `
+                    <svg class="ui-icon"><use href="#icon-alert"></use></svg>
+                    <span id="step2-rbac-text"><strong>Read-Only Layout Mode:</strong> Component footprint authoring is restricted to SMT Supervisors and QA Admins. Line Inspectors have view-only access.</span>
+                `;
+            }
+            if (canvasContainer) canvasContainer.classList.add('canvas-locked');
+            if (el.btnClearComps) el.btnClearComps.disabled = true;
+            if (el.btnLoadSampleComps) el.btnLoadSampleComps.disabled = true;
+            if (el.btnImportRecipe) el.btnImportRecipe.disabled = true;
+        }
+
+        // Workspace 5 Calibration & Tolerance Controls & Banner
+        const settingsBanner = document.getElementById('settings-rbac-banner');
+        const rangeTilt = document.getElementById('range-tilt-tolerance');
+        const rangeShift = document.getElementById('range-shift-tolerance');
+        const btnCalCam = document.getElementById('btn-calibrate-cam');
+
+        if (canTuneTolerances()) {
+            if (settingsBanner) {
+                settingsBanner.className = 'rbac-notice-banner rbac-authorized';
+                settingsBanner.innerHTML = `
+                    <svg class="ui-icon"><use href="#icon-check"></use></svg>
+                    <span id="settings-rbac-text"><strong>Tolerances Unlocked:</strong> Plant Quality Administrator access confirmed. Placement tolerances and optical reticle active.</span>
+                `;
+            }
+            if (rangeTilt) {
+                rangeTilt.disabled = false;
+                rangeTilt.classList.remove('slider-locked');
+            }
+            if (rangeShift) {
+                rangeShift.disabled = false;
+                rangeShift.classList.remove('slider-locked');
+            }
+            if (btnCalCam) btnCalCam.disabled = false;
+        } else {
+            if (settingsBanner) {
+                settingsBanner.className = 'rbac-notice-banner rbac-locked';
+                settingsBanner.innerHTML = `
+                    <svg class="ui-icon"><use href="#icon-alert"></use></svg>
+                    <span id="settings-rbac-text"><strong>Tolerances Locked:</strong> Machine vision placement tolerances and optical calibration are restricted to QA Administrators. Read-only for Inspectors and Supervisors.</span>
+                `;
+            }
+            if (rangeTilt) {
+                rangeTilt.disabled = true;
+                rangeTilt.classList.add('slider-locked');
+            }
+            if (rangeShift) {
+                rangeShift.disabled = true;
+                rangeShift.classList.add('slider-locked');
+            }
+            if (btnCalCam) btnCalCam.disabled = true;
+        }
+
+        // Update Component List UI if present
+        if (state.components && state.components.length > 0) {
+            renderComponentsList();
+        }
+
+        // Update Result Cards if present
+        if (state.lastInspectionData && state.lastInspectionData.results) {
+            renderResultCards();
+        }
+    }
+
     function updateOperatorHeader(user) {
         if (!user) return;
         state.currentUser = user;
         if (el.headerOperatorName) el.headerOperatorName.textContent = user.name;
-        if (el.headerOperatorBadge) el.headerOperatorBadge.textContent = `${user.badge} (${user.role})`;
+        if (el.headerOperatorBadge) {
+            el.headerOperatorBadge.textContent = `${user.badge} (${user.role})`;
+            const roleClass = user.role === 'ADMIN' ? 'role-admin' : (user.role === 'SUPERVISOR' ? 'role-supervisor' : 'role-inspector');
+            el.headerOperatorBadge.className = `header-operator-badge role-badge ${roleClass}`;
+        }
+        applyRBACPermissions();
     }
 
     async function loadAuthProfiles() {
@@ -597,6 +721,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     el.annotationCanvas.addEventListener('mousedown', (e) => {
         if (!state.referenceImg) return;
+        if (!canAuthorFootprints()) {
+            showAlert('Read-Only Layout Mode: Footprint authoring is locked to SMT Supervisors and QA Admins. Line Inspectors have view-only access.', 'warning');
+            return;
+        }
         const pos = getCanvasCoords(e);
         isDrawing = true;
         startX = pos.x;
@@ -711,6 +839,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const [x, y, w, h] = comp.bbox;
             const warningBadge = comp.warning ? `<span class="badge badge-amber" title="${comp.warning}">FLAGGED</span>` : '';
 
+            const actionHtml = canAuthorFootprints()
+                ? `
+                    <div class="comp-item-actions">
+                        <button type="button" class="btn-icon btn-rename" title="Rename Footprint" data-idx="${idx}">Edit</button>
+                        <button type="button" class="btn-icon btn-icon-danger btn-del" title="Delete" data-idx="${idx}">&times;</button>
+                    </div>
+                `
+                : `
+                    <div class="comp-item-actions">
+                        <span class="badge" style="background:#1e293b; color:#8b949e; border:1px solid #334155; font-size:0.68rem; font-weight:600;">LOCKED</span>
+                    </div>
+                `;
+
             item.innerHTML = `
                 <div class="comp-item-info">
                     <div style="display:flex; align-items:center; gap:0.5rem;">
@@ -719,10 +860,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <span class="comp-item-coords">[${x}, ${y}, ${w}×${h} px]</span>
                 </div>
-                <div class="comp-item-actions">
-                    <button type="button" class="btn-icon btn-rename" title="Rename Footprint" data-idx="${idx}">Edit</button>
-                    <button type="button" class="btn-icon btn-icon-danger btn-del" title="Delete" data-idx="${idx}">&times;</button>
-                </div>
+                ${actionHtml}
             `;
             el.componentListContainer.appendChild(item);
         });
@@ -730,6 +868,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Attach action handlers
         el.componentListContainer.querySelectorAll('.btn-del').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                if (!canAuthorFootprints()) return;
                 const idx = parseInt(e.target.getAttribute('data-idx'));
                 state.components.splice(idx, 1);
                 renderAnnotationCanvas();
@@ -739,6 +878,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         el.componentListContainer.querySelectorAll('.btn-rename').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                if (!canAuthorFootprints()) return;
                 const idx = parseInt(e.target.getAttribute('data-idx'));
                 const newName = prompt('Enter new component name:', state.components[idx].name);
                 if (newName && newName.trim()) {
@@ -753,6 +893,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Quick load standard components (optional fallback)
     if (el.btnLoadSampleComps) {
         el.btnLoadSampleComps.addEventListener('click', async () => {
+            if (!canAuthorFootprints()) {
+                showAlert('Read-Only Layout Mode: Loading footprints requires Supervisor authorization.', 'warning');
+                return;
+            }
             try {
                 const res = await fetch('/api/sample-components');
                 if (!res.ok) throw new Error('Failed to fetch standard components');
@@ -785,6 +929,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     el.btnClearComps.addEventListener('click', () => {
+        if (!canAuthorFootprints()) {
+            showAlert('Read-Only Layout Mode: Clearing footprints requires Supervisor authorization.', 'warning');
+            return;
+        }
         if (state.components.length === 0) return;
         if (confirm('Clear all marked components?')) {
             state.components = [];
@@ -1300,6 +1448,14 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('session_id', state.sessionId);
         formData.append('sensitivity', 'balanced');
         formData.append('enable_cascade', true);
+        if (state.activeTolerances) {
+            if (state.activeTolerances.max_tilt_deg !== undefined) {
+                formData.append('max_tilt_deg', state.activeTolerances.max_tilt_deg);
+            }
+            if (state.activeTolerances.max_shift_px !== undefined) {
+                formData.append('max_shift_px', state.activeTolerances.max_shift_px);
+            }
+        }
 
         state.testFiles.forEach(file => {
             formData.append('test_images', file);
@@ -1503,6 +1659,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                         ? `${c.scores.shift_dist_px.toFixed(1)} px`
                                         : '0.0 px';
 
+                                    const isMachineDefect = ['MISSING', 'TILTED', 'MISALIGNED', 'BRIDGED', 'POLARITY_REVERSED', 'TOMBSTONED'].includes(c.status);
                                     let signoffHtml = '';
                                     if (c.status === 'UNCERTAIN') {
                                         if (sign) {
@@ -1512,7 +1669,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                             signoffHtml = `
                                                 <div style="margin-top:0.35rem;">
                                                     <span class="${signBadge}">${signIcon}: ${isPres ? 'VERIFIED PRESENT' : 'CONFIRMED DEFECT'}</span>
-                                                    <span style="font-size:0.75rem; color:#8b949e; margin-left:0.3rem;">(By ${sign.operator_id}${sign.note ? ' &bull; ' + sign.note : ''})</span>
+                                                    <span style="font-size:0.75rem; color:#8b949e; margin-left:0.3rem;">(By ${sign.operator_id} [${sign.operator_role || 'INSPECTOR'}]${sign.note ? ' &bull; ' + sign.note : ''})</span>
                                                     <button type="button" class="btn-link btn-edit-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" style="margin-left:0.5rem; font-size:0.75rem; color:#58a6ff;">Edit</button>
                                                 </div>
                                                 <div style="font-size:0.75rem; color:#8b949e; margin-top:2px;">Original Machine Verdict: UNCERTAIN</div>
@@ -1527,6 +1684,43 @@ document.addEventListener('DOMContentLoaded', () => {
                                                         <button type="button" class="btn btn-sm btn-success btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="PRESENT">Verify Present</button>
                                                         <button type="button" class="btn btn-sm btn-danger btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="MISSING">Confirm Defect</button>
                                                     </div>
+                                                </div>
+                                            `;
+                                        }
+                                    } else if (isMachineDefect) {
+                                        if (sign && sign.final_status === 'PRESENT') {
+                                            signoffHtml = `
+                                                <div style="margin-top:0.35rem;">
+                                                    <span class="badge-override-active">OVERRIDE: PRESENT</span>
+                                                    <span style="font-size:0.75rem; color:#8b949e; margin-left:0.3rem;">(By ${sign.operator_id} [${sign.operator_role || 'SUPERVISOR'}]${sign.note ? ' &bull; ' + sign.note : ''})</span>
+                                                    ${canOverrideDefects() ? `<button type="button" class="btn-link btn-edit-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" style="margin-left:0.5rem; font-size:0.75rem; color:#58a6ff;">Revert</button>` : ''}
+                                                </div>
+                                                <div style="font-size:0.75rem; color:#8b949e; margin-top:2px;">Original Machine Verdict: ${c.status}</div>
+                                            `;
+                                        } else if (canOverrideDefects()) {
+                                            signoffHtml = `
+                                                <div style="margin-top:0.35rem;">
+                                                    <button type="button" class="btn-trigger-override" data-target="override-${resIdx}-${c.name}">
+                                                        <svg class="ui-icon" style="width:12px;height:12px;"><use href="#icon-settings"></use></svg> Override Defect to PASS
+                                                    </button>
+                                                    <div id="override-${resIdx}-${c.name}" class="override-box d-none">
+                                                        <div class="override-title">
+                                                            <svg class="ui-icon" style="width:14px;height:14px;"><use href="#icon-alert"></use></svg>
+                                                            Supervisor Disposition Override (IPC-A-610)
+                                                        </div>
+                                                        <div class="override-controls-row">
+                                                            <input type="text" class="signoff-input signoff-input-badge" id="ovr-badge-${resIdx}-${c.name}" placeholder="Supervisor ID" value="${state.currentUser ? state.currentUser.badge : 'LEAD-104'}">
+                                                            <input type="text" class="signoff-input signoff-input-note" id="ovr-note-${resIdx}-${c.name}" placeholder="Mandatory engineering rationale (e.g. verified under loupe)" style="flex:1; min-width:220px;">
+                                                            <button type="button" class="btn btn-sm btn-primary btn-confirm-override" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}">Authorize Pass</button>
+                                                            <button type="button" class="btn btn-sm btn-outline btn-cancel-override" data-target="override-${resIdx}-${c.name}">Cancel</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `;
+                                        } else {
+                                            signoffHtml = `
+                                                <div style="margin-top:0.35rem; font-size:0.75rem; color:#8b949e;">
+                                                    Defect flagged by AOI &bull; Overrides locked to Supervisor / Admin
                                                 </div>
                                             `;
                                         }
@@ -1578,8 +1772,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function attachSignoffHandlers() {
+        // Routine signoff buttons (for UNCERTAIN calls)
         el.resultsCardsContainer.querySelectorAll('.btn-signoff').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
                 const target = e.currentTarget;
                 const resIdx = target.getAttribute('data-res-idx');
                 const fname = target.getAttribute('data-fname');
@@ -1588,30 +1783,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const badgeEl = document.getElementById(`badge-${resIdx}-${comp}`);
                 const noteEl = document.getElementById(`note-${resIdx}-${comp}`);
-                const badge = (badgeEl && badgeEl.value.trim()) || 'OPERATOR';
+                const badge = (badgeEl && badgeEl.value.trim()) || (state.currentUser ? state.currentUser.badge : 'OP-8402');
                 const note = (noteEl && noteEl.value.trim()) || '';
+                const role = state.currentUser ? state.currentUser.role : 'INSPECTOR';
 
                 if (!state.signoffs[fname]) state.signoffs[fname] = {};
                 state.signoffs[fname][comp] = {
                     final_status: verdict,
                     operator_id: badge,
+                    operator_role: role,
                     note: note,
                     timestamp: new Date().toLocaleTimeString(),
                 };
 
                 // Sync to backend if session exists
                 if (state.sessionId) {
-                    fetch(`/api/sessions/${state.sessionId}/signoff`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            filename: fname,
-                            component_name: comp,
-                            final_status: verdict,
-                            operator_id: badge,
-                            note: note,
-                        }),
-                    }).catch(() => {});
+                    try {
+                        const resp = await fetch(`/api/sessions/${state.sessionId}/signoff`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                filename: fname,
+                                component_name: comp,
+                                final_status: verdict,
+                                operator_id: badge,
+                                operator_role: role,
+                                note: note,
+                            }),
+                        });
+                        if (!resp.ok) {
+                            const errData = await resp.json().catch(() => ({}));
+                            throw new Error(errData.detail || 'Signoff failed');
+                        }
+                    } catch (err) {
+                        showAlert(`Signoff error: ${err.message}`, 'danger');
+                    }
                 }
 
                 renderResultCards();
@@ -1619,6 +1825,94 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
+        // Toggle Defect Override Box
+        el.resultsCardsContainer.querySelectorAll('.btn-trigger-override').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const targetId = e.currentTarget.getAttribute('data-target');
+                const box = document.getElementById(targetId);
+                if (box) {
+                    box.classList.toggle('d-none');
+                }
+            });
+        });
+
+        // Cancel Defect Override Box
+        el.resultsCardsContainer.querySelectorAll('.btn-cancel-override').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const targetId = e.currentTarget.getAttribute('data-target');
+                const box = document.getElementById(targetId);
+                if (box) {
+                    box.classList.add('d-none');
+                }
+            });
+        });
+
+        // Confirm Defect Override to PASS (Supervisor / Admin)
+        el.resultsCardsContainer.querySelectorAll('.btn-confirm-override').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const target = e.currentTarget;
+                const resIdx = target.getAttribute('data-res-idx');
+                const fname = target.getAttribute('data-fname');
+                const comp = target.getAttribute('data-comp');
+
+                const badgeEl = document.getElementById(`ovr-badge-${resIdx}-${comp}`);
+                const noteEl = document.getElementById(`ovr-note-${resIdx}-${comp}`);
+                const badge = (badgeEl && badgeEl.value.trim()) || (state.currentUser ? state.currentUser.badge : 'LEAD-104');
+                const note = (noteEl && noteEl.value.trim()) || '';
+                const role = state.currentUser ? state.currentUser.role : 'SUPERVISOR';
+
+                if (!note) {
+                    showAlert('ISO 9001 Compliance: An engineering rationale is required when overriding a machine defect to PASS.', 'warning');
+                    if (noteEl) noteEl.focus();
+                    return;
+                }
+
+                if (!canOverrideDefects()) {
+                    showAlert('Unauthorized: Defect overrides require SMT Supervisor or QA Admin authorization.', 'danger');
+                    return;
+                }
+
+                // Sync to backend
+                if (state.sessionId) {
+                    try {
+                        const resp = await fetch(`/api/sessions/${state.sessionId}/signoff`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                filename: fname,
+                                component_name: comp,
+                                final_status: 'PRESENT',
+                                operator_id: badge,
+                                operator_role: role,
+                                note: note,
+                            }),
+                        });
+                        if (!resp.ok) {
+                            const errData = await resp.json().catch(() => ({}));
+                            throw new Error(errData.detail || 'Override failed');
+                        }
+                    } catch (err) {
+                        showAlert(`Override rejected: ${err.message}`, 'danger');
+                        return;
+                    }
+                }
+
+                if (!state.signoffs[fname]) state.signoffs[fname] = {};
+                state.signoffs[fname][comp] = {
+                    final_status: 'PRESENT',
+                    operator_id: badge,
+                    operator_role: role,
+                    note: note,
+                    timestamp: new Date().toLocaleTimeString(),
+                };
+
+                showAlert(`Defect override recorded: ${comp} dispositioned as PASS by ${badge} (${role}).`, 'success');
+                renderResultCards();
+                updateBatchSummary();
+            });
+        });
+
+        // Edit / Revert Sign-Off
         el.resultsCardsContainer.querySelectorAll('.btn-edit-signoff').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const target = e.currentTarget;
@@ -2343,17 +2637,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnCalCam = document.getElementById('btn-calibrate-cam');
 
         if (tiltRange && dispTilt) {
+            tiltRange.value = state.activeTolerances.max_tilt_deg;
+            dispTilt.textContent = `±${state.activeTolerances.max_tilt_deg.toFixed(1)}°`;
             tiltRange.addEventListener('input', (e) => {
-                dispTilt.textContent = `±${Number(e.target.value).toFixed(1)}°`;
+                if (!canTuneTolerances()) return;
+                const val = parseFloat(e.target.value);
+                dispTilt.textContent = `±${val.toFixed(1)}°`;
+                state.activeTolerances.max_tilt_deg = val;
             });
         }
         if (shiftRange && dispShift) {
+            shiftRange.value = state.activeTolerances.max_shift_px;
+            dispShift.textContent = `${state.activeTolerances.max_shift_px.toFixed(1)} px`;
             shiftRange.addEventListener('input', (e) => {
-                dispShift.textContent = `${Number(e.target.value).toFixed(1)} px`;
+                if (!canTuneTolerances()) return;
+                const val = parseFloat(e.target.value);
+                dispShift.textContent = `${val.toFixed(1)} px`;
+                state.activeTolerances.max_shift_px = val;
             });
         }
         if (btnCalCam) {
             btnCalCam.addEventListener('click', () => {
+                if (!canTuneTolerances()) {
+                    showAlert('Optical Calibration Locked: Camera reticle calibration is restricted to QA Administrators.', 'warning');
+                    return;
+                }
                 openCameraModal();
             });
         }
@@ -2438,4 +2746,8 @@ document.addEventListener('DOMContentLoaded', () => {
             setStep(1);
         }
     });
+
+    // --- INITIALIZE RBAC STATE ---
+    updateOperatorHeader(state.currentUser);
+    applyRBACPermissions();
 });

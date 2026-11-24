@@ -265,6 +265,8 @@ async def inspect_test_images(
     sensitivity: str = Form("balanced"),
     enable_cascade: bool = Form(True),
     components_json: Optional[str] = Form(None),
+    max_tilt_deg: Optional[float] = Form(None),
+    max_shift_px: Optional[float] = Form(None),
     test_images: List[UploadFile] = File(...),
 ):
     """
@@ -352,6 +354,10 @@ async def inspect_test_images(
 
     # Initialize configuration reading strictly from DetectionConfig
     cfg = DetectionConfig(sensitivity=sens)
+    if max_tilt_deg is not None:
+        cfg.max_allowed_tilt_deg = float(max_tilt_deg)
+    if max_shift_px is not None:
+        cfg.max_allowed_shift_px = float(max_shift_px)
     effective_thresh = cfg.get_effective_thresholds()
 
     results = []
@@ -526,7 +532,8 @@ DEFAULT_OPERATORS = [
         "operator_id": "OP-8402",
         "name": "Sarah Jenkins",
         "role": "INSPECTOR",
-        "role_label": "Senior AOI Inspector",
+        "role_label": "Line Quality Inspector",
+        "description": "Routine batch inspection, 3× loupe analysis, verify uncertain calls. Footprint & tolerances locked.",
         "badge": "OP-8402",
         "pin": "1234",
     },
@@ -534,7 +541,8 @@ DEFAULT_OPERATORS = [
         "operator_id": "LEAD-104",
         "name": "Marcus Vance",
         "role": "SUPERVISOR",
-        "role_label": "SMT Quality Line Lead",
+        "role_label": "SMT Process Supervisor",
+        "description": "Footprint authoring, recipe save/export, defect overrides, batch release certification.",
         "badge": "LEAD-104",
         "pin": "5678",
     },
@@ -543,6 +551,7 @@ DEFAULT_OPERATORS = [
         "name": "Dr. Elena Rostova",
         "role": "ADMIN",
         "role_label": "Plant Quality Manager",
+        "description": "Full administrative authorization, SMT tolerance tuning, optical reticle alignment, ISO audit logs.",
         "badge": "QA-DIR-01",
         "pin": "9999",
     },
@@ -641,6 +650,7 @@ class SignoffRequest(BaseModel):
     component_name: str
     final_status: str
     operator_id: str
+    operator_role: Optional[str] = "INSPECTOR"
     note: Optional[str] = ""
 
 
@@ -738,7 +748,7 @@ async def validate_recipe(
 
 @app.post("/api/sessions/{session_id}/signoff")
 async def record_operator_signoff(session_id: str, signoff: SignoffRequest):
-    """Logs human operator manual sign-off on borderline / uncertain parts for ISO 9001 compliance."""
+    """Logs human operator manual sign-off on borderline / uncertain parts or supervisor defect overrides."""
     if session_id not in SESSIONS:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -746,12 +756,28 @@ async def record_operator_signoff(session_id: str, signoff: SignoffRequest):
         )
     sess = SESSIONS[session_id]
     sess.setdefault("signoffs", {})
+
+    # RBAC Enforcement: Line Inspectors cannot override confirmed defects to PRESENT
+    is_inspector = (signoff.operator_role or "").upper() == "INSPECTOR"
+    if is_inspector and signoff.final_status == "PRESENT":
+        for res in sess.get("last_inspection_results", []):
+            if res.get("filename") == signoff.filename:
+                for c in res.get("components", []):
+                    if c.get("name") == signoff.component_name and c.get("status") in [
+                        "MISSING", "TILTED", "MISALIGNED", "BRIDGED", "POLARITY_REVERSED", "TOMBSTONED"
+                    ]:
+                        raise HTTPException(
+                            status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Defect overrides to PRESENT require Supervisor or Admin authorization.",
+                        )
+
     key = f"{signoff.filename}::{signoff.component_name}"
     sess["signoffs"][key] = {
         "filename": signoff.filename,
         "component_name": signoff.component_name,
         "final_status": signoff.final_status,
         "operator_id": signoff.operator_id,
+        "operator_role": signoff.operator_role or "INSPECTOR",
         "note": signoff.note,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
     }
@@ -786,6 +812,9 @@ async def export_inspection_csv(session_id: str):
                 sign = signoffs[s_key]
                 stat = sign.get("final_status", stat)
                 op_id = sign.get("operator_id", "")
+                role = sign.get("operator_role", "")
+                if role:
+                    op_id = f"{op_id} [{role}]"
                 note = sign.get("note", "")
             rows.append(f"{ts},{session_id},{fname},{cname},{stat},{zncc:.4f},{diff:.4f},{op_id},{note}")
     csv_content = "\n".join(rows)
