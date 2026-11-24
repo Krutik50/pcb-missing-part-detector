@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const roleColor = p.role === 'ADMIN' ? 'preset-badge-amber' : (p.role === 'SUPERVISOR' ? 'preset-badge-blue' : 'preset-badge-green');
             item.innerHTML = `
                 <div class="auth-profile-left">
-                    <span style="font-size:1.2rem;">👤</span>
+                    <svg class="ui-icon" style="width:18px;height:18px;color:var(--color-blue);"><use href="#icon-user"></use></svg>
                     <div>
                         <div class="auth-profile-name">${p.name}</div>
                         <div class="auth-profile-role">${p.role_label || p.role}</div>
@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div style="display:flex; align-items:center; gap:0.5rem;">
                     <span class="preset-badge ${roleColor}">${p.badge}</span>
-                    <span style="font-size:0.8rem; color:var(--color-blue); font-weight:600;">Sign In →</span>
+                    <span style="font-size:0.8rem; color:var(--color-blue); font-weight:600;">Select &rarr;</span>
                 </div>
             `;
             item.addEventListener('click', () => {
@@ -709,7 +709,7 @@ document.addEventListener('DOMContentLoaded', () => {
             item.className = 'component-card-item';
 
             const [x, y, w, h] = comp.bbox;
-            const warningBadge = comp.warning ? `<span class="badge badge-amber" title="${comp.warning}">⚠ Warning: Tight/Loose</span>` : '';
+            const warningBadge = comp.warning ? `<span class="badge badge-amber" title="${comp.warning}">FLAGGED</span>` : '';
 
             item.innerHTML = `
                 <div class="comp-item-info">
@@ -720,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="comp-item-coords">[${x}, ${y}, ${w}×${h} px]</span>
                 </div>
                 <div class="comp-item-actions">
-                    <button type="button" class="btn-icon btn-rename" title="Rename" data-idx="${idx}">✎</button>
+                    <button type="button" class="btn-icon btn-rename" title="Rename Footprint" data-idx="${idx}">Edit</button>
                     <button type="button" class="btn-icon btn-icon-danger btn-del" title="Delete" data-idx="${idx}">&times;</button>
                 </div>
             `;
@@ -1281,7 +1281,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showAlert(`Failed to load physical test batch: ${err.message}`, 'danger');
             } finally {
                 el.btnLoadPresetBatch.disabled = false;
-                el.btnLoadPresetBatch.textContent = '📦 1-Click Load Physical Test Batch for This Board';
+                el.btnLoadPresetBatch.textContent = 'Load Physical Test Batch for This Board';
             }
         });
     }
@@ -1375,55 +1375,59 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'result-card';
 
-            // Determine Banner Styling & Icons
+            // Determine Banner Styling & Labels
             let bannerClass = 'banner-ok';
-            let icon = '✓';
-            let titleText = 'OK — PASSED';
+            let iconText = 'PASS';
+            let titleText = 'INSPECTION PASSED — ALL COMPONENTS VERIFIED';
 
             if (effectiveBoardStatus === 'DEFECT') {
                 bannerClass = 'banner-defect';
-                icon = '✗';
+                iconText = 'DEFECT';
                 titleText = hasSignoffs && res.board_status === 'REVIEW'
-                    ? 'DEFECT — DEFECTIVE SMT PARTS CONFIRMED VIA SIGN-OFF'
-                    : 'DEFECT — SMT DEFECTS DETECTED (MISSING/TILT/SHIFT)';
+                    ? 'DEFECT CONFIRMED VIA OPERATOR SIGN-OFF'
+                    : 'SMT DEFECTS DETECTED (MISSING / SKEW / LATERAL DISPLACEMENT)';
             } else if (effectiveBoardStatus === 'REVIEW') {
                 bannerClass = 'banner-review';
-                icon = '⚠';
-                titleText = 'REVIEW — OPERATOR SIGN-OFF REQUIRED';
+                iconText = 'DISCREPANCY';
+                titleText = 'DISCREPANCY DETECTED — OPERATOR VERIFICATION REQUIRED';
             } else if (effectiveBoardStatus === 'OK' && hasSignoffs && res.board_status === 'REVIEW') {
                 bannerClass = 'banner-ok';
-                icon = '✓';
-                titleText = 'OK — PASSED (SIGN-OFF VERIFIED)';
+                iconText = 'VERIFIED';
+                titleText = 'INSPECTION PASSED (OPERATOR VERIFIED)';
             } else if (effectiveBoardStatus === 'ERROR') {
                 bannerClass = 'banner-defect';
-                icon = '⚠';
+                iconText = 'ERROR';
                 titleText = 'PROCESSING ERROR';
             }
 
             // Alignment Notice
             const alignNotice = res.alignment && res.alignment.fallback_used
-                ? `<div class="alignment-notice">⚠ Alignment Notice: ${res.alignment.message} (dx: ${res.alignment.dx_px}px, dy: ${res.alignment.dy_px}px)</div>`
+                ? `<div class="alignment-notice">Alignment Notice: ${res.alignment.message} (dx: ${res.alignment.dx_px}px, dy: ${res.alignment.dy_px}px)</div>`
                 : '';
 
             card.innerHTML = `
                 <div class="result-banner ${bannerClass}">
                     <div>
-                        <div class="banner-status-title"><span>${icon}</span> ${titleText}</div>
-                        <div class="banner-summary">${res.summary} ${hasSignoffs ? '<span style="opacity:0.9;">(Human review logged)</span>' : ''}</div>
+                        <div class="banner-status-title"><span class="banner-tag">${iconText}</span> ${titleText}</div>
+                        <div class="banner-summary">${res.summary} ${hasSignoffs ? '<span style="opacity:0.9;">(Operator review logged)</span>' : ''}</div>
                     </div>
                     <div style="text-align:right;">
                         <span class="banner-filename">${res.filename}</span>
-                        ${res.elapsed_ms ? `<div style="font-size:0.75rem; opacity:0.8;">Inspection time: ${res.elapsed_ms} ms</div>` : ''}
+                        ${res.elapsed_ms ? `<div style="font-size:0.75rem; opacity:0.8;">Tact time: ${res.elapsed_ms} ms</div>` : ''}
                     </div>
                 </div>
                 ${alignNotice}
                 <!-- View Switcher Toolbar -->
                 <div class="result-view-header">
                     <div class="view-mode-tabs">
-                        <button type="button" class="btn-view-mode active btn-tab-overlay" data-card="${resIdx}">🎯 Defect Overlay</button>
-                        <button type="button" class="btn-view-mode btn-tab-split" data-card="${resIdx}">↔️ Split Diff Slider</button>
+                        <button type="button" class="btn-view-mode active btn-tab-overlay" data-card="${resIdx}">
+                            <svg class="ui-icon btn-svg-icon"><use href="#icon-scan"></use></svg> Defect Overlay
+                        </button>
+                        <button type="button" class="btn-view-mode btn-tab-split" data-card="${resIdx}">
+                            <svg class="ui-icon btn-svg-icon"><use href="#icon-split"></use></svg> Split Comparison
+                        </button>
                     </div>
-                    <span style="font-size: 0.76rem; color: var(--color-blue); font-weight: 500;">🔬 Tip: Click any row below to open 3× Digital Microscope</span>
+                    <span style="font-size: 0.76rem; color: var(--color-blue); font-weight: 500;">Select any component row below to inspect in 3× Digital Loupe</span>
                 </div>
 
                 <div class="result-card-body">
@@ -1438,7 +1442,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div id="split-layer-top-${resIdx}" class="split-layer split-layer-top" style="width: 50%;">
                                 <canvas id="split-canvas-ref-${resIdx}"></canvas>
                                 <span class="split-label-badge split-label-ref">Golden Reference</span>
-                                <div class="split-divider-handle">⇄</div>
+                                <div class="split-divider-handle"></div>
                             </div>
                         </div>
                         <div id="split-controls-${resIdx}" class="d-none" style="padding: 0.5rem 0.8rem; background: var(--bg-card-subtle); border-radius: 0 0 6px 6px;">
@@ -1504,24 +1508,24 @@ document.addEventListener('DOMContentLoaded', () => {
                                         if (sign) {
                                             const isPres = sign.final_status === 'PRESENT';
                                             const signBadge = isPres ? 'badge-signoff-verified' : 'badge-signoff-confirmed';
-                                            const signIcon = isPres ? '✓' : '✗';
+                                            const signIcon = isPres ? 'PASS' : 'DEFECT';
                                             signoffHtml = `
                                                 <div style="margin-top:0.35rem;">
-                                                    <span class="${signBadge}">${signIcon} ${isPres ? 'VERIFIED PRESENT' : 'CONFIRMED DEFECT'}</span>
+                                                    <span class="${signBadge}">${signIcon}: ${isPres ? 'VERIFIED PRESENT' : 'CONFIRMED DEFECT'}</span>
                                                     <span style="font-size:0.75rem; color:#8b949e; margin-left:0.3rem;">(By ${sign.operator_id}${sign.note ? ' &bull; ' + sign.note : ''})</span>
-                                                    <button type="button" class="btn-link btn-edit-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" style="margin-left:0.5rem; font-size:0.75rem; color:#58a6ff;">✎ Edit</button>
+                                                    <button type="button" class="btn-link btn-edit-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" style="margin-left:0.5rem; font-size:0.75rem; color:#58a6ff;">Edit</button>
                                                 </div>
                                                 <div style="font-size:0.75rem; color:#8b949e; margin-top:2px;">Original Machine Verdict: UNCERTAIN</div>
                                             `;
                                         } else {
                                             signoffHtml = `
                                                 <div class="signoff-box">
-                                                    <div class="signoff-header-text">⚠ Operator Sign-Off Required for This Part</div>
+                                                    <div class="signoff-header-text">Operator Sign-Off Required for Discrepancy</div>
                                                     <div class="signoff-controls-row">
                                                         <input type="text" class="signoff-input signoff-input-badge" id="badge-${resIdx}-${c.name}" placeholder="Badge ID" value="${state.currentUser ? state.currentUser.badge : 'OP-8402'}">
                                                         <input type="text" class="signoff-input signoff-input-note" id="note-${resIdx}-${c.name}" placeholder="Optional note (e.g. glare on lead)">
-                                                        <button type="button" class="btn btn-sm btn-success btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="PRESENT">✓ Verify Present</button>
-                                                        <button type="button" class="btn btn-sm btn-danger btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="MISSING">✗ Confirm Defect</button>
+                                                        <button type="button" class="btn btn-sm btn-success btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="PRESENT">Verify Present</button>
+                                                        <button type="button" class="btn btn-sm btn-danger btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="MISSING">Confirm Defect</button>
                                                     </div>
                                                 </div>
                                             `;
@@ -1529,10 +1533,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                     }
 
                                     return `
-                                        <tr class="result-row clickable-comp-row ${rowClass}" data-res-idx="${resIdx}" data-comp-name="${c.name}" title="Click to inspect in 3× Digital Microscope">
+                                        <tr class="result-row clickable-comp-row ${rowClass}" data-res-idx="${resIdx}" data-comp-name="${c.name}" title="Click to inspect in 3× Digital Loupe">
                                             <td style="cursor: pointer;">
                                                 <div style="display:flex; align-items:center; gap:0.45rem;">
-                                                    <span style="font-size:0.85rem;" title="Microscope Loupe">🔬</span>
+                                                    <svg class="ui-icon" style="width:13px; height:13px; color:var(--color-blue);"><use href="#icon-loupe"></use></svg>
                                                     <strong>${c.name}</strong>
                                                 </div>
                                             </td>
@@ -2065,11 +2069,11 @@ document.addEventListener('DOMContentLoaded', () => {
         loupeContainer.innerHTML = `
             <div class="loupe-header">
                 <div class="loupe-header-title">
-                    <span style="font-size:1.2rem;">🔬</span>
+                    <svg class="ui-icon" style="width:18px;height:18px;color:var(--color-blue);"><use href="#icon-loupe"></use></svg>
                     <h4>Digital Microscope Loupe: ${comp.name}</h4>
                     <span class="badge ${badgeClass}">${comp.status}</span>
                 </div>
-                <button type="button" class="btn-xs-link btn-close-loupe" data-card="${resIdx}" style="color:var(--text-muted); font-size:1rem; cursor:pointer; text-decoration:none;">&times; Close Loupe</button>
+                <button type="button" class="btn-xs-link btn-close-loupe" data-card="${resIdx}" style="color:var(--text-muted); font-size:0.85rem; cursor:pointer; text-decoration:none;">&times; Close Loupe</button>
             </div>
 
             <div class="loupe-crops-grid">
@@ -2222,7 +2226,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${b.defects > 0 ? `<span style="color:var(--color-red); font-weight:700;">${b.defects} defects</span>` : '<span style="color:var(--color-green-light);">0 defects</span>'}</td>
                 <td><span class="badge ${b.verdict === 'OK' ? 'badge-success' : 'badge-danger'}">${b.verdict}</span></td>
                 <td>${b.inspector}</td>
-                <td><button type="button" class="btn btn-xs btn-outline" onclick="window.print()">🖨️ Certificate</button></td>
+                <td><button type="button" class="btn btn-xs btn-outline" onclick="window.print()">
+                    <svg class="ui-icon btn-svg-icon"><use href="#icon-print"></use></svg> Certificate
+                </button></td>
             </tr>
         `).join('');
     }
@@ -2255,9 +2261,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div style="display:flex; gap:0.5rem;">
                         <button type="button" class="btn btn-sm btn-primary btn-block btn-load-studio" data-id="${p.id}">
-                            ⚡ Load into Live Station
+                            <svg class="ui-icon btn-svg-icon"><use href="#icon-scan"></use></svg> Load into Station
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline btn-recipe-dl" data-id="${p.id}" title="Download Recipe JSON">💾</button>
+                        <button type="button" class="btn btn-sm btn-outline btn-recipe-dl" data-id="${p.id}" title="Download Recipe JSON">
+                            <svg class="ui-icon btn-svg-icon"><use href="#icon-download"></use></svg>
+                        </button>
                     </div>
                 </div>
             `;
