@@ -95,14 +95,6 @@
                         <!-- Rendered dynamically from /api/presets -->
                     </div>
                 </div>
-
-                <details class="sample-details">
-                    <summary class="sample-summary">🧪 Legacy sample reference (synthetic)</summary>
-                    <div class="sample-details-content">
-                        <span class="sample-hint">Testing without physical boards? Use legacy synthetic reference:</span>
-                        <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-ref">Load Synthetic Reference (sample_data/reference.png)</button>
-                    </div>
-                </details>
             </div>
         </section>
 
@@ -129,14 +121,6 @@
                         Tightly-cropped boxes that clip solder pins cause false alarms under lighting shifts.
                     </div>
                 </div>
-
-                <details class="sample-details" style="margin-bottom: 1rem;">
-                    <summary class="sample-summary">🧪 Sample data for testing</summary>
-                    <div class="sample-details-content">
-                        <span class="sample-hint">Auto-populate standard 14 components for the sample reference board:</span>
-                        <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-comps">Load Standard 14 Parts</button>
-                    </div>
-                </details>
 
                 <div class="annotation-layout">
                     <!-- Left: Interactive Canvas -->
@@ -194,57 +178,35 @@
                         <div class="action-row-step3">
                             <button type="button" class="btn btn-sm btn-outline" id="btn-camera-test"><span class="btn-icon-label">📹</span> Capture Test Photo with Camera</button>
                         </div>
-                        <div class="preset-test-batch-box" id="preset-test-batch-box" style="margin-top: 0.6rem;">
-                            <button type="button" class="btn btn-sm btn-success-outline btn-block" id="btn-load-preset-batch">
-                                📦 Load Physical Test Batch for This Board (Nominal, Missing, Tilted, Shifted)
+                        <div class="preset-test-batch-box" id="preset-test-batch-box" style="margin-top: 0.8rem;">
+                            <button type="button" class="btn btn-sm btn-success-outline btn-block" id="btn-load-preset-batch" style="padding: 0.65rem 0.9rem; font-weight: 500;">
+                                📦 1-Click Load Physical Test Batch for This Board
                             </button>
                         </div>
-                        <details class="sample-details" style="margin-top: 0.6rem;">
-                            <summary class="sample-summary">🧪 Legacy sample data (synthetic)</summary>
-                            <div class="sample-details-content">
-                                <span class="sample-hint">Load legacy synthetic batch (1 OK, 2 Defective):</span>
-                                <button type="button" class="btn btn-sm btn-outline" id="btn-load-sample-batch">Load Legacy Batch</button>
-                            </div>
-                        </details>
                     </div>
 
-                    <!-- Right: Sensitivity & Action -->
-                    <div class="sensitivity-col">
-                        <label class="control-label">Inspection Sensitivity Profile:</label>
-                        <div class="sensitivity-selector">
-                            <label class="radio-card">
-                                <input type="radio" name="sensitivity" value="strict">
-                                <div class="radio-card-body">
-                                    <span class="radio-title">Strict</span>
-                                    <span class="radio-desc">High vigilance; catches subtle variations</span>
-                                </div>
-                            </label>
-                            <label class="radio-card selected">
-                                <input type="radio" name="sensitivity" value="balanced" checked>
-                                <div class="radio-card-body">
-                                    <span class="radio-title">Balanced (Recommended)</span>
-                                    <span class="radio-desc">Calibrated for fixed-camera shop-floor AOI</span>
-                                </div>
-                            </label>
-                            <label class="radio-card">
-                                <input type="radio" name="sensitivity" value="lenient">
-                                <div class="radio-card-body">
-                                    <span class="radio-title">Lenient</span>
-                                    <span class="radio-desc">Higher tolerance for glare & lighting shifts</span>
-                                </div>
-                            </label>
-                        </div>
+                    <!-- Right: Direct Inspection Action -->
+                    <div class="inspection-action-col">
+                        <div class="inspection-action-card">
+                            <div class="action-card-header">
+                                <span class="badge badge-success">⚡ Industrial AOI Ready</span>
+                                <h3 style="margin: 0.4rem 0 0.2rem 0; font-size: 1.1rem; color: var(--text-primary);">Automated Optical Inspection</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.9rem;">
+                                    Rigid Euclidean registration, sub-pixel ZNCC pattern matching, and offline Stage 2 deep triage will be executed across all loaded test boards.
+                                </p>
+                            </div>
 
-                        <div class="cascade-toggle-wrapper" style="margin-top: 0.8rem; margin-bottom: 0.8rem; background: var(--bg-card-subtle); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.6rem 0.8rem;">
-                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.82rem; color: var(--text-primary); margin: 0;">
-                                <input type="checkbox" id="chk-enable-cascade" checked style="accent-color: var(--color-blue); width: 16px; height: 16px;">
-                                <span><strong>Cascaded Deep Learning Triage</strong> (Auto-resolves specular glare & bare pad ambiguities)</span>
-                            </label>
-                        </div>
+                            <div class="inspection-spec-pills">
+                                <span class="spec-pill">✓ IPC-A-610 Class 2/3</span>
+                                <span class="spec-pill">✓ 7 Defect Modes</span>
+                                <span class="spec-pill">✓ Zero-Escape Policy</span>
+                                <span class="spec-pill">✓ 100% Offline Air-Gapped</span>
+                            </div>
 
-                        <button type="button" class="btn btn-primary btn-lg btn-block" id="btn-run-inspect" disabled>
-                            Inspect Board(s)
-                        </button>
+                            <button type="button" class="btn btn-primary btn-lg btn-block btn-pulse" id="btn-run-inspect" disabled style="padding: 1rem 1.25rem; font-size: 1.05rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.6rem; margin-top: 1.2rem;">
+                                <span style="font-size: 1.25rem;">⚡</span> Inspect Board(s) &amp; View Results
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -511,23 +511,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Quick sample reference loader
-    el.btnLoadSampleRef.addEventListener('click', async () => {
-        try {
-            el.btnLoadSampleRef.disabled = true;
-            el.btnLoadSampleRef.textContent = 'Loading sample...';
-            const res = await fetch('/sample_data/reference.png');
-            if (!res.ok) throw new Error('Sample reference not found on server');
-            const blob = await res.blob();
-            const file = new File([blob], 'reference.png', { type: 'image/png' });
-            await handleReferenceFile(file);
-        } catch (err) {
-            showAlert(`Could not load sample reference: ${err.message}`, 'danger');
-        } finally {
-            el.btnLoadSampleRef.disabled = false;
-            el.btnLoadSampleRef.textContent = 'Load Sample Reference (sample_data/reference.png)';
-        }
-    });
+    // Quick sample reference loader (optional fallback)
+    if (el.btnLoadSampleRef) {
+        el.btnLoadSampleRef.addEventListener('click', async () => {
+            try {
+                el.btnLoadSampleRef.disabled = true;
+                el.btnLoadSampleRef.textContent = 'Loading sample...';
+                const res = await fetch('/sample_data/reference.png');
+                if (!res.ok) throw new Error('Sample reference not found on server');
+                const blob = await res.blob();
+                const file = new File([blob], 'reference.png', { type: 'image/png' });
+                await handleReferenceFile(file);
+            } catch (err) {
+                showAlert(`Could not load sample reference: ${err.message}`, 'danger');
+            } finally {
+                el.btnLoadSampleRef.disabled = false;
+                el.btnLoadSampleRef.textContent = 'Load Sample Reference (sample_data/reference.png)';
+            }
+        });
+    }
 
     // --- STEP 2: CANVAS ANNOTATION ---
     function renderAnnotationCanvas() {
@@ -748,37 +750,39 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Quick load standard 14 components
-    el.btnLoadSampleComps.addEventListener('click', async () => {
-        try {
-            const res = await fetch('/api/sample-components');
-            if (!res.ok) throw new Error('Failed to fetch standard components');
-            const data = await res.json();
-            const comps = data.components;
+    // Quick load standard components (optional fallback)
+    if (el.btnLoadSampleComps) {
+        el.btnLoadSampleComps.addEventListener('click', async () => {
+            try {
+                const res = await fetch('/api/sample-components');
+                if (!res.ok) throw new Error('Failed to fetch standard components');
+                const data = await res.json();
+                const comps = data.components;
 
-            state.components = Object.keys(comps).map(cid => {
-                const info = comps[cid];
-                const [x, y, w, h] = info.pixel_bbox;
-                return {
-                    id: cid,
-                    name: cid,
-                    bbox: [x, y, w, h],
-                    warning: getBoxWarning(w, h, state.workingDim.width, state.workingDim.height),
-                    normalized: [
-                        Number((x / state.workingDim.width).toFixed(4)),
-                        Number((y / state.workingDim.height).toFixed(4)),
-                        Number((w / state.workingDim.width).toFixed(4)),
-                        Number((h / state.workingDim.height).toFixed(4)),
-                    ],
-                };
-            });
+                state.components = Object.keys(comps).map(cid => {
+                    const info = comps[cid];
+                    const [x, y, w, h] = info.pixel_bbox;
+                    return {
+                        id: cid,
+                        name: cid,
+                        bbox: [x, y, w, h],
+                        warning: getBoxWarning(w, h, state.workingDim.width, state.workingDim.height),
+                        normalized: [
+                            Number((x / state.workingDim.width).toFixed(4)),
+                            Number((y / state.workingDim.height).toFixed(4)),
+                            Number((w / state.workingDim.width).toFixed(4)),
+                            Number((h / state.workingDim.height).toFixed(4)),
+                        ],
+                    };
+                });
 
-            renderAnnotationCanvas();
-            renderComponentsList();
-        } catch (err) {
-            showAlert(`Could not load standard components: ${err.message}`, 'danger');
-        }
-    });
+                renderAnnotationCanvas();
+                renderComponentsList();
+            } catch (err) {
+                showAlert(`Could not load standard components: ${err.message}`, 'danger');
+            }
+        });
+    }
 
     el.btnClearComps.addEventListener('click', () => {
         if (state.components.length === 0) return;
@@ -1212,33 +1216,35 @@ document.addEventListener('DOMContentLoaded', () => {
         el.btnRunInspect.disabled = state.testFiles.length === 0;
     }
 
-    // Quick sample batch loader: 1 Complete (calib_01), 1 Defect (calib_08), 1 Defect (calib_12)
-    el.btnLoadSampleBatch.addEventListener('click', async () => {
-        const sampleFiles = [
-            { name: 'calib_01_all_ok_nominal.png', path: '/sample_data/calibration/calib_01_all_ok_nominal.png' },
-            { name: 'calib_08_missing_u1_mcu.png', path: '/sample_data/calibration/calib_08_missing_u1_mcu.png' },
-            { name: 'calib_12_missing_adj_c1_c2.png', path: '/sample_data/calibration/calib_12_missing_adj_c1_c2.png' },
-        ];
+    // Quick sample batch loader (optional fallback)
+    if (el.btnLoadSampleBatch) {
+        el.btnLoadSampleBatch.addEventListener('click', async () => {
+            const sampleFiles = [
+                { name: 'calib_01_all_ok_nominal.png', path: '/sample_data/calibration/calib_01_all_ok_nominal.png' },
+                { name: 'calib_08_missing_u1_mcu.png', path: '/sample_data/calibration/calib_08_missing_u1_mcu.png' },
+                { name: 'calib_12_missing_adj_c1_c2.png', path: '/sample_data/calibration/calib_12_missing_adj_c1_c2.png' },
+            ];
 
-        try {
-            el.btnLoadSampleBatch.disabled = true;
-            el.btnLoadSampleBatch.textContent = 'Loading sample batch...';
+            try {
+                el.btnLoadSampleBatch.disabled = true;
+                el.btnLoadSampleBatch.textContent = 'Loading sample batch...';
 
-            for (const item of sampleFiles) {
-                const res = await fetch(item.path);
-                if (res.ok) {
-                    const blob = await res.blob();
-                    const file = new File([blob], item.name, { type: 'image/png' });
-                    addTestFiles([file]);
+                for (const item of sampleFiles) {
+                    const res = await fetch(item.path);
+                    if (res.ok) {
+                        const blob = await res.blob();
+                        const file = new File([blob], item.name, { type: 'image/png' });
+                        addTestFiles([file]);
+                    }
                 }
+            } catch (err) {
+                showAlert(`Failed to load sample batch: ${err.message}`, 'danger');
+            } finally {
+                el.btnLoadSampleBatch.disabled = false;
+                el.btnLoadSampleBatch.textContent = 'Load Sample Batch';
             }
-        } catch (err) {
-            showAlert(`Failed to load sample batch: ${err.message}`, 'danger');
-        } finally {
-            el.btnLoadSampleBatch.disabled = false;
-            el.btnLoadSampleBatch.textContent = 'Load Sample Batch (Complete, Missing MCU, Missing Passives)';
-        }
-    });
+        });
+    }
 
     // 1-Click Load Physical Test Batch for Active Preset
     if (el.btnLoadPresetBatch) {
@@ -1275,21 +1281,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 showAlert(`Failed to load physical test batch: ${err.message}`, 'danger');
             } finally {
                 el.btnLoadPresetBatch.disabled = false;
-                el.btnLoadPresetBatch.textContent = '📦 Load Physical Test Batch for This Board (Nominal, Missing, Tilted, Shifted)';
+                el.btnLoadPresetBatch.textContent = '📦 1-Click Load Physical Test Batch for This Board';
             }
         });
     }
 
-    // Sensitivity radio selection
-    document.querySelectorAll('input[name="sensitivity"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
-            e.target.closest('.radio-card').classList.add('selected');
-            state.activeSensitivity = e.target.value;
-        });
-    });
-
-    // Run Inspection
+    // Run Automated Inspection (Single Click - Balanced Calibrated Operating Standard)
     el.btnRunInspect.addEventListener('click', async () => {
         if (state.testFiles.length === 0) return;
 
@@ -1301,9 +1298,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData();
         formData.append('session_id', state.sessionId);
-        formData.append('sensitivity', state.activeSensitivity);
-        const chkCascade = document.getElementById('chk-enable-cascade');
-        formData.append('enable_cascade', chkCascade ? chkCascade.checked : true);
+        formData.append('sensitivity', 'balanced');
+        formData.append('enable_cascade', true);
 
         state.testFiles.forEach(file => {
             formData.append('test_images', file);
