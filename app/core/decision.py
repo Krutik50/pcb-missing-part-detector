@@ -4,7 +4,7 @@ States: PRESENT (Green), MISSING (Red), UNCERTAIN (Amber / Review).
 Board-level status: OK, DEFECT, REVIEW.
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from app.core.config import DetectionConfig
 
 
@@ -12,15 +12,13 @@ def classify_component(
     component_name: str,
     inspection_result: Dict[str, Any],
     config: DetectionConfig,
+    auto_calib: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     Applies multi-metric 3-state decision rules to evaluate a component:
     - PRESENT: High ZNCC (surface pattern match) AND Low Patch Diff (low residual)
     - MISSING: Low ZNCC OR High Patch Diff (bare pad/silkscreen visible)
-    - UNCERTAIN: Borderline scores requiring operator review
-
-    Returns:
-        Structured result with status, scores, and human-readable diagnostic reason.
+    - UNCERTAIN: Borderline scores or auto-calibrated variance crossing threshold, requiring human review
     """
     zncc = inspection_result["zncc_score"]
     diff = inspection_result["patch_diff"]
@@ -32,6 +30,16 @@ def classify_component(
     d_high = thresholds["diff_high"]
     max_tilt = thresholds.get("max_allowed_tilt_deg", 3.5)
     max_shift = thresholds.get("max_allowed_shift_px", 5.0)
+    auto_calibrated = False
+    good_units = 100
+    model_name = "Board Architecture"
+
+    if auto_calib:
+        max_tilt = auto_calib.get("learned_max_tilt", max_tilt)
+        max_shift = auto_calib.get("learned_max_shift", max_shift)
+        good_units = auto_calib.get("good_units_count", 100)
+        model_name = auto_calib.get("name", "Board Architecture")
+        auto_calibrated = auto_calib.get("auto_calibrated", True)
 
     tilt_deg = inspection_result.get("tilt_deg", 0.0)
     rot_zncc = inspection_result.get("rot_zncc", zncc)
@@ -72,16 +80,27 @@ def classify_component(
         else:
             reason = f"Significant structural deviation (Diff: {diff:.2f} > {d_high:.2f})"
     elif is_present:
-        # Evaluate SMT placement tolerances (IPC-A-610 Class 2/3)
+        # Evaluate SMT placement tolerances (IPC-A-610 Class 2/3 and Auto-Calibration envelope)
         if abs(tilt_deg) > max_tilt:
-            status = "TILTED"
-            reason = f"Component skewed/tilted by {tilt_deg:+.1f}° (Tolerance limit: ±{max_tilt:.1f}°)"
+            if auto_calibrated:
+                status = "UNCERTAIN"  # Automatically routed to human review!
+                reason = f"Auto-Calibration Alert: Tilt {tilt_deg:+.1f}° exceeds learned limit (±{max_tilt:.1f}° from {good_units} good {model_name} boards) — marked for human review"
+            else:
+                status = "TILTED"
+                reason = f"Component skewed/tilted by {tilt_deg:+.1f}° (Tolerance limit: ±{max_tilt:.1f}°)"
         elif shift_dist > max_shift:
-            status = "MISALIGNED"
-            reason = f"Component shifted by {shift_dist:.1f}px (Tolerance limit: {max_shift:.1f}px, dx={shift_x:+.1f}, dy={shift_y:+.1f})"
+            if auto_calibrated:
+                status = "UNCERTAIN"  # Automatically routed to human review!
+                reason = f"Auto-Calibration Alert: Shift {shift_dist:.1f}px exceeds learned limit ({max_shift:.1f}px from {good_units} good {model_name} boards) — marked for human review"
+            else:
+                status = "MISALIGNED"
+                reason = f"Component shifted by {shift_dist:.1f}px (Tolerance limit: {max_shift:.1f}px, dx={shift_x:+.1f}, dy={shift_y:+.1f})"
         else:
             status = "PRESENT"
-            reason = f"Verified present & aligned (ZNCC: {zncc:.2f}, Tilt: {tilt_deg:+.1f}°, Shift: {shift_dist:.1f}px)"
+            if auto_calibrated:
+                reason = f"Verified present & aligned within auto-calibrated baseline (ZNCC: {zncc:.2f}, Tilt: {tilt_deg:+.1f}°, Shift: {shift_dist:.1f}px)"
+            else:
+                reason = f"Verified present & aligned (ZNCC: {zncc:.2f}, Tilt: {tilt_deg:+.1f}°, Shift: {shift_dist:.1f}px)"
     else:
         status = "UNCERTAIN"
         reason = f"Borderline scores (ZNCC: {zncc:.2f}, Diff: {diff:.2f}) - manual visual check recommended"

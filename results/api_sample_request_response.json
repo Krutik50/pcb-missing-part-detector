@@ -1,7 +1,7 @@
 {
   "endpoint": "POST /api/inspect",
   "request": {
-    "session_id": "e61887d764ca4d33b7225ad04fded3aa",
+    "session_id": "53c71f32eb7a4eff974705f99551e106",
     "sensitivity": "balanced",
     "test_images_count": 4,
     "filenames": [
@@ -45,7 +45,7 @@
               "tilt_deg": -0.25,
               "shift_dist_px": 0.0
             },
-            "reason": "Verified present & aligned (ZNCC: 0.99, Tilt: -0.2\u00b0, Shift: 0.0px)",
+            "reason": "Verified present & aligned within auto-calibrated baseline (ZNCC: 0.99, Tilt: -0.2\u00b0, Shift: 0.0px)",
             "shape_type": "rectangle",
             "polygon": null,
             "box": {
@@ -72,7 +72,7 @@
               "tilt_deg": 0.25,
               "shift_dist_px": 0.0
             },
-            "reason": "Verified present & aligned (ZNCC: 0.99, Tilt: +0.2\u00b0, Shift: 0.0px)",
+            "reason": "Verified present & aligned within auto-calibrated baseline (ZNCC: 0.99, Tilt: +0.2\u00b0, Shift: 0.0px)",
             "shape_type": "rectangle",
             "polygon": null,
             "box": {
@@ -114,7 +114,7 @@
               "tilt_deg": -0.25,
               "shift_dist_px": 0.0
             },
-            "reason": "Verified present & aligned (ZNCC: 0.99, Tilt: -0.2\u00b0, Shift: 0.0px)",
+            "reason": "Verified present & aligned within auto-calibrated baseline (ZNCC: 0.99, Tilt: -0.2\u00b0, Shift: 0.0px)",
             "shape_type": "rectangle",
             "polygon": null,
             "box": {
@@ -141,7 +141,7 @@
               "tilt_deg": 0.25,
               "shift_dist_px": 0.0
             },
-            "reason": "Verified present & aligned (ZNCC: 0.99, Tilt: +0.2\u00b0, Shift: 0.0px)",
+            "reason": "Verified present & aligned within auto-calibrated baseline (ZNCC: 0.99, Tilt: +0.2\u00b0, Shift: 0.0px)",
             "shape_type": "rectangle",
             "polygon": null,
             "box": {
@@ -210,7 +210,7 @@
               "tilt_deg": 0.25,
               "shift_dist_px": 0.0
             },
-            "reason": "Verified present & aligned (ZNCC: 0.99, Tilt: +0.2\u00b0, Shift: 0.0px)",
+            "reason": "Verified present & aligned within auto-calibrated baseline (ZNCC: 0.99, Tilt: +0.2\u00b0, Shift: 0.0px)",
             "shape_type": "rectangle",
             "polygon": null,
             "box": {

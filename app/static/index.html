@@ -131,22 +131,14 @@
                     <span class="sidebar-link-text">Inspection Station</span>
                     <span class="sidebar-badge">ONLINE</span>
                 </a>
-                <a class="sidebar-link" data-workspace="workspace-recipe" id="nav-item-recipe" title="Recipe & CAD Footprint Studio">
+                <a class="sidebar-link" data-workspace="workspace-recipe" id="nav-item-recipe" title="Recipe &amp; CAD Footprint Studio">
                     <span class="sidebar-icon"><svg class="ui-icon"><use href="#icon-chip"></use></svg></span>
-                    <span class="sidebar-link-text">Board & CAD Studio</span>
+                    <span class="sidebar-link-text">Board &amp; CAD Studio</span>
                     <span class="sidebar-badge">5 PRESETS</span>
                 </a>
-                <a class="sidebar-link" data-workspace="workspace-analytics" id="nav-item-analytics" title="Statistical Process Control & Yield">
-                    <span class="sidebar-icon"><svg class="ui-icon"><use href="#icon-chart"></use></svg></span>
-                    <span class="sidebar-link-text">Quality & Yield (SPC)</span>
-                </a>
-                <a class="sidebar-link" data-workspace="workspace-archive" id="nav-item-archive" title="ISO 9001 Batch Audit Records">
+                <a class="sidebar-link" data-workspace="workspace-archive" id="nav-item-archive" title="Monitored Board Logs &amp; Traceability">
                     <span class="sidebar-icon"><svg class="ui-icon"><use href="#icon-archive"></use></svg></span>
-                    <span class="sidebar-link-text">ISO 9001 Archive</span>
-                </a>
-                <a class="sidebar-link" data-workspace="workspace-settings" id="nav-item-settings" title="Machine Vision & Reticle Alignment">
-                    <span class="sidebar-icon"><svg class="ui-icon"><use href="#icon-settings"></use></svg></span>
-                    <span class="sidebar-link-text">Optical Calibration</span>
+                    <span class="sidebar-link-text">Monitored Board Logs</span>
                 </a>
             </nav>
 
@@ -506,171 +498,62 @@
                 </section>
 
                 <!-- ============================================================= -->
-                <!-- WORKSPACE 3: QUALITY & YIELD ANALYTICS (SPC) -->
-                <!-- ============================================================= -->
-                <section id="workspace-analytics" class="app-workspace d-none">
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <h2>Statistical Process Control (SPC) &amp; Yield Analytics</h2>
-                                <p class="section-desc" style="margin: 0.2rem 0 0 0;">
-                                    Real-time production line quality monitoring, defect Pareto distributions, and component vulnerability ranking.
-                                </p>
-                            </div>
-                            <div class="header-tools">
-                                <span class="badge badge-success">LIVE TELEMETRY</span>
-                            </div>
-                        </div>
-
-                        <div class="spc-kpi-row">
-                            <div class="spc-kpi-card">
-                                <span class="spc-kpi-title">First-Pass Yield (FPY)</span>
-                                <span class="spc-kpi-value" id="spc-fpy-val" style="color: var(--color-green-light);">98.0%</span>
-                                <span style="font-size:0.75rem; color:var(--text-muted);">Benchmarked on physical test sets</span>
-                            </div>
-                            <div class="spc-kpi-card">
-                                <span class="spc-kpi-title">Components Evaluated</span>
-                                <span class="spc-kpi-value" id="spc-evals-val">4,100</span>
-                                <span style="font-size:0.75rem; color:var(--text-muted);">500 boards across 5 architectures</span>
-                            </div>
-                            <div class="spc-kpi-card">
-                                <span class="spc-kpi-title">Critical False Escapes</span>
-                                <span class="spc-kpi-value" id="spc-escapes-val" style="color: var(--color-green-light);">0 FN</span>
-                                <span style="font-size:0.75rem; color:var(--text-muted);">Zero-escape policy enforced</span>
-                            </div>
-                            <div class="spc-kpi-card">
-                                <span class="spc-kpi-title">Mean Tact Time</span>
-                                <span class="spc-kpi-value" id="spc-latency-val">250 ms</span>
-                                <span style="font-size:0.75rem; color:var(--text-muted);">Sub-second inline cycle standard</span>
-                            </div>
-                        </div>
-
-                        <div class="spc-chart-grid">
-                            <div class="spc-chart-box">
-                                <h3 style="font-size:1.05rem; margin-bottom:1rem;">Defect Mode Distribution (Pareto)</h3>
-                                <div id="pareto-chart-container">
-                                    <!-- Populated dynamically -->
-                                </div>
-                            </div>
-                            <div class="spc-chart-box">
-                                <h3 style="font-size:1.05rem; margin-bottom:1rem;">Component Vulnerability Ranking</h3>
-                                <div id="top-failing-parts-container">
-                                    <!-- Populated dynamically -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ============================================================= -->
-                <!-- WORKSPACE 4: ISO 9001 BATCH ARCHIVE -->
+                <!-- WORKSPACE 3: MONITORED BOARD LOGS & TRACEABILITY -->
                 <!-- ============================================================= -->
                 <section id="workspace-archive" class="app-workspace d-none">
                     <div class="card">
                         <div class="card-header">
                             <div>
-                                <h2>ISO 9001 Inspection Batch Archive &amp; Traceability</h2>
+                                <h2>Monitored Board Logs &amp; Automated Calibration Registry</h2>
                                 <p class="section-desc" style="margin: 0.2rem 0 0 0;">
-                                    Historical inspection registry, operator verification sign-offs, and downloadable compliance audit records.
+                                    Production batch audit trail, automated optical calibration baselines, and operator verification sign-offs.
                                 </p>
                             </div>
                             <div class="header-tools">
                                 <button type="button" class="btn btn-sm btn-outline" id="btn-export-archive-csv">
-                                    <svg class="ui-icon btn-svg-icon"><use href="#icon-download"></use></svg> Export Log (CSV)
+                                    <svg class="ui-icon btn-svg-icon"><use href="#icon-download"></use></svg> Export Logs (CSV)
                                 </button>
                             </div>
                         </div>
 
-                        <div class="archive-table-wrapper" style="overflow-x: auto; margin-top: 1rem;">
-                            <table class="result-table" id="archive-table">
-                                <thead>
-                                    <tr>
-                                        <th>Batch ID</th>
-                                        <th>Board Model</th>
-                                        <th>Timestamp</th>
-                                        <th>Parts Checked</th>
-                                        <th>Defects</th>
-                                        <th>Verdict</th>
-                                        <th>Inspector</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="archive-table-body">
-                                    <!-- Populated dynamically -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ============================================================= -->
-                <!-- WORKSPACE 5: CAMERA & CALIBRATION CENTER -->
-                <!-- ============================================================= -->
-                <section id="workspace-settings" class="app-workspace d-none">
-                    <div class="card">
-                        <div class="card-header">
-                            <div>
-                                <h2>Machine Vision &amp; Camera Calibration Center</h2>
-                                <p class="section-desc" style="margin: 0.2rem 0 0 0;">
-                                    Optical alignment reticle, lighting uniformity diagnostics, and SMT tolerance threshold tuning.
-                                </p>
+                        <!-- Automated Optical Calibration Status Banner & Cards -->
+                        <div class="auto-calib-banner" style="background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:6px; padding:1.1rem 1.25rem; margin-top:1.25rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.5rem;">
+                                <div style="display:flex; align-items:center; gap:0.6rem;">
+                                    <span class="badge badge-success" style="font-size:0.72rem;">ACTIVE AUTO-CALIBRATION</span>
+                                    <strong style="font-size:0.95rem;">Empirical Optical Tolerance Baselines</strong>
+                                </div>
+                                <span style="font-size:0.75rem; color:var(--text-muted);">Self-Calibrating from Monitored Production Batches</span>
                             </div>
-                            <div class="header-tools">
-                                <button type="button" class="btn btn-sm btn-primary" id="btn-calibrate-cam">
-                                    <svg class="ui-icon btn-svg-icon"><use href="#icon-camera"></use></svg> Test Alignment Feed
-                                </button>
+                            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:1rem; line-height:1.45;">
+                                Optical placement tolerances (angular tilt and lateral shift) are automatically learned from populations of verified good boards (e.g. 100 Arduino Uno units). Unseen test boards that cross this learned empirical threshold are automatically flagged for <strong>Human Review</strong>.
+                            </p>
+                            <div class="auto-calib-cards-grid" id="auto-calib-cards-container">
+                                <!-- Populated dynamically from /api/calibration/profiles -->
                             </div>
                         </div>
 
-                        <!-- RBAC Optical Calibration Banner -->
-                        <div class="rbac-notice-banner rbac-locked" id="settings-rbac-banner" style="margin-top: 1rem; margin-bottom: 0;">
-                            <svg class="ui-icon"><use href="#icon-alert"></use></svg>
-                            <span id="settings-rbac-text"><strong>Tolerances Locked:</strong> Machine vision placement tolerances and optical calibration are restricted to QA Administrators. Read-only for Inspectors and Supervisors.</span>
-                        </div>
-
-                        <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:1.5rem; margin-top:1rem;">
-                            <!-- Left: Reticle View -->
-                            <div>
-                                <div class="reticle-container">
-                                    <div class="reticle-overlay-lines">
-                                        <div class="reticle-crosshair-h"></div>
-                                        <div class="reticle-crosshair-v"></div>
-                                        <div class="reticle-boundary-box"></div>
-                                    </div>
-                                    <div style="width:100%; height:360px; background:#060a10; display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:0.85rem; padding: 1.5rem; text-align: center;">
-                                        <span id="reticle-placeholder-text">Initiate alignment stream to project optical center reticle lines</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Right: Calibration Sliders -->
-                            <div style="background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:4px; padding:1.25rem;">
-                                <h3 style="font-size:1.05rem; margin-bottom:1rem;">SMT Placement Tolerance Limits</h3>
-                                
-                                <div style="margin-bottom:1.25rem;">
-                                    <div style="display:flex; justify-content:space-between; margin-bottom:0.35rem;">
-                                        <label style="font-size:0.85rem; font-weight:600;">Max Angular Skew (|&Delta;&theta;|):</label>
-                                        <span style="font-family:var(--font-mono); font-weight:700; color:var(--color-blue);" id="val-disp-tilt">&plusmn;3.5&deg;</span>
-                                    </div>
-                                    <input type="range" min="1.0" max="10.0" step="0.5" value="3.5" class="split-range-input" id="range-tilt-tolerance">
-                                    <span style="font-size:0.75rem; color:var(--text-muted);">IPC-A-610 Class 2/3 limit for chip &amp; IC rotation.</span>
-                                </div>
-
-                                <div style="margin-bottom:1.25rem;">
-                                    <div style="display:flex; justify-content:space-between; margin-bottom:0.35rem;">
-                                        <label style="font-size:0.85rem; font-weight:600;">Max Lateral Shift (&Delta;d):</label>
-                                        <span style="font-family:var(--font-mono); font-weight:700; color:var(--color-blue);" id="val-disp-shift">5.0 px</span>
-                                    </div>
-                                    <input type="range" min="2.0" max="15.0" step="0.5" value="5.0" class="split-range-input" id="range-shift-tolerance">
-                                    <span style="font-size:0.75rem; color:var(--text-muted);">Tolerance margin for pick-and-place nozzle positioning.</span>
-                                </div>
-
-                                <div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border-color);">
-                                    <span class="badge badge-success" style="margin-bottom:0.5rem; display:inline-block;">CALIBRATED LIMITS ACTIVE</span>
-                                    <p style="font-size:0.8rem; color:var(--text-muted); margin:0;">
-                                        Tolerances locked according to empirical validation across 500 physical boards to guarantee zero false escapes.
-                                    </p>
-                                </div>
+                        <!-- Monitored Board Batch History Registry -->
+                        <div style="margin-top:1.75rem;">
+                            <h3 style="font-size:1.05rem; margin-bottom:0.75rem;">Batch Inspection &amp; Hardware Sign-Off History</h3>
+                            <div class="archive-table-wrapper" style="overflow-x: auto;">
+                                <table class="result-table" id="archive-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Batch ID</th>
+                                            <th>Board Architecture</th>
+                                            <th>Timestamp</th>
+                                            <th>Parts Inspected</th>
+                                            <th>Defects</th>
+                                            <th>Verdict</th>
+                                            <th>Lead Inspector</th>
+                                            <th>Quality Sheet</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="archive-table-body">
+                                        <!-- Populated dynamically -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>

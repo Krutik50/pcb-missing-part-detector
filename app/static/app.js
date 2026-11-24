@@ -259,48 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (el.btnImportRecipe) el.btnImportRecipe.disabled = true;
         }
 
-        // Workspace 5 Calibration & Tolerance Controls & Banner
-        const settingsBanner = document.getElementById('settings-rbac-banner');
-        const rangeTilt = document.getElementById('range-tilt-tolerance');
-        const rangeShift = document.getElementById('range-shift-tolerance');
-        const btnCalCam = document.getElementById('btn-calibrate-cam');
-
-        if (canTuneTolerances()) {
-            if (settingsBanner) {
-                settingsBanner.className = 'rbac-notice-banner rbac-authorized';
-                settingsBanner.innerHTML = `
-                    <svg class="ui-icon"><use href="#icon-check"></use></svg>
-                    <span id="settings-rbac-text"><strong>Tolerances Unlocked:</strong> Plant Quality Administrator access confirmed. Placement tolerances and optical reticle active.</span>
-                `;
-            }
-            if (rangeTilt) {
-                rangeTilt.disabled = false;
-                rangeTilt.classList.remove('slider-locked');
-            }
-            if (rangeShift) {
-                rangeShift.disabled = false;
-                rangeShift.classList.remove('slider-locked');
-            }
-            if (btnCalCam) btnCalCam.disabled = false;
-        } else {
-            if (settingsBanner) {
-                settingsBanner.className = 'rbac-notice-banner rbac-locked';
-                settingsBanner.innerHTML = `
-                    <svg class="ui-icon"><use href="#icon-alert"></use></svg>
-                    <span id="settings-rbac-text"><strong>Tolerances Locked:</strong> Machine vision placement tolerances and optical calibration are restricted to QA Administrators. Read-only for Inspectors and Supervisors.</span>
-                `;
-            }
-            if (rangeTilt) {
-                rangeTilt.disabled = true;
-                rangeTilt.classList.add('slider-locked');
-            }
-            if (rangeShift) {
-                rangeShift.disabled = true;
-                rangeShift.classList.add('slider-locked');
-            }
-            if (btnCalCam) btnCalCam.disabled = true;
-        }
-
         // Update Component List UI if present
         if (state.components && state.components.length > 0) {
             renderComponentsList();
@@ -3210,173 +3168,96 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function renderBatchArchive() {
+    async function renderMonitoredBoardLogs() {
+        // 1. Render batch audit history rows
         const tbody = document.getElementById('archive-table-body');
-        if (!tbody) return;
-        if (!state.batchHistory || state.batchHistory.length === 0) {
-            state.batchHistory = [
-                { id: 'BATCH-841920', board: 'Arduino Uno R3 Physical MCU', time: '10:42 AM', parts: 82, defects: 3, verdict: 'DEFECT', inspector: 'Sarah Jenkins (OP-8402)' },
-                { id: 'BATCH-841919', board: 'Appliance AC Power Board', time: '10:15 AM', parts: 90, defects: 0, verdict: 'OK', inspector: 'Marcus Vance (OP-9104)' },
-                { id: 'BATCH-841918', board: 'Industrial PMS-63 Scale', time: '09:50 AM', parts: 75, defects: 2, verdict: 'DEFECT', inspector: 'Sarah Jenkins (OP-8402)' },
-                { id: 'BATCH-841917', board: 'Analog Instrumentation', time: '09:22 AM', parts: 64, defects: 0, verdict: 'OK', inspector: 'Dr. Elena Rostova (QM-001)' },
-            ];
+        if (tbody) {
+            if (!state.batchHistory || state.batchHistory.length === 0) {
+                state.batchHistory = [
+                    { id: 'BATCH-841920', board: 'Arduino Uno R3 Physical MCU', time: '10:42 AM', parts: 82, defects: 3, verdict: 'DEFECT', inspector: 'Sarah Jenkins (OP-8402)' },
+                    { id: 'BATCH-841919', board: 'Appliance AC Power Board', time: '10:15 AM', parts: 90, defects: 0, verdict: 'OK', inspector: 'Marcus Vance (OP-9104)' },
+                    { id: 'BATCH-841918', board: 'Industrial PMS-63 Scale', time: '09:50 AM', parts: 75, defects: 2, verdict: 'DEFECT', inspector: 'Sarah Jenkins (OP-8402)' },
+                    { id: 'BATCH-841917', board: 'Analog Instrumentation', time: '09:22 AM', parts: 64, defects: 0, verdict: 'OK', inspector: 'Dr. Elena Rostova (QM-001)' },
+                ];
+            }
+            tbody.innerHTML = state.batchHistory.map(b => `
+                <tr>
+                    <td><strong>${b.id}</strong></td>
+                    <td>${b.board}</td>
+                    <td style="color:var(--text-muted);">${b.time}</td>
+                    <td>${b.parts} parts</td>
+                    <td>${b.defects > 0 ? `<span style="color:var(--color-red); font-weight:700;">${b.defects} defects</span>` : '<span style="color:var(--color-green-light);">0 defects</span>'}</td>
+                    <td><span class="badge ${b.verdict === 'OK' ? 'badge-success' : 'badge-danger'}">${b.verdict}</span></td>
+                    <td>${b.inspector}</td>
+                    <td><button type="button" class="btn btn-xs btn-outline" onclick="window.openPrintableReport ? window.openPrintableReport() : window.print()">
+                        <svg class="ui-icon btn-svg-icon"><use href="#icon-print"></use></svg> Quality Sheet
+                    </button></td>
+                </tr>
+            `).join('');
         }
-        tbody.innerHTML = state.batchHistory.map(b => `
-            <tr>
-                <td><strong>${b.id}</strong></td>
-                <td>${b.board}</td>
-                <td style="color:var(--text-muted);">${b.time}</td>
-                <td>${b.parts} parts</td>
-                <td>${b.defects > 0 ? `<span style="color:var(--color-red); font-weight:700;">${b.defects} defects</span>` : '<span style="color:var(--color-green-light);">0 defects</span>'}</td>
-                <td><span class="badge ${b.verdict === 'OK' ? 'badge-success' : 'badge-danger'}">${b.verdict}</span></td>
-                <td>${b.inspector}</td>
-                <td><button type="button" class="btn btn-xs btn-outline" onclick="window.openPrintableReport ? window.openPrintableReport() : window.print()">
-                    <svg class="ui-icon btn-svg-icon"><use href="#icon-print"></use></svg> Quality Sheet
-                </button></td>
-            </tr>
-        `).join('');
-    }
 
-    // --- WORKSPACE 2: RECIPE STUDIO ---
-    function renderStudioGrid() {
-        const container = document.getElementById('studio-boards-grid');
-        if (!container || !state.presets) return;
-        container.innerHTML = '';
-
-        state.presets.forEach(p => {
-            const card = document.createElement('div');
-            card.className = 'studio-card';
-            const compCount = p.components ? p.components.length : 0;
-            card.innerHTML = `
-                <div class="studio-thumb-wrapper">
-                    <img src="${p.reference_url}" alt="${p.name}">
-                    <span class="preset-badge preset-badge-blue" style="position:absolute; top:8px; right:8px;">${p.tier}</span>
-                </div>
-                <div class="studio-body">
-                    <div>
-                        <h3 style="font-size:1.05rem; margin-bottom:0.3rem;">${p.name}</h3>
-                        <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.75rem;">
-                            ${compCount} Pre-calibrated SMT footprints &bull; ${p.resolution[0]}×${p.resolution[1]} px
-                        </p>
-                        <div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:1rem;">
-                            ${(p.components || []).slice(0, 5).map(c => `<span class="tag-chip" style="font-size:0.7rem; padding:0.15rem 0.4rem;">${c.name}</span>`).join('')}
-                            ${compCount > 5 ? `<span class="tag-chip" style="font-size:0.7rem; padding:0.15rem 0.4rem;">+${compCount - 5} more</span>` : ''}
+        // 2. Fetch and render Automated Optical Calibration baselines
+        const calibCards = document.getElementById('auto-calib-cards-container');
+        if (calibCards) {
+            try {
+                const res = await fetch('/api/calibration/profiles');
+                const data = await res.json();
+                const profiles = data.profiles || [];
+                calibCards.innerHTML = profiles.map(p => `
+                    <div class="auto-calib-card">
+                        <div class="auto-calib-card-header">
+                            <span class="auto-calib-card-title">${escapeHtml(p.name)}</span>
+                            <span class="auto-calib-badge">${p.status}</span>
+                        </div>
+                        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.35rem;">
+                            <strong>${p.good_units_count} Good Units</strong> Monitored &bull; Normal Variance Learned
+                        </div>
+                        <div class="auto-calib-metrics">
+                            <div class="auto-calib-metric-item">
+                                <strong>Learned Skew Limit</strong>
+                                <span class="auto-calib-metric-val">±${p.learned_max_tilt}°</span>
+                            </div>
+                            <div class="auto-calib-metric-item">
+                                <strong>Learned Shift Limit</strong>
+                                <span class="auto-calib-metric-val">${p.learned_max_shift} px</span>
+                            </div>
+                        </div>
+                        <div class="auto-calib-foot-sub">
+                            <span style="color:var(--color-blue); font-weight:600;">Automated Rule:</span> ${escapeHtml(p.human_review_rule)}
                         </div>
                     </div>
-                    <div style="display:flex; gap:0.5rem;">
-                        <button type="button" class="btn btn-sm btn-primary btn-block btn-load-studio" data-id="${p.id}">
-                            <svg class="ui-icon btn-svg-icon"><use href="#icon-scan"></use></svg> Load into Station
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline btn-recipe-dl" data-id="${p.id}" title="Download Recipe JSON">
-                            <svg class="ui-icon btn-svg-icon"><use href="#icon-download"></use></svg>
-                        </button>
-                    </div>
-                </div>
-            `;
-            card.querySelector('.btn-load-studio').addEventListener('click', async () => {
-                await applyPreset(p);
-                switchWorkspace('workspace-inspect');
-                setStep(2);
-            });
-            card.querySelector('.btn-recipe-dl').addEventListener('click', () => {
-                const recipe = {
-                    version: '2.0.0',
-                    board_id: p.id,
-                    board_name: p.name,
-                    resolution: p.resolution,
-                    components: p.components
-                };
-                const blob = new Blob([JSON.stringify(recipe, null, 2)], { type: 'application/json' });
+                `).join('');
+            } catch (err) {
+                console.warn('Could not fetch auto-calibration profiles', err);
+            }
+        }
+    }
+
+    const btnExportArchiveCsv = document.getElementById('btn-export-archive-csv');
+    if (btnExportArchiveCsv) {
+        btnExportArchiveCsv.addEventListener('click', () => {
+            if (state.lastInspectionData && state.lastInspectionData.results) {
+                downloadCsvReport();
+            } else {
+                const rows = [
+                    ['Batch_ID', 'Board_Architecture', 'Timestamp', 'Parts_Inspected', 'Defects', 'Verdict', 'Lead_Inspector']
+                ];
+                (state.batchHistory || []).forEach(b => {
+                    rows.push([b.id, `"${b.board}"`, b.time, b.parts, b.defects, b.verdict, `"${b.inspector}"`]);
+                });
+                const csv = rows.map(r => r.join(',')).join('\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `${p.id}_recipe.json`;
+                a.download = `monitored_board_logs_${Date.now()}.csv`;
+                document.body.appendChild(a);
                 a.click();
-            });
-            container.appendChild(card);
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
         });
     }
-
-    // --- WORKSPACE 3: QUALITY & YIELD ANALYTICS (SPC) ---
-    function renderAnalyticsSPC() {
-        const paretoContainer = document.getElementById('pareto-chart-container');
-        const topPartsContainer = document.getElementById('top-failing-parts-container');
-        if (!paretoContainer || !topPartsContainer) return;
-
-        const defects = [
-            { name: 'Missing Part', count: 35, pct: '100%', color: '#da3633' },
-            { name: 'Rotational Tilt', count: 32, pct: '91.4%', color: '#d29922' },
-            { name: 'Positional Shift', count: 34, pct: '97.1%', color: '#8957e5' },
-            { name: 'Reversed Polarity', count: 28, pct: '80.0%', color: '#388bfd' },
-            { name: 'Solder Bridge', count: 24, pct: '75.0%', color: '#d946ef' },
-            { name: 'Tombstoning', count: 18, pct: '65.0%', color: '#ea580c' },
-        ];
-
-        paretoContainer.innerHTML = defects.map(d => `
-            <div class="pareto-bar-row">
-                <span class="pareto-label">${d.name}</span>
-                <div class="pareto-bar-track">
-                    <div class="pareto-bar-fill" style="width:${d.pct}; background-color:${d.color};"></div>
-                </div>
-                <span class="pareto-count" style="color:${d.color};">${d.count} (${d.pct})</span>
-            </div>
-        `).join('');
-
-        topPartsContainer.innerHTML = `
-            <table class="result-table" style="font-size:0.8rem;">
-                <thead>
-                    <tr><th>Footprint / Designator</th><th>Defect Mode</th><th>Failure Incidents</th><th>Risk Level</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td><strong>U1_ATMEGA328_DIP</strong></td><td><span class="badge badge-tilted">Tilt &amp; Shift</span></td><td>14 events</td><td><span class="badge badge-danger">High Vigilance</span></td></tr>
-                    <tr><td><strong>C2_47UF_ALUM</strong></td><td><span class="badge badge-danger">Missing</span></td><td>12 events</td><td><span class="badge badge-danger">High Vigilance</span></td></tr>
-                    <tr><td><strong>U2_ATMEGA16U2</strong></td><td><span class="badge badge-bridged">Solder Bridge</span></td><td>9 events</td><td><span class="badge badge-amber">Medium</span></td></tr>
-                    <tr><td><strong>Y1_16MHZ_XTAL</strong></td><td><span class="badge badge-polarity">Polarity</span></td><td>7 events</td><td><span class="badge badge-amber">Medium</span></td></tr>
-                    <tr><td><strong>VR1_AMS1117</strong></td><td><span class="badge badge-tombstoned">Tombstoned</span></td><td>5 events</td><td><span class="badge badge-success">Low</span></td></tr>
-                </tbody>
-            </table>
-        `;
-    }
-
-    // --- WORKSPACE 5: CALIBRATION CONTROLS ---
-    function initCalibrationCenter() {
-        const tiltRange = document.getElementById('range-tilt-tolerance');
-        const shiftRange = document.getElementById('range-shift-tolerance');
-        const dispTilt = document.getElementById('val-disp-tilt');
-        const dispShift = document.getElementById('val-disp-shift');
-        const btnCalCam = document.getElementById('btn-calibrate-cam');
-
-        if (tiltRange && dispTilt) {
-            tiltRange.value = state.activeTolerances.max_tilt_deg;
-            dispTilt.textContent = `±${state.activeTolerances.max_tilt_deg.toFixed(1)}°`;
-            tiltRange.addEventListener('input', (e) => {
-                if (!canTuneTolerances()) return;
-                const val = parseFloat(e.target.value);
-                dispTilt.textContent = `±${val.toFixed(1)}°`;
-                state.activeTolerances.max_tilt_deg = val;
-            });
-        }
-        if (shiftRange && dispShift) {
-            shiftRange.value = state.activeTolerances.max_shift_px;
-            dispShift.textContent = `${state.activeTolerances.max_shift_px.toFixed(1)} px`;
-            shiftRange.addEventListener('input', (e) => {
-                if (!canTuneTolerances()) return;
-                const val = parseFloat(e.target.value);
-                dispShift.textContent = `${val.toFixed(1)} px`;
-                state.activeTolerances.max_shift_px = val;
-            });
-        }
-        if (btnCalCam) {
-            btnCalCam.addEventListener('click', () => {
-                if (!canTuneTolerances()) {
-                    showAlert('Optical Calibration Locked: Camera reticle calibration is restricted to QA Administrators.', 'warning');
-                    return;
-                }
-                openCameraModal();
-            });
-        }
-    }
-    initCalibrationCenter();
 
     // --- MULTI-WORKSPACE NAVIGATION ---
     const workspaceLinks = document.querySelectorAll('.sidebar-link');
@@ -3410,8 +3291,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Trigger workspace specific updates
         if (targetId === 'workspace-recipe') renderStudioGrid();
-        if (targetId === 'workspace-analytics') renderAnalyticsSPC();
-        if (targetId === 'workspace-archive') renderBatchArchive();
+        if (targetId === 'workspace-archive') renderMonitoredBoardLogs();
     }
 
     workspaceLinks.forEach(link => {

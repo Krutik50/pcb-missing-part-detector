@@ -2558,140 +2558,85 @@ body {
 }
 
 /* ==========================================================================
-   WORKSPACE 3: QUALITY & YIELD SPC DASHBOARD
+   MONITORED BOARD LOGS & AUTOMATED CALIBRATION REGISTRY
    ========================================================================== */
-.spc-kpi-row {
+.auto-calib-cards-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.85rem;
+    margin-top: 0.5rem;
 }
 
-.spc-kpi-card {
+.auto-calib-card {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1.25rem;
+    border-radius: 6px;
+    padding: 0.9rem 1rem;
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    justify-content: space-between;
+    transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
-.spc-kpi-title {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    font-weight: 600;
+.auto-calib-card:hover {
+    border-color: var(--color-blue);
+    transform: translateY(-2px);
 }
 
-.spc-kpi-value {
-    font-size: 1.85rem;
-    font-weight: 800;
-    color: var(--text-primary);
-    font-family: var(--font-mono);
-}
-
-.spc-chart-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.25rem;
-    margin-bottom: 1.5rem;
-}
-
-.spc-chart-box {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1.25rem;
-}
-
-.pareto-bar-row {
+.auto-calib-card-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
-.pareto-label {
-    width: 130px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-secondary);
+.auto-calib-card-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
 }
 
-.pareto-bar-track {
-    flex: 1;
-    height: 18px;
-    background: var(--bg-card-subtle);
-    border-radius: 9px;
-    overflow: hidden;
-    position: relative;
-}
-
-.pareto-bar-fill {
-    height: 100%;
-    border-radius: 9px;
-    transition: width 0.5s ease;
-}
-
-.pareto-count {
-    width: 45px;
-    text-align: right;
-    font-size: 0.8rem;
+.auto-calib-badge {
+    font-size: 0.68rem;
     font-weight: 700;
     font-family: var(--font-mono);
+    padding: 0.15rem 0.45rem;
+    border-radius: 3px;
+    background: var(--color-green-bg);
+    color: var(--color-green-light);
+    border: 1px solid var(--color-green-border);
 }
 
-/* ==========================================================================
-   WORKSPACE 5: CAMERA CALIBRATION RETICLE
-   ========================================================================== */
-.reticle-container {
-    position: relative;
-    width: 100%;
-    max-width: 720px;
-    margin: 0 auto;
-    background: #000;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 2px solid var(--border-color);
-}
-
-.reticle-overlay-lines {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 10;
-}
-
-.reticle-crosshair-h {
-    position: absolute;
-    top: 50%;
-    left: 10%;
-    right: 10%;
-    height: 1px;
-    background: rgba(88, 166, 255, 0.4);
-}
-
-.reticle-crosshair-v {
-    position: absolute;
-    left: 50%;
-    top: 10%;
-    bottom: 10%;
-    width: 1px;
-    background: rgba(88, 166, 255, 0.4);
-}
-
-.reticle-boundary-box {
-    position: absolute;
-    top: 15%;
-    left: 15%;
-    width: 70%;
-    height: 70%;
-    border: 1px dashed rgba(56, 189, 248, 0.6);
+.auto-calib-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+    padding: 0.45rem 0.6rem;
+    background: var(--bg-card-subtle);
     border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.auto-calib-metric-item strong {
+    display: block;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.auto-calib-metric-val {
+    font-size: 1.05rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--color-blue);
+}
+
+.auto-calib-foot-sub {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    line-height: 1.35;
+    margin-top: 0.35rem;
 }
 
 /* ==========================================================================

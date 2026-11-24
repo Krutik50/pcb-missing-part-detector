@@ -27,6 +27,7 @@ from app.core.aligner import align_test_to_reference
 from app.core.detector import inspect_component
 from app.core.decision import classify_component, aggregate_board_status
 from app.core.dl_verifier import get_dl_verifier
+from app.core.auto_calibration import get_auto_calibration_registry
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -98,6 +99,13 @@ async def get_sample_components():
             data = json.load(f)
         return {"components": data.get("components", {})}
     return {"components": {}}
+
+
+@app.get("/api/calibration/profiles")
+async def get_calibration_profiles():
+    """Returns empirical auto-calibrated optical tolerance profiles learned across PCB models."""
+    reg = get_auto_calibration_registry()
+    return {"profiles": reg.list_profiles()}
 
 
 def _validate_and_decode_image(file_bytes: bytes, filename: str) -> np.ndarray:
@@ -408,6 +416,11 @@ async def inspect_test_images(
                 downscale=cfg.alignment_downscale_factor,
             )
 
+            # Resolve auto-calibrated optical tolerance baseline (e.g. 100-board Arduino Uno profile)
+            calib_reg = get_auto_calibration_registry()
+            board_hint = session.get("board_model") or fname
+            auto_profile = calib_reg.get_profile(board_hint)
+
             # Inspect each component
             comp_results = []
             for cname, cinfo in sorted(components_dict.items()):
@@ -422,7 +435,7 @@ async def inspect_test_images(
                     polygon=cinfo.get("polygon"),
                 )
 
-                dec = classify_component(cname, insp, cfg)
+                dec = classify_component(cname, insp, cfg, auto_calib=auto_profile)
 
                 # Stage 2 Deep Learning Triage on Uncertain / Glare / Footprint edge cases
                 dl_info = None
@@ -523,11 +536,23 @@ async def inspect_test_images(
 
     session["last_inspection_results"] = results
 
+    calib_reg = get_auto_calibration_registry()
+    board_hint = session.get("board_model") or (results[0]["filename"] if results else None)
+    auto_profile = calib_reg.get_profile(board_hint)
+
     return {
         "session_id": session_id,
         "sensitivity": sens,
         "thresholds": effective_thresh,
         "total_images_inspected": len(test_images),
+        "auto_calibration": {
+            "board_model": auto_profile["name"],
+            "good_units_count": auto_profile["good_units_count"],
+            "learned_max_tilt": auto_profile["learned_max_tilt"],
+            "learned_max_shift": auto_profile["learned_max_shift"],
+            "status": "AUTO-CALIBRATED",
+            "rule": auto_profile["human_review_rule"],
+        },
         "results": results,
     }
 
@@ -793,7 +818,7 @@ async def record_operator_signoff(session_id: str, signoff: SignoffRequest):
 
 @app.get("/api/sessions/{session_id}/report.csv")
 async def export_inspection_csv(session_id: str):
-    """Exports inspection results and operator sign-offs as an ISO 9001 audit CSV certificate."""
+    """Exports inspection results and operator sign-offs as Monitored Board Logs CSV."""
     if session_id not in SESSIONS:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
