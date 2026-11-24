@@ -1,7 +1,7 @@
 {
   "endpoint": "POST /api/inspect",
   "request": {
-    "session_id": "85ef713693a344bc9c9d0a57263561a7",
+    "session_id": "4f0c11708454420da7fea984f973733c",
     "sensitivity": "balanced",
     "test_images_count": 4,
     "filenames": [
@@ -46,6 +46,8 @@
               "shift_dist_px": 0.0
             },
             "reason": "Verified present & aligned (ZNCC: 0.99, Tilt: -0.2\u00b0, Shift: 0.0px)",
+            "shape_type": "rectangle",
+            "polygon": null,
             "box": {
               "pixel": [
                 480,
@@ -71,6 +73,8 @@
               "shift_dist_px": 0.0
             },
             "reason": "Verified present & aligned (ZNCC: 0.99, Tilt: +0.2\u00b0, Shift: 0.0px)",
+            "shape_type": "rectangle",
+            "polygon": null,
             "box": {
               "pixel": [
                 480,
@@ -111,6 +115,8 @@
               "shift_dist_px": 0.0
             },
             "reason": "Verified present & aligned (ZNCC: 0.99, Tilt: -0.2\u00b0, Shift: 0.0px)",
+            "shape_type": "rectangle",
+            "polygon": null,
             "box": {
               "pixel": [
                 480,
@@ -136,6 +142,8 @@
               "shift_dist_px": 0.0
             },
             "reason": "Verified present & aligned (ZNCC: 0.99, Tilt: +0.2\u00b0, Shift: 0.0px)",
+            "shape_type": "rectangle",
+            "polygon": null,
             "box": {
               "pixel": [
                 480,
@@ -176,6 +184,8 @@
               "shift_dist_px": 0.0
             },
             "reason": "Surface mismatch & high pad residual (ZNCC: 0.83 < 0.86, Diff: 0.14 > 0.09)",
+            "shape_type": "rectangle",
+            "polygon": null,
             "box": {
               "pixel": [
                 480,
@@ -201,6 +211,8 @@
               "shift_dist_px": 0.0
             },
             "reason": "Verified present & aligned (ZNCC: 0.99, Tilt: +0.2\u00b0, Shift: 0.0px)",
+            "shape_type": "rectangle",
+            "polygon": null,
             "box": {
               "pixel": [
                 480,
@@ -241,6 +253,8 @@
               "shift_dist_px": 0.0
             },
             "reason": "Surface mismatch & high pad residual (ZNCC: 0.82 < 0.86, Diff: 0.15 > 0.09)",
+            "shape_type": "rectangle",
+            "polygon": null,
             "box": {
               "pixel": [
                 480,
@@ -266,6 +280,8 @@
               "shift_dist_px": 0.0
             },
             "reason": "Surface mismatch & high pad residual (ZNCC: 0.83 < 0.86, Diff: 0.14 > 0.09)",
+            "shape_type": "rectangle",
+            "polygon": null,
             "box": {
               "pixel": [
                 480,

@@ -60,6 +60,8 @@ class ComponentDef(BaseModel):
     name: str
     bbox: List[float]  # [x, y, w, h] either pixel coordinates or normalized [0..1]
     is_normalized: Optional[bool] = False
+    shape_type: Optional[str] = "rectangle"  # "rectangle", "pencil", "polygon"
+    polygon: Optional[List[List[float]]] = None  # [[x, y], ...] for non-linear contours
 
 
 class SetComponentsRequest(BaseModel):
@@ -229,6 +231,8 @@ async def set_session_components(session_id: str, payload: SetComponentsRequest)
             "name": name,
             "pixel_bbox": [px_x, px_y, px_w, px_h],
             "normalized_bbox": norm_box,
+            "shape_type": comp.shape_type or "rectangle",
+            "polygon": comp.polygon,
         }
 
     session["components"] = registered
@@ -415,6 +419,7 @@ async def inspect_test_images(
                     aligned_test,
                     px_box,
                     search_margin_px=cfg.search_margin_px,
+                    polygon=cinfo.get("polygon"),
                 )
 
                 dec = classify_component(cname, insp, cfg)
@@ -448,6 +453,8 @@ async def inspect_test_images(
                         "shift_dist_px": insp.get("shift_dist_px", 0.0),
                     },
                     "reason": dec["reason"],
+                    "shape_type": cinfo.get("shape_type", "rectangle"),
+                    "polygon": cinfo.get("polygon"),
                     "box": {
                         "pixel": px_box,
                         "normalized": norm_box,

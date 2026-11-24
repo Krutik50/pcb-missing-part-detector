@@ -59,6 +59,7 @@ def inspect_component(
     aligned_test_img: np.ndarray,
     bbox: List[int],
     search_margin_px: int = 16,
+    polygon: Any = None,
 ) -> Dict[str, Any]:
     """
     Evaluates a single component site:
@@ -157,8 +158,18 @@ def inspect_component(
     mean_c = float(np.mean(c_f))
     c_adjusted = c_f - mean_c + mean_t
 
-    # L1 residual normalized to [0.0, 1.0]
-    patch_diff = float(np.mean(np.abs(t_f - c_adjusted)) / 255.0)
+    # L1 residual normalized to [0.0, 1.0] (masked if non-linear polygon provided)
+    if polygon and len(polygon) >= 3:
+        mask = np.zeros((h, w), dtype=np.uint8)
+        local_pts = np.array([[int(round(p[0] - x)), int(round(p[1] - y))] for p in polygon], dtype=np.int32)
+        cv2.fillPoly(mask, [local_pts], 255)
+        if np.count_nonzero(mask) > 10:
+            diff_map = np.abs(t_f - c_adjusted)
+            patch_diff = float(np.mean(diff_map[mask > 0]) / 255.0)
+        else:
+            patch_diff = float(np.mean(np.abs(t_f - c_adjusted)) / 255.0)
+    else:
+        patch_diff = float(np.mean(np.abs(t_f - c_adjusted)) / 255.0)
 
     # Check for empty/flat ROI warning (standard deviation)
     std_t = float(np.std(t_f))

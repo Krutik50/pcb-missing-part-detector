@@ -29,6 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
             max_tilt_deg: 3.5,
             max_shift_px: 5.0,
         },
+        activeTool: 'rectangle', // 'rectangle', 'pencil', 'polygon'
+        carouselIndex: 0,
+        resultsViewMode: 'carousel', // 'carousel' or 'stacked'
     };
 
     // --- DOM Elements ---
@@ -75,6 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
         annotationCanvas: document.getElementById('annotation-canvas'),
         canvasContainer: document.getElementById('canvas-container'),
         canvasDimInfo: document.getElementById('canvas-dim-info'),
+        canvasToolHint: document.getElementById('canvas-tool-hint'),
+        btnToolRect: document.getElementById('tool-rect'),
+        btnToolPencil: document.getElementById('tool-pencil'),
+        btnToolPoly: document.getElementById('tool-poly'),
         componentListContainer: document.getElementById('component-list-container'),
         emptyCompsMsg: document.getElementById('empty-comps-msg'),
         compCount: document.getElementById('comp-count'),
@@ -97,6 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
         inspectionResultsArea: document.getElementById('inspection-results-area'),
         resultsSummaryBadge: document.getElementById('results-summary-badge'),
         resultsCardsContainer: document.getElementById('results-cards-container'),
+        toggleViewCarousel: document.getElementById('toggle-view-carousel'),
+        toggleViewStacked: document.getElementById('toggle-view-stacked'),
         activeSessionBadge: document.getElementById('active-session-badge'),
 
         // Batch Summary & KPIs
@@ -144,6 +153,30 @@ document.addEventListener('DOMContentLoaded', () => {
     let startX = 0, startY = 0;
     let currentX = 0, currentY = 0;
     let pendingBox = null;
+    let pendingShapeType = 'rectangle'; // 'rectangle', 'pencil', 'polygon'
+    let pendingPolygon = null; // [[x, y], ...]
+    let freehandStroke = []; // [[x, y], ...]
+    let polygonPoints = []; // [[x, y], ...]
+
+    function setActiveTool(tool) {
+        state.activeTool = tool;
+        if (el.btnToolRect) el.btnToolRect.classList.toggle('active', tool === 'rectangle');
+        if (el.btnToolPencil) el.btnToolPencil.classList.toggle('active', tool === 'pencil');
+        if (el.btnToolPoly) el.btnToolPoly.classList.toggle('active', tool === 'polygon');
+
+        if (el.canvasToolHint) {
+            if (tool === 'rectangle') el.canvasToolHint.textContent = 'Click and drag to draw rectangular bounding box';
+            else if (tool === 'pencil') el.canvasToolHint.textContent = 'Click and drag freehand to trace non-linear component contour';
+            else if (tool === 'polygon') el.canvasToolHint.textContent = 'Click points around component, double-click or click start point to close';
+        }
+        polygonPoints = [];
+        freehandStroke = [];
+        renderAnnotationCanvas();
+    }
+
+    if (el.btnToolRect) el.btnToolRect.addEventListener('click', () => setActiveTool('rectangle'));
+    if (el.btnToolPencil) el.btnToolPencil.addEventListener('click', () => setActiveTool('pencil'));
+    if (el.btnToolPoly) el.btnToolPoly.addEventListener('click', () => setActiveTool('polygon'));
 
     // --- Health Check ---
     async function checkHealth() {
@@ -454,6 +487,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     id: 'preset_comp_' + i,
                     name: c.name,
                     bbox: [x, y, w, h],
+                    shape_type: c.shape_type || 'rectangle',
+                    polygon: c.polygon || null,
                     warning: getBoxWarning(w, h, state.workingDim.width, state.workingDim.height),
                     normalized: c.normalized_bbox || [
                         Number((x / state.workingDim.width).toFixed(4)),
@@ -474,6 +509,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         components: state.components.map(c => ({
                             name: c.name,
                             bbox: c.bbox,
+                            shape_type: c.shape_type || 'rectangle',
+                            polygon: c.polygon || null,
                             is_normalized: false,
                         })),
                     }),
@@ -675,36 +712,104 @@ document.addEventListener('DOMContentLoaded', () => {
         state.components.forEach((comp) => {
             const [x, y, w, h] = comp.bbox;
 
-            // Box outline
-            ctx.strokeStyle = '#388bfd';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(x, y, w, h);
+            if (comp.polygon && comp.polygon.length >= 3) {
+                // Non-linear Polygon / Pencil Contour
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(comp.polygon[0][0], comp.polygon[0][1]);
+                for (let i = 1; i < comp.polygon.length; i++) {
+                    ctx.lineTo(comp.polygon[i][0], comp.polygon[i][1]);
+                }
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.22)';
+                ctx.fill();
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
 
-            // Translucent fill
-            ctx.fillStyle = 'rgba(56, 139, 253, 0.2)';
-            ctx.fillRect(x, y, w, h);
+                // Bounding envelope dashed
+                ctx.setLineDash([4, 4]);
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x, y, w, h);
+                ctx.restore();
 
-            // Label banner
-            ctx.fillStyle = '#388bfd';
-            const label = comp.name;
-            ctx.font = 'bold 16px -apple-system, sans-serif';
-            const textWidth = ctx.measureText(label).width;
-            ctx.fillRect(x, Math.max(0, y - 24), textWidth + 12, 24);
+                // Label banner
+                ctx.fillStyle = '#0284c7';
+                const label = `${comp.name} (${comp.shape_type === 'pencil' ? '✎' : '⬡'})`;
+                ctx.font = 'bold 15px -apple-system, sans-serif';
+                const textWidth = ctx.measureText(label).width;
+                ctx.fillRect(x, Math.max(0, y - 22), textWidth + 10, 22);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(label, x + 5, Math.max(15, y - 6));
+            } else {
+                // Standard Rectangle
+                ctx.strokeStyle = '#388bfd';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(x, y, w, h);
+                ctx.fillStyle = 'rgba(56, 139, 253, 0.2)';
+                ctx.fillRect(x, y, w, h);
 
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText(label, x + 6, Math.max(16, y - 6));
+                // Label banner
+                ctx.fillStyle = '#388bfd';
+                const label = comp.name;
+                ctx.font = 'bold 16px -apple-system, sans-serif';
+                const textWidth = ctx.measureText(label).width;
+                ctx.fillRect(x, Math.max(0, y - 24), textWidth + 12, 24);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(label, x + 6, Math.max(16, y - 6));
+            }
         });
 
-        // Draw active drag rectangle
-        if (isDrawing && pendingBox) {
+        // Draw active drawing feedback based on tool
+        if (state.activeTool === 'rectangle' && isDrawing && pendingBox) {
             const [x, y, w, h] = pendingBox;
             ctx.save();
             ctx.setLineDash([6, 6]);
-            ctx.strokeStyle = '#2ea043';
-            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#22c55e';
+            ctx.lineWidth = 2.5;
             ctx.strokeRect(x, y, w, h);
-            ctx.fillStyle = 'rgba(46, 160, 67, 0.25)';
+            ctx.fillStyle = 'rgba(34, 197, 94, 0.2)';
             ctx.fillRect(x, y, w, h);
+            ctx.restore();
+        } else if (state.activeTool === 'pencil' && isDrawing && freehandStroke.length > 1) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(freehandStroke[0][0], freehandStroke[0][1]);
+            for (let i = 1; i < freehandStroke.length; i++) {
+                ctx.lineTo(freehandStroke[i][0], freehandStroke[i][1]);
+            }
+            ctx.strokeStyle = '#22c55e';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+            ctx.fillStyle = 'rgba(34, 197, 94, 0.15)';
+            ctx.fill();
+            ctx.restore();
+        } else if (state.activeTool === 'polygon' && polygonPoints.length > 0) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(polygonPoints[0][0], polygonPoints[0][1]);
+            for (let i = 1; i < polygonPoints.length; i++) {
+                ctx.lineTo(polygonPoints[i][0], polygonPoints[i][1]);
+            }
+            ctx.lineTo(currentX, currentY);
+            ctx.strokeStyle = '#22c55e';
+            ctx.lineWidth = 2.5;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+
+            // Draw vertex handles
+            polygonPoints.forEach((pt, pIdx) => {
+                ctx.beginPath();
+                ctx.arc(pt[0], pt[1], pIdx === 0 ? 6 : 4, 0, Math.PI * 2);
+                ctx.fillStyle = pIdx === 0 ? '#38bdf8' : '#22c55e';
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            });
             ctx.restore();
         }
     }
@@ -726,42 +831,114 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         const pos = getCanvasCoords(e);
-        isDrawing = true;
-        startX = pos.x;
-        startY = pos.y;
-        pendingBox = [startX, startY, 0, 0];
-    });
 
-    el.annotationCanvas.addEventListener('mousemove', (e) => {
-        if (!isDrawing) return;
-        const pos = getCanvasCoords(e);
-        currentX = pos.x;
-        currentY = pos.y;
-
-        const x = Math.min(startX, currentX);
-        const y = Math.min(startY, currentY);
-        const w = Math.abs(currentX - startX);
-        const h = Math.abs(currentY - startY);
-
-        pendingBox = [x, y, w, h];
-        renderAnnotationCanvas();
-    });
-
-    el.annotationCanvas.addEventListener('mouseup', () => {
-        if (!isDrawing) return;
-        isDrawing = false;
-
-        if (pendingBox && pendingBox[2] >= 12 && pendingBox[3] >= 12) {
-            // Open modal to name the component
-            openNameModal(pendingBox);
-        } else {
-            pendingBox = null;
+        if (state.activeTool === 'rectangle') {
+            isDrawing = true;
+            startX = pos.x;
+            startY = pos.y;
+            pendingBox = [startX, startY, 0, 0];
+        } else if (state.activeTool === 'pencil') {
+            isDrawing = true;
+            startX = pos.x;
+            startY = pos.y;
+            freehandStroke = [[pos.x, pos.y]];
+        } else if (state.activeTool === 'polygon') {
+            if (polygonPoints.length >= 3) {
+                // If clicked close to starting point (within 18px), close polygon!
+                const distToStart = Math.hypot(pos.x - polygonPoints[0][0], pos.y - polygonPoints[0][1]);
+                if (distToStart < 18) {
+                    finishPolygonMarking();
+                    return;
+                }
+            }
+            polygonPoints.push([pos.x, pos.y]);
             renderAnnotationCanvas();
         }
     });
 
-    function openNameModal(box) {
+    el.annotationCanvas.addEventListener('mousemove', (e) => {
+        const pos = getCanvasCoords(e);
+        currentX = pos.x;
+        currentY = pos.y;
+
+        if (state.activeTool === 'rectangle') {
+            if (!isDrawing) return;
+            const x = Math.min(startX, currentX);
+            const y = Math.min(startY, currentY);
+            const w = Math.abs(currentX - startX);
+            const h = Math.abs(currentY - startY);
+            pendingBox = [x, y, w, h];
+            renderAnnotationCanvas();
+        } else if (state.activeTool === 'pencil') {
+            if (!isDrawing) return;
+            freehandStroke.push([pos.x, pos.y]);
+            renderAnnotationCanvas();
+        } else if (state.activeTool === 'polygon') {
+            if (polygonPoints.length > 0) {
+                renderAnnotationCanvas();
+            }
+        }
+    });
+
+    el.annotationCanvas.addEventListener('mouseup', () => {
+        if (state.activeTool === 'rectangle') {
+            if (!isDrawing) return;
+            isDrawing = false;
+            if (pendingBox && pendingBox[2] >= 10 && pendingBox[3] >= 10) {
+                openNameModal(pendingBox, 'rectangle', null);
+            } else {
+                pendingBox = null;
+                renderAnnotationCanvas();
+            }
+        } else if (state.activeTool === 'pencil') {
+            if (!isDrawing) return;
+            isDrawing = false;
+            if (freehandStroke.length >= 5) {
+                const minX = Math.min(...freehandStroke.map(p => p[0]));
+                const maxX = Math.max(...freehandStroke.map(p => p[0]));
+                const minY = Math.min(...freehandStroke.map(p => p[1]));
+                const maxY = Math.max(...freehandStroke.map(p => p[1]));
+                const w = maxX - minX;
+                const h = maxY - minY;
+                if (w >= 10 && h >= 10) {
+                    openNameModal([minX, minY, w, h], 'pencil', freehandStroke);
+                } else {
+                    freehandStroke = [];
+                    renderAnnotationCanvas();
+                }
+            } else {
+                freehandStroke = [];
+                renderAnnotationCanvas();
+            }
+        }
+    });
+
+    // Double-click to close multi-point polygon
+    el.annotationCanvas.addEventListener('dblclick', (e) => {
+        if (state.activeTool === 'polygon' && polygonPoints.length >= 3) {
+            finishPolygonMarking();
+        }
+    });
+
+    function finishPolygonMarking() {
+        if (polygonPoints.length < 3) return;
+        const minX = Math.min(...polygonPoints.map(p => p[0]));
+        const maxX = Math.max(...polygonPoints.map(p => p[0]));
+        const minY = Math.min(...polygonPoints.map(p => p[1]));
+        const maxY = Math.max(...polygonPoints.map(p => p[1]));
+        const w = maxX - minX;
+        const h = maxY - minY;
+        if (w >= 10 && h >= 10) {
+            openNameModal([minX, minY, w, h], 'polygon', polygonPoints.slice());
+        }
+        polygonPoints = [];
+        renderAnnotationCanvas();
+    }
+
+    function openNameModal(box, shapeType = 'rectangle', poly = null) {
         pendingBox = box;
+        pendingShapeType = shapeType;
+        pendingPolygon = poly;
         el.compNameInput.value = '';
         el.nameModal.classList.remove('d-none');
         setTimeout(() => el.compNameInput.focus(), 50);
@@ -770,6 +947,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeNameModal() {
         el.nameModal.classList.add('d-none');
         pendingBox = null;
+        pendingPolygon = null;
+        freehandStroke = [];
+        polygonPoints = [];
         renderAnnotationCanvas();
     }
 
@@ -790,11 +970,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function getBoxWarning(w, h, canvasW, canvasH) {
-        if (w < 25 || h < 20) {
-            return 'Tight box: May clip solder pads (high risk of false alarms under lighting shifts)';
+        if (w < 20 || h < 16) {
+            return 'Tight envelope: Small pad area';
         }
-        if (w > canvasW * 0.4 || h > canvasH * 0.4) {
-            return 'Large box: Excess background substrate may mask missing parts';
+        if (w > canvasW * 0.5 || h > canvasH * 0.5) {
+            return 'Large envelope: Excess substrate';
         }
         return null;
     }
@@ -809,6 +989,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 id: 'comp_' + Date.now(),
                 name: name,
                 bbox: [x, y, w, h],
+                shape_type: pendingShapeType || 'rectangle',
+                polygon: pendingPolygon || null,
                 warning: warning,
                 normalized: [
                     Number((x / state.workingDim.width).toFixed(4)),
@@ -1283,6 +1465,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 components: state.components.map(c => ({
                     name: c.name,
                     bbox: c.bbox,
+                    shape_type: c.shape_type || 'rectangle',
+                    polygon: c.polygon || null,
                     is_normalized: false,
                 })),
             };
@@ -1498,17 +1682,417 @@ document.addEventListener('DOMContentLoaded', () => {
         el.inspectionResultsArea.scrollIntoView({ behavior: 'smooth' });
     }
 
+    function renderComponentRowsHtml(res, resIdx, bSign) {
+        return res.components.map(c => {
+            const sign = bSign[c.name];
+            let badgeClass = 'badge-success';
+            let rowClass = '';
+            if (c.status === 'MISSING') {
+                badgeClass = 'badge-danger';
+                rowClass = 'row-missing';
+            } else if (c.status === 'TILTED') {
+                badgeClass = 'badge-tilted';
+                rowClass = 'row-tilted';
+            } else if (c.status === 'MISALIGNED') {
+                badgeClass = 'badge-misaligned';
+                rowClass = 'row-misaligned';
+            } else if (c.status === 'BRIDGED') {
+                badgeClass = 'badge-bridged';
+                rowClass = 'row-bridged';
+            } else if (c.status === 'POLARITY_REVERSED') {
+                badgeClass = 'badge-polarity';
+                rowClass = 'row-polarity';
+            } else if (c.status === 'TOMBSTONED') {
+                badgeClass = 'badge-tombstoned';
+                rowClass = 'row-tombstoned';
+            } else if (c.status === 'UNCERTAIN') {
+                badgeClass = 'badge-amber';
+                rowClass = 'row-uncertain';
+            }
+
+            const tiltStr = (c.scores && c.scores.tilt_deg !== undefined)
+                ? (c.scores.tilt_deg > 0 ? `+${c.scores.tilt_deg.toFixed(1)}°` : `${c.scores.tilt_deg.toFixed(1)}°`)
+                : '0.0°';
+            const shiftStr = (c.scores && c.scores.shift_dist_px !== undefined)
+                ? `${c.scores.shift_dist_px.toFixed(1)} px`
+                : '0.0 px';
+
+            const isMachineDefect = ['MISSING', 'TILTED', 'MISALIGNED', 'BRIDGED', 'POLARITY_REVERSED', 'TOMBSTONED'].includes(c.status);
+            let signoffHtml = '';
+
+            if (c.status === 'UNCERTAIN') {
+                if (sign) {
+                    const isPres = sign.final_status === 'PRESENT';
+                    const signBadge = isPres ? 'badge-signoff-verified' : 'badge-signoff-confirmed';
+                    const signIcon = isPres ? 'PASS' : 'DEFECT';
+                    signoffHtml = `
+                        <div style="margin-top:0.35rem;">
+                            <span class="${signBadge}">${signIcon}: ${isPres ? 'VERIFIED PRESENT' : 'CONFIRMED DEFECT'}</span>
+                            <span style="font-size:0.75rem; color:#8b949e; margin-left:0.3rem;">(By ${sign.operator_id} [${sign.operator_role || 'INSPECTOR'}]${sign.note ? ' &bull; ' + sign.note : ''})</span>
+                            <button type="button" class="btn-link btn-edit-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" style="margin-left:0.5rem; font-size:0.75rem; color:#58a6ff;">Edit</button>
+                        </div>
+                        <div style="font-size:0.75rem; color:#8b949e; margin-top:2px;">Original Machine Verdict: UNCERTAIN</div>
+                    `;
+                } else {
+                    signoffHtml = `
+                        <div class="signoff-box">
+                            <div class="signoff-header-text">Operator Sign-Off Required for Discrepancy</div>
+                            <div class="signoff-controls-row">
+                                <input type="text" class="signoff-input signoff-input-badge" id="badge-${resIdx}-${c.name}" placeholder="Badge ID" value="${state.currentUser ? state.currentUser.badge : 'OP-8402'}">
+                                <input type="text" class="signoff-input signoff-input-note" id="note-${resIdx}-${c.name}" placeholder="Optional note (e.g. glare on lead)">
+                                <button type="button" class="btn btn-sm btn-success btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="PRESENT">Verify Present</button>
+                                <button type="button" class="btn btn-sm btn-danger btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="MISSING">Confirm Defect</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else if (isMachineDefect) {
+                if (sign && sign.final_status === 'PRESENT') {
+                    signoffHtml = `
+                        <div style="margin-top:0.35rem;">
+                            <span class="badge-override-active">OVERRIDE: PRESENT</span>
+                            <span style="font-size:0.75rem; color:#8b949e; margin-left:0.3rem;">(By ${sign.operator_id} [${sign.operator_role || 'SUPERVISOR'}]${sign.note ? ' &bull; ' + sign.note : ''})</span>
+                            ${canOverrideDefects() ? `<button type="button" class="btn-link btn-edit-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" style="margin-left:0.5rem; font-size:0.75rem; color:#58a6ff;">Revert</button>` : ''}
+                        </div>
+                        <div style="font-size:0.75rem; color:#8b949e; margin-top:2px;">Original Machine Verdict: ${c.status}</div>
+                    `;
+                } else if (canOverrideDefects()) {
+                    signoffHtml = `
+                        <div style="margin-top:0.35rem;">
+                            <button type="button" class="btn-trigger-override" data-target="override-${resIdx}-${c.name}">
+                                <svg class="ui-icon" style="width:12px;height:12px;"><use href="#icon-settings"></use></svg> Override Defect to PASS
+                            </button>
+                            <div id="override-${resIdx}-${c.name}" class="override-box d-none">
+                                <div class="override-title">
+                                    <svg class="ui-icon" style="width:14px;height:14px;"><use href="#icon-alert"></use></svg>
+                                    Supervisor Disposition Override (IPC-A-610)
+                                </div>
+                                <div class="override-controls-row">
+                                    <input type="text" class="signoff-input signoff-input-badge" id="ovr-badge-${resIdx}-${c.name}" placeholder="Supervisor ID" value="${state.currentUser ? state.currentUser.badge : 'LEAD-104'}">
+                                    <input type="text" class="signoff-input signoff-input-note" id="ovr-note-${resIdx}-${c.name}" placeholder="Mandatory engineering rationale (e.g. verified under loupe)" style="flex:1; min-width:220px;">
+                                    <button type="button" class="btn btn-sm btn-primary btn-confirm-override" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}">Authorize Pass</button>
+                                    <button type="button" class="btn btn-sm btn-outline btn-cancel-override" data-target="override-${resIdx}-${c.name}">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    signoffHtml = `
+                        <div style="margin-top:0.35rem; font-size:0.75rem; color:#8b949e;">
+                            Defect flagged by AOI &bull; Overrides locked to Supervisor / Admin
+                        </div>
+                    `;
+                }
+            }
+
+            const shapeBadge = c.shape_type === 'pencil' ? '<span style="color:#38bdf8; font-size:0.75rem;" title="Non-linear pencil contour">✎</span>' : (c.shape_type === 'polygon' ? '<span style="color:#38bdf8; font-size:0.75rem;" title="Polygon contour">⬡</span>' : '');
+
+            return `
+                <tr class="result-row clickable-comp-row ${rowClass}" data-res-idx="${resIdx}" data-comp-name="${c.name}" title="Click to inspect in 3× Digital Loupe">
+                    <td style="cursor: pointer;">
+                        <div style="display:flex; align-items:center; gap:0.45rem;">
+                            <svg class="ui-icon" style="width:13px; height:13px; color:var(--color-blue);"><use href="#icon-loupe"></use></svg>
+                            <strong>${c.name}</strong> ${shapeBadge}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge ${badgeClass}">${c.status}</span>
+                        ${signoffHtml}
+                    </td>
+                    <td class="score-num">${c.scores ? c.scores.zncc.toFixed(4) : 'N/A'}</td>
+                    <td class="score-num ${c.status === 'TILTED' ? 'val-defect' : ''}">${tiltStr}</td>
+                    <td class="score-num ${c.status === 'MISALIGNED' ? 'val-defect' : ''}">${shiftStr}</td>
+                    <td>${c.reason}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function drawCarouselReferenceCanvas() {
+        const canvas = document.getElementById('carousel-ref-canvas');
+        if (!canvas || !state.referenceImg) return;
+        canvas.width = state.workingDim.width;
+        canvas.height = state.workingDim.height;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(state.referenceImg, 0, 0, canvas.width, canvas.height);
+
+        // Draw component outlines on reference board
+        state.components.forEach(comp => {
+            const [x, y, w, h] = comp.bbox;
+            if (comp.polygon && comp.polygon.length >= 3) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(comp.polygon[0][0], comp.polygon[0][1]);
+                for (let i = 1; i < comp.polygon.length; i++) {
+                    ctx.lineTo(comp.polygon[i][0], comp.polygon[i][1]);
+                }
+                ctx.closePath();
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
+                ctx.fill();
+                ctx.restore();
+            } else {
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2.5;
+                ctx.strokeRect(x, y, w, h);
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+                ctx.fillRect(x, y, w, h);
+            }
+            // Label
+            ctx.fillStyle = '#0284c7';
+            ctx.font = 'bold 15px -apple-system, sans-serif';
+            const tw = ctx.measureText(comp.name).width;
+            ctx.fillRect(x, Math.max(0, y - 20), tw + 8, 20);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(comp.name, x + 4, Math.max(14, y - 5));
+        });
+    }
+
+    function setupViewportZoom(frameId, btnId) {
+        const frame = document.getElementById(frameId);
+        const btn = document.getElementById(btnId);
+        if (!frame) return;
+
+        let isZoomed = false;
+        function toggleZoom() {
+            isZoomed = !isZoomed;
+            frame.classList.toggle('is-zoomed', isZoomed);
+            if (btn) {
+                btn.classList.toggle('active', isZoomed);
+                btn.innerHTML = `<svg class="ui-icon" style="width:12px;height:12px;"><use href="#icon-loupe"></use></svg> ${isZoomed ? 'Reset Zoom' : 'Zoom In'}`;
+            }
+        }
+
+        if (btn) {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleZoom();
+            });
+        }
+
+        frame.addEventListener('click', () => {
+            toggleZoom();
+        });
+
+        frame.addEventListener('mousemove', (e) => {
+            if (!frame.classList.contains('is-zoomed')) return;
+            const rect = frame.getBoundingClientRect();
+            const xPct = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+            const yPct = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+            const canvas = frame.querySelector('canvas');
+            if (canvas) {
+                canvas.style.transformOrigin = `${xPct}% ${yPct}%`;
+            }
+        });
+    }
+
+    function renderCarouselStationCard(data) {
+        el.resultsCardsContainer.innerHTML = '';
+        if (!data || !data.results || data.results.length === 0) return;
+
+        const totalBoards = data.results.length;
+        const currIdx = Math.max(0, Math.min(state.carouselIndex || 0, totalBoards - 1));
+        state.carouselIndex = currIdx;
+        const res = data.results[currIdx];
+        const bSign = state.signoffs[res.filename] || {};
+
+        let okCount = 0, defectCount = 0, reviewCount = 0;
+        const boardStatuses = data.results.map((r, rIdx) => {
+            const rSign = state.signoffs[r.filename] || {};
+            let hasD = false, hasU = false;
+            r.components.forEach(c => {
+                const s = rSign[c.name] ? rSign[c.name].final_status : c.status;
+                if (['MISSING', 'TILTED', 'MISALIGNED', 'BRIDGED', 'POLARITY_REVERSED', 'TOMBSTONED'].includes(s)) hasD = true;
+                else if (s === 'UNCERTAIN') hasU = true;
+            });
+            const stat = hasD ? 'DEFECT' : (hasU ? 'REVIEW' : 'OK');
+            if (stat === 'OK') okCount++;
+            else if (stat === 'DEFECT') defectCount++;
+            else if (stat === 'REVIEW') reviewCount++;
+            return { rIdx, stat, hasD, hasU };
+        });
+
+        el.resultsSummaryBadge.className = defectCount > 0 ? 'badge badge-danger' : (reviewCount > 0 ? 'badge badge-amber' : 'badge badge-success');
+        el.resultsSummaryBadge.textContent = `${totalBoards} Board(s): ${okCount} OK, ${defectCount} Defect, ${reviewCount} Review`;
+
+        const curStatus = boardStatuses[currIdx].stat;
+        let badgeClass = 'badge-success';
+        if (curStatus === 'DEFECT') {
+            badgeClass = 'badge-danger';
+        } else if (curStatus === 'REVIEW') {
+            badgeClass = 'badge-amber';
+        }
+
+        const alignNotice = res.alignment && res.alignment.fallback_used
+            ? `<div class="alignment-notice" style="margin: 0.5rem 1.25rem 0;">Alignment Notice: ${res.alignment.message} (dx: ${res.alignment.dx_px}px, dy: ${res.alignment.dy_px}px)</div>`
+            : '';
+
+        const container = document.createElement('div');
+        container.className = 'station-carousel-container';
+
+        container.innerHTML = `
+            <!-- Top Bar: Header & Quick Jump Pills -->
+            <div class="station-carousel-header">
+                <div class="station-title-block">
+                    <span class="badge ${badgeClass}" style="font-size:0.85rem; padding: 0.35rem 0.75rem;">${curStatus}</span>
+                    <div>
+                        <div class="station-board-name">Board ${currIdx + 1} of ${totalBoards}: ${res.filename}</div>
+                        <div class="station-board-meta">${res.summary} ${res.elapsed_ms ? `&bull; Tact time: ${res.elapsed_ms} ms` : ''}</div>
+                    </div>
+                </div>
+                <div class="station-jump-pills">
+                    ${boardStatuses.map(b => {
+                        const pillDefect = b.hasD ? 'pill-defect' : '';
+                        const pillActive = b.rIdx === currIdx ? 'active' : '';
+                        return `<button type="button" class="station-jump-pill ${pillDefect} ${pillActive}" data-card-idx="${b.rIdx}">Board ${b.rIdx + 1}: ${b.stat}</button>`;
+                    }).join('')}
+                </div>
+            </div>
+            ${alignNotice}
+
+            <!-- Side-by-Side Dual Viewport Card (Excalidraw Card Layout) -->
+            <div class="station-dual-viewport-card">
+                <!-- Left: Reference Image Viewport -->
+                <div class="station-viewport-panel">
+                    <div class="station-viewport-bar">
+                        <div class="station-viewport-title">
+                            <span class="indicator-dot-ref"></span> Reference Image
+                        </div>
+                        <button type="button" class="btn-viewport-zoom" id="btn-zoom-ref">
+                            <svg class="ui-icon" style="width:12px;height:12px;"><use href="#icon-loupe"></use></svg> Zoom In
+                        </button>
+                    </div>
+                    <div class="station-canvas-frame" id="frame-carousel-ref" title="Click or hover to zoom">
+                        <canvas id="carousel-ref-canvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Right: Test Board Viewport -->
+                <div class="station-viewport-panel">
+                    <div class="station-viewport-bar">
+                        <div class="station-viewport-title">
+                            <span class="indicator-dot-test"></span> Test Board (${res.filename})
+                        </div>
+                        <button type="button" class="btn-viewport-zoom" id="btn-zoom-test">
+                            <svg class="ui-icon" style="width:12px;height:12px;"><use href="#icon-loupe"></use></svg> Zoom In
+                        </button>
+                    </div>
+                    <div class="station-canvas-frame" id="frame-carousel-test" title="Click or hover to zoom">
+                        <canvas id="carousel-test-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carousel Arrow Controls Bar (as sketched by user: [ ← ] and [ → ]) -->
+            <div class="station-carousel-controls">
+                <button type="button" class="btn-carousel-arrow" id="btn-carousel-prev" ${currIdx === 0 ? 'disabled' : ''}>
+                    <svg class="ui-icon" style="width:14px;height:14px;"><use href="#icon-arrow-left"></use></svg> Previous Board
+                </button>
+                <span class="station-counter-indicator">Board ${currIdx + 1} of ${totalBoards}</span>
+                <button type="button" class="btn-carousel-arrow" id="btn-carousel-next" ${currIdx === totalBoards - 1 ? 'disabled' : ''}>
+                    Next Board <svg class="ui-icon" style="width:14px;height:14px;"><use href="#icon-arrow-right"></use></svg>
+                </button>
+            </div>
+
+            <!-- Connected Component Table Section -->
+            <div class="station-table-section">
+                <div class="station-table-section-title">
+                    <span>Component Breakdown &bull; <strong style="color:#38bdf8;">${res.filename}</strong> (${res.components.length} parts)</span>
+                    <span style="font-size:0.75rem; color:#8b949e; font-weight:normal;">Click any row to inspect in 3× Loupe</span>
+                </div>
+                <div class="result-table-wrap">
+                    <table class="result-table">
+                        <thead>
+                            <tr>
+                                <th>Component (3× Loupe)</th>
+                                <th>Verdict &amp; Operator Sign-Off</th>
+                                <th>ZNCC</th>
+                                <th>Tilt (°)</th>
+                                <th>Shift (px)</th>
+                                <th>Diagnostic Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${renderComponentRowsHtml(res, currIdx, bSign)}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Digital Microscope Loupe Pop-Out Container -->
+                <div id="loupe-container-${currIdx}" class="microscope-loupe-card d-none"></div>
+            </div>
+        `;
+
+        el.resultsCardsContainer.appendChild(container);
+
+        // Draw canvases
+        drawCarouselReferenceCanvas();
+        drawResultCanvas('carousel-test-canvas', res);
+
+        // Wire zoom & pan
+        setupViewportZoom('frame-carousel-ref', 'btn-zoom-ref');
+        setupViewportZoom('frame-carousel-test', 'btn-zoom-test');
+
+        // Wire jump pills
+        container.querySelectorAll('.station-jump-pill').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const targetIdx = parseInt(e.currentTarget.getAttribute('data-card-idx'));
+                if (!isNaN(targetIdx) && targetIdx !== state.carouselIndex) {
+                    state.carouselIndex = targetIdx;
+                    renderResultCards();
+                }
+            });
+        });
+
+        // Wire arrow navigation
+        const btnPrev = document.getElementById('btn-carousel-prev');
+        const btnNext = document.getElementById('btn-carousel-next');
+        if (btnPrev) {
+            btnPrev.addEventListener('click', () => {
+                if (state.carouselIndex > 0) {
+                    state.carouselIndex--;
+                    renderResultCards();
+                }
+            });
+        }
+        if (btnNext) {
+            btnNext.addEventListener('click', () => {
+                if (state.carouselIndex < totalBoards - 1) {
+                    state.carouselIndex++;
+                    renderResultCards();
+                }
+            });
+        }
+
+        // Attach Sign-Off Handlers, Loupe, and Archive
+        attachSignoffHandlers();
+        attachMicroscopeLoupeHandlers();
+        recordBatchInArchive(data);
+    }
+
     function renderResultCards() {
         if (!state.lastInspectionData) return;
         const data = state.lastInspectionData;
-        el.resultsCardsContainer.innerHTML = '';
 
+        // Sync view toggle buttons
+        if (el.toggleViewCarousel) el.toggleViewCarousel.classList.toggle('active', state.resultsViewMode === 'carousel');
+        if (el.toggleViewStacked) el.toggleViewStacked.classList.toggle('active', state.resultsViewMode === 'stacked');
+
+        if (state.resultsViewMode === 'carousel') {
+            renderCarouselStationCard(data);
+            return;
+        }
+
+        // Stacked View:
+        el.resultsCardsContainer.innerHTML = '';
         let okCount = 0, defectCount = 0, reviewCount = 0;
 
         data.results.forEach((res, resIdx) => {
             const bSign = state.signoffs[res.filename] || {};
 
-            // Compute effective status for this board considering sign-offs
             let hasDefect = false;
             let hasUncertain = false;
             let hasSignoffs = false;
@@ -1531,7 +2115,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'result-card';
 
-            // Determine Banner Styling & Labels
             let bannerClass = 'banner-ok';
             let iconText = 'PASS';
             let titleText = 'INSPECTION PASSED — ALL COMPONENTS VERIFIED';
@@ -1556,7 +2139,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 titleText = 'PROCESSING ERROR';
             }
 
-            // Alignment Notice
             const alignNotice = res.alignment && res.alignment.fallback_used
                 ? `<div class="alignment-notice">Alignment Notice: ${res.alignment.message} (dx: ${res.alignment.dx_px}px, dy: ${res.alignment.dy_px}px)</div>`
                 : '';
@@ -1573,7 +2155,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 ${alignNotice}
-                <!-- View Switcher Toolbar -->
                 <div class="result-view-header">
                     <div class="view-mode-tabs">
                         <button type="button" class="btn-view-mode active btn-tab-overlay" data-card="${resIdx}">
@@ -1587,7 +2168,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <div class="result-card-body">
-                    <!-- Annotated Visual Viewport & Split Diff Slider -->
                     <div class="result-image-view">
                         <canvas id="res-canvas-${resIdx}"></canvas>
                         <div id="split-container-${resIdx}" class="split-slider-container d-none">
@@ -1611,140 +2191,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
 
-                    <!-- Detailed Table -->
                     <div class="result-table-wrap">
                         <table class="result-table">
                             <thead>
                                 <tr>
-                                    <th>Component (3× Loupe)</th>
-                                    <th>Verdict &amp; Operator Sign-Off</th>
-                                    <th>ZNCC</th>
-                                    <th>Tilt (°)</th>
-                                    <th>Shift (px)</th>
-                                    <th>Diagnostic Reason</th>
+                                <th>Component (3× Loupe)</th>
+                                <th>Verdict &amp; Operator Sign-Off</th>
+                                <th>ZNCC</th>
+                                <th>Tilt (°)</th>
+                                <th>Shift (px)</th>
+                                <th>Diagnostic Reason</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${res.components.map(c => {
-                                    const sign = bSign[c.name];
-                                    let badgeClass = 'badge-success';
-                                    let rowClass = '';
-                                    if (c.status === 'MISSING') {
-                                        badgeClass = 'badge-danger';
-                                        rowClass = 'row-missing';
-                                    } else if (c.status === 'TILTED') {
-                                        badgeClass = 'badge-tilted';
-                                        rowClass = 'row-tilted';
-                                    } else if (c.status === 'MISALIGNED') {
-                                        badgeClass = 'badge-misaligned';
-                                        rowClass = 'row-misaligned';
-                                    } else if (c.status === 'BRIDGED') {
-                                        badgeClass = 'badge-bridged';
-                                        rowClass = 'row-bridged';
-                                    } else if (c.status === 'POLARITY_REVERSED') {
-                                        badgeClass = 'badge-polarity';
-                                        rowClass = 'row-polarity';
-                                    } else if (c.status === 'TOMBSTONED') {
-                                        badgeClass = 'badge-tombstoned';
-                                        rowClass = 'row-tombstoned';
-                                    } else if (c.status === 'UNCERTAIN') {
-                                        badgeClass = 'badge-amber';
-                                        rowClass = 'row-uncertain';
-                                    }
-
-                                    const tiltStr = (c.scores && c.scores.tilt_deg !== undefined)
-                                        ? (c.scores.tilt_deg > 0 ? `+${c.scores.tilt_deg.toFixed(1)}°` : `${c.scores.tilt_deg.toFixed(1)}°`)
-                                        : '0.0°';
-                                    const shiftStr = (c.scores && c.scores.shift_dist_px !== undefined)
-                                        ? `${c.scores.shift_dist_px.toFixed(1)} px`
-                                        : '0.0 px';
-
-                                    const isMachineDefect = ['MISSING', 'TILTED', 'MISALIGNED', 'BRIDGED', 'POLARITY_REVERSED', 'TOMBSTONED'].includes(c.status);
-                                    let signoffHtml = '';
-                                    if (c.status === 'UNCERTAIN') {
-                                        if (sign) {
-                                            const isPres = sign.final_status === 'PRESENT';
-                                            const signBadge = isPres ? 'badge-signoff-verified' : 'badge-signoff-confirmed';
-                                            const signIcon = isPres ? 'PASS' : 'DEFECT';
-                                            signoffHtml = `
-                                                <div style="margin-top:0.35rem;">
-                                                    <span class="${signBadge}">${signIcon}: ${isPres ? 'VERIFIED PRESENT' : 'CONFIRMED DEFECT'}</span>
-                                                    <span style="font-size:0.75rem; color:#8b949e; margin-left:0.3rem;">(By ${sign.operator_id} [${sign.operator_role || 'INSPECTOR'}]${sign.note ? ' &bull; ' + sign.note : ''})</span>
-                                                    <button type="button" class="btn-link btn-edit-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" style="margin-left:0.5rem; font-size:0.75rem; color:#58a6ff;">Edit</button>
-                                                </div>
-                                                <div style="font-size:0.75rem; color:#8b949e; margin-top:2px;">Original Machine Verdict: UNCERTAIN</div>
-                                            `;
-                                        } else {
-                                            signoffHtml = `
-                                                <div class="signoff-box">
-                                                    <div class="signoff-header-text">Operator Sign-Off Required for Discrepancy</div>
-                                                    <div class="signoff-controls-row">
-                                                        <input type="text" class="signoff-input signoff-input-badge" id="badge-${resIdx}-${c.name}" placeholder="Badge ID" value="${state.currentUser ? state.currentUser.badge : 'OP-8402'}">
-                                                        <input type="text" class="signoff-input signoff-input-note" id="note-${resIdx}-${c.name}" placeholder="Optional note (e.g. glare on lead)">
-                                                        <button type="button" class="btn btn-sm btn-success btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="PRESENT">Verify Present</button>
-                                                        <button type="button" class="btn btn-sm btn-danger btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="MISSING">Confirm Defect</button>
-                                                    </div>
-                                                </div>
-                                            `;
-                                        }
-                                    } else if (isMachineDefect) {
-                                        if (sign && sign.final_status === 'PRESENT') {
-                                            signoffHtml = `
-                                                <div style="margin-top:0.35rem;">
-                                                    <span class="badge-override-active">OVERRIDE: PRESENT</span>
-                                                    <span style="font-size:0.75rem; color:#8b949e; margin-left:0.3rem;">(By ${sign.operator_id} [${sign.operator_role || 'SUPERVISOR'}]${sign.note ? ' &bull; ' + sign.note : ''})</span>
-                                                    ${canOverrideDefects() ? `<button type="button" class="btn-link btn-edit-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" style="margin-left:0.5rem; font-size:0.75rem; color:#58a6ff;">Revert</button>` : ''}
-                                                </div>
-                                                <div style="font-size:0.75rem; color:#8b949e; margin-top:2px;">Original Machine Verdict: ${c.status}</div>
-                                            `;
-                                        } else if (canOverrideDefects()) {
-                                            signoffHtml = `
-                                                <div style="margin-top:0.35rem;">
-                                                    <button type="button" class="btn-trigger-override" data-target="override-${resIdx}-${c.name}">
-                                                        <svg class="ui-icon" style="width:12px;height:12px;"><use href="#icon-settings"></use></svg> Override Defect to PASS
-                                                    </button>
-                                                    <div id="override-${resIdx}-${c.name}" class="override-box d-none">
-                                                        <div class="override-title">
-                                                            <svg class="ui-icon" style="width:14px;height:14px;"><use href="#icon-alert"></use></svg>
-                                                            Supervisor Disposition Override (IPC-A-610)
-                                                        </div>
-                                                        <div class="override-controls-row">
-                                                            <input type="text" class="signoff-input signoff-input-badge" id="ovr-badge-${resIdx}-${c.name}" placeholder="Supervisor ID" value="${state.currentUser ? state.currentUser.badge : 'LEAD-104'}">
-                                                            <input type="text" class="signoff-input signoff-input-note" id="ovr-note-${resIdx}-${c.name}" placeholder="Mandatory engineering rationale (e.g. verified under loupe)" style="flex:1; min-width:220px;">
-                                                            <button type="button" class="btn btn-sm btn-primary btn-confirm-override" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}">Authorize Pass</button>
-                                                            <button type="button" class="btn btn-sm btn-outline btn-cancel-override" data-target="override-${resIdx}-${c.name}">Cancel</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            `;
-                                        } else {
-                                            signoffHtml = `
-                                                <div style="margin-top:0.35rem; font-size:0.75rem; color:#8b949e;">
-                                                    Defect flagged by AOI &bull; Overrides locked to Supervisor / Admin
-                                                </div>
-                                            `;
-                                        }
-                                    }
-
-                                    return `
-                                        <tr class="result-row clickable-comp-row ${rowClass}" data-res-idx="${resIdx}" data-comp-name="${c.name}" title="Click to inspect in 3× Digital Loupe">
-                                            <td style="cursor: pointer;">
-                                                <div style="display:flex; align-items:center; gap:0.45rem;">
-                                                    <svg class="ui-icon" style="width:13px; height:13px; color:var(--color-blue);"><use href="#icon-loupe"></use></svg>
-                                                    <strong>${c.name}</strong>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge ${badgeClass}">${c.status}</span>
-                                                ${signoffHtml}
-                                            </td>
-                                            <td class="score-num">${c.scores ? c.scores.zncc.toFixed(4) : 'N/A'}</td>
-                                            <td class="score-num ${c.status === 'TILTED' ? 'val-defect' : ''}">${tiltStr}</td>
-                                            <td class="score-num ${c.status === 'MISALIGNED' ? 'val-defect' : ''}">${shiftStr}</td>
-                                            <td>${c.reason}</td>
-                                        </tr>
-                                    `;
-                                }).join('')}
+                                ${renderComponentRowsHtml(res, resIdx, bSign)}
                             </tbody>
                         </table>
                     </div>
@@ -1755,16 +2215,12 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
 
             el.resultsCardsContainer.appendChild(card);
-
-            // Draw annotated test board image on canvas
             drawResultCanvas(`res-canvas-${resIdx}`, res);
         });
 
-        // Summary badge
         el.resultsSummaryBadge.className = defectCount > 0 ? 'badge badge-danger' : (reviewCount > 0 ? 'badge badge-amber' : 'badge badge-success');
         el.resultsSummaryBadge.textContent = `${data.results.length} Board(s): ${okCount} OK, ${defectCount} Defect, ${reviewCount} Review`;
 
-        // Attach Sign-Off Handlers
         attachSignoffHandlers();
         attachSplitSliderHandlers();
         attachMicroscopeLoupeHandlers();
@@ -2054,6 +2510,24 @@ document.addEventListener('DOMContentLoaded', () => {
         el.btnDownloadCsv.addEventListener('click', downloadCsvReport);
     }
 
+    if (el.toggleViewCarousel) {
+        el.toggleViewCarousel.addEventListener('click', () => {
+            state.resultsViewMode = 'carousel';
+            if (el.toggleViewCarousel) el.toggleViewCarousel.classList.add('active');
+            if (el.toggleViewStacked) el.toggleViewStacked.classList.remove('active');
+            renderResultCards();
+        });
+    }
+
+    if (el.toggleViewStacked) {
+        el.toggleViewStacked.addEventListener('click', () => {
+            state.resultsViewMode = 'stacked';
+            if (el.toggleViewStacked) el.toggleViewStacked.classList.add('active');
+            if (el.toggleViewCarousel) el.toggleViewCarousel.classList.remove('active');
+            renderResultCards();
+        });
+    }
+
     // --- PRINTABLE INSPECTION REPORT ---
     function openPrintableReport() {
         if (!state.lastInspectionData) {
@@ -2225,13 +2699,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     tagText = `${comp.name} [UNCERTAIN]`;
                 }
 
-                // Draw bounding box
-                ctx.strokeStyle = color;
-                ctx.lineWidth = 4;
-                ctx.strokeRect(x, y, w, h);
-
-                ctx.fillStyle = fillColor;
-                ctx.fillRect(x, y, w, h);
+                // Draw bounding contour (polygon if defined, else rectangle)
+                if (comp.polygon && comp.polygon.length >= 3) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(comp.polygon[0][0], comp.polygon[0][1]);
+                    for (let i = 1; i < comp.polygon.length; i++) {
+                        ctx.lineTo(comp.polygon[i][0], comp.polygon[i][1]);
+                    }
+                    ctx.closePath();
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 3.5;
+                    ctx.stroke();
+                    ctx.fillStyle = fillColor;
+                    ctx.fill();
+                    ctx.restore();
+                } else {
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 4;
+                    ctx.strokeRect(x, y, w, h);
+                    ctx.fillStyle = fillColor;
+                    ctx.fillRect(x, y, w, h);
+                }
 
                 // Draw solid label pill
                 ctx.font = 'bold 15px -apple-system, sans-serif';
@@ -2332,10 +2821,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = state.lastInspectionData.results[resIdx];
                 const comp = res ? res.components.find(c => c.name === compName) : null;
                 if (res && comp) {
+                    focusViewportOnComponent(comp.box ? comp.box.pixel : null);
                     openMicroscopeLoupe(res, comp, resIdx);
                 }
             });
         });
+    }
+
+    function focusViewportOnComponent(compBbox) {
+        if (!compBbox) return;
+        const [x, y, w, h] = compBbox;
+        const cx = x + w / 2;
+        const cy = y + h / 2;
+        const xPct = Math.max(0, Math.min(100, (cx / state.workingDim.width) * 100));
+        const yPct = Math.max(0, Math.min(100, (cy / state.workingDim.height) * 100));
+
+        ['frame-carousel-ref', 'frame-carousel-test'].forEach(id => {
+            const frame = document.getElementById(id);
+            if (frame) {
+                frame.classList.add('is-zoomed');
+                const canvas = frame.querySelector('canvas');
+                if (canvas) {
+                    canvas.style.transformOrigin = `${xPct}% ${yPct}%`;
+                }
+            }
+        });
+        const zRef = document.getElementById('btn-zoom-ref');
+        const zTest = document.getElementById('btn-zoom-test');
+        if (zRef) {
+            zRef.classList.add('active');
+            zRef.innerHTML = `<svg class="ui-icon" style="width:12px;height:12px;"><use href="#icon-loupe"></use></svg> Reset Zoom`;
+        }
+        if (zTest) {
+            zTest.classList.add('active');
+            zTest.innerHTML = `<svg class="ui-icon" style="width:12px;height:12px;"><use href="#icon-loupe"></use></svg> Reset Zoom`;
+        }
     }
 
     function openMicroscopeLoupe(res, comp, resIdx) {

@@ -90,6 +90,22 @@
             <rect x="3" y="3" width="18" height="18" rx="2"/>
             <line x1="12" y1="3" x2="12" y2="21"/>
         </symbol>
+        <symbol id="icon-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+            <rect x="7" y="7" width="10" height="10" rx="1"/>
+        </symbol>
+        <symbol id="icon-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+        </symbol>
+        <symbol id="icon-poly" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 22 8.5 18 20 6 20 2 8.5 12 2"/>
+        </symbol>
+        <symbol id="icon-arrow-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </symbol>
+        <symbol id="icon-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+        </symbol>
         <symbol id="icon-collapse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="11 17 6 12 11 7"/>
             <polyline points="18 17 13 12 18 7"/>
@@ -280,8 +296,19 @@
                                 <!-- Left: Interactive Canvas -->
                                 <div class="canvas-wrapper">
                                     <div class="canvas-toolbar">
+                                        <div class="marking-tools-group" id="marking-tools-group">
+                                            <button type="button" class="btn-marking-tool active" id="tool-rect" data-tool="rectangle" title="Rectangle bounding box">
+                                                <svg class="ui-icon btn-svg-icon"><use href="#icon-scan"></use></svg> Rectangle
+                                            </button>
+                                            <button type="button" class="btn-marking-tool" id="tool-pencil" data-tool="pencil" title="Freehand pencil / lasso (trace irregular boundaries)">
+                                                <svg class="ui-icon btn-svg-icon"><use href="#icon-pencil"></use></svg> Freehand Pencil
+                                            </button>
+                                            <button type="button" class="btn-marking-tool" id="tool-poly" data-tool="polygon" title="Polygon multi-point (click points, double-click to close)">
+                                                <svg class="ui-icon btn-svg-icon"><use href="#icon-poly"></use></svg> Polygon
+                                            </button>
+                                        </div>
                                         <span class="toolbar-info" id="canvas-dim-info">Resolution: 1920 &times; 1080</span>
-                                        <span class="toolbar-hint">Click and drag to draw component bounding box</span>
+                                        <span class="toolbar-hint" id="canvas-tool-hint">Click and drag to draw component bounding box</span>
                                     </div>
                                     <div class="canvas-viewport" id="canvas-container">
                                         <canvas id="annotation-canvas"></canvas>
@@ -378,8 +405,18 @@
                         <!-- Results Section -->
                         <section id="inspection-results-area" class="results-area d-none">
                             <div class="results-header">
-                                <h2>Inspection Batch Results</h2>
-                                <span id="results-summary-badge" class="badge"></span>
+                                <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                                    <h2>Inspection Batch Results</h2>
+                                    <span id="results-summary-badge" class="badge"></span>
+                                </div>
+                                <div class="results-view-toggle">
+                                    <button type="button" class="btn-view-toggle active" id="toggle-view-carousel" title="Inspection Station Carousel Card (Single Board Focus)">
+                                        <svg class="ui-icon btn-svg-icon"><use href="#icon-split"></use></svg> Station Card
+                                    </button>
+                                    <button type="button" class="btn-view-toggle" id="toggle-view-stacked" title="Full Batch Stacked List">
+                                        <svg class="ui-icon btn-svg-icon"><use href="#icon-archive"></use></svg> Stacked List
+                                    </button>
+                                </div>
                             </div>
 
                             <!-- Batch Summary & Yield Panel -->
