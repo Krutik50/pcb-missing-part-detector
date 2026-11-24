@@ -1081,19 +1081,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const bSign = state.signoffs[res.filename] || {};
 
             // Compute effective status for this board considering sign-offs
-            let hasMissing = false;
+            let hasDefect = false;
             let hasUncertain = false;
             let hasSignoffs = false;
 
             res.components.forEach(c => {
                 const sign = bSign[c.name];
                 const effStatus = sign ? sign.final_status : c.status;
-                if (effStatus === 'MISSING') hasMissing = true;
+                if (['MISSING', 'TILTED', 'MISALIGNED'].includes(effStatus)) hasDefect = true;
                 else if (effStatus === 'UNCERTAIN') hasUncertain = true;
                 if (sign) hasSignoffs = true;
             });
 
-            let effectiveBoardStatus = hasMissing ? 'DEFECT' : (hasUncertain ? 'REVIEW' : 'OK');
+            let effectiveBoardStatus = hasDefect ? 'DEFECT' : (hasUncertain ? 'REVIEW' : 'OK');
             if (res.board_status === 'ERROR') effectiveBoardStatus = 'ERROR';
 
             if (effectiveBoardStatus === 'OK') okCount++;
@@ -1112,8 +1112,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 bannerClass = 'banner-defect';
                 icon = '✗';
                 titleText = hasSignoffs && res.board_status === 'REVIEW'
-                    ? 'DEFECT — MISSING PARTS CONFIRMED VIA SIGN-OFF'
-                    : 'DEFECT — MISSING PARTS DETECTED';
+                    ? 'DEFECT — DEFECTIVE SMT PARTS CONFIRMED VIA SIGN-OFF'
+                    : 'DEFECT — SMT DEFECTS DETECTED (MISSING/TILT/SHIFT)';
             } else if (effectiveBoardStatus === 'REVIEW') {
                 bannerClass = 'banner-review';
                 icon = '⚠';
@@ -1159,7 +1159,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <th>Component</th>
                                     <th>Verdict & Operator Sign-Off</th>
                                     <th>ZNCC</th>
-                                    <th>Diff</th>
+                                    <th>Tilt (°)</th>
+                                    <th>Shift (px)</th>
                                     <th>Diagnostic Reason</th>
                                 </tr>
                             </thead>
@@ -1171,10 +1172,23 @@ document.addEventListener('DOMContentLoaded', () => {
                                     if (c.status === 'MISSING') {
                                         badgeClass = 'badge-danger';
                                         rowClass = 'row-missing';
+                                    } else if (c.status === 'TILTED') {
+                                        badgeClass = 'badge-tilted';
+                                        rowClass = 'row-tilted';
+                                    } else if (c.status === 'MISALIGNED') {
+                                        badgeClass = 'badge-misaligned';
+                                        rowClass = 'row-misaligned';
                                     } else if (c.status === 'UNCERTAIN') {
                                         badgeClass = 'badge-amber';
                                         rowClass = 'row-uncertain';
                                     }
+
+                                    const tiltStr = (c.scores && c.scores.tilt_deg !== undefined)
+                                        ? (c.scores.tilt_deg > 0 ? `+${c.scores.tilt_deg.toFixed(1)}°` : `${c.scores.tilt_deg.toFixed(1)}°`)
+                                        : '0.0°';
+                                    const shiftStr = (c.scores && c.scores.shift_dist_px !== undefined)
+                                        ? `${c.scores.shift_dist_px.toFixed(1)} px`
+                                        : '0.0 px';
 
                                     let signoffHtml = '';
                                     if (c.status === 'UNCERTAIN') {
@@ -1184,7 +1198,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                             const signIcon = isPres ? '✓' : '✗';
                                             signoffHtml = `
                                                 <div style="margin-top:0.35rem;">
-                                                    <span class="${signBadge}">${signIcon} ${isPres ? 'VERIFIED PRESENT' : 'CONFIRMED MISSING'}</span>
+                                                    <span class="${signBadge}">${signIcon} ${isPres ? 'VERIFIED PRESENT' : 'CONFIRMED DEFECT'}</span>
                                                     <span style="font-size:0.75rem; color:#8b949e; margin-left:0.3rem;">(By ${sign.operator_id}${sign.note ? ' &bull; ' + sign.note : ''})</span>
                                                     <button type="button" class="btn-link btn-edit-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" style="margin-left:0.5rem; font-size:0.75rem; color:#58a6ff;">✎ Edit</button>
                                                 </div>
@@ -1198,7 +1212,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                                         <input type="text" class="signoff-input signoff-input-badge" id="badge-${resIdx}-${c.name}" placeholder="Badge ID" value="OP-1">
                                                         <input type="text" class="signoff-input signoff-input-note" id="note-${resIdx}-${c.name}" placeholder="Optional note (e.g. glare on lead)">
                                                         <button type="button" class="btn btn-sm btn-success btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="PRESENT">✓ Verify Present</button>
-                                                        <button type="button" class="btn btn-sm btn-danger btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="MISSING">✗ Confirm Missing</button>
+                                                        <button type="button" class="btn btn-sm btn-danger btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="MISSING">✗ Confirm Defect</button>
                                                     </div>
                                                 </div>
                                             `;
@@ -1213,7 +1227,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                                 ${signoffHtml}
                                             </td>
                                             <td class="score-num">${c.scores.zncc.toFixed(4)}</td>
-                                            <td class="score-num">${c.scores.patch_diff.toFixed(4)}</td>
+                                            <td class="score-num">${tiltStr}</td>
+                                            <td class="score-num">${shiftStr}</td>
                                             <td>${c.reason}</td>
                                         </tr>
                                     `;
@@ -1301,7 +1316,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let machineOk = 0, machineDefect = 0, machineReview = 0;
         let finalOk = 0, finalDefect = 0, finalReview = 0;
-        const missingCounts = {};
+        const defectCounts = {};
 
         results.forEach(res => {
             const mStatus = res.board_status;
@@ -1310,21 +1325,22 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (mStatus === 'REVIEW') machineReview++;
 
             const bSign = state.signoffs[res.filename] || {};
-            let bHasMissing = false;
+            let bHasDefect = false;
             let bHasUncertain = false;
 
             res.components.forEach(c => {
                 const sign = bSign[c.name];
                 const effectiveStatus = sign ? sign.final_status : c.status;
-                if (effectiveStatus === 'MISSING') {
-                    bHasMissing = true;
-                    missingCounts[c.name] = (missingCounts[c.name] || 0) + 1;
+                if (['MISSING', 'TILTED', 'MISALIGNED'].includes(effectiveStatus)) {
+                    bHasDefect = true;
+                    const defectKey = `${c.name} (${effectiveStatus.toLowerCase()})`;
+                    defectCounts[defectKey] = (defectCounts[defectKey] || 0) + 1;
                 } else if (effectiveStatus === 'UNCERTAIN') {
                     bHasUncertain = true;
                 }
             });
 
-            if (bHasMissing) finalDefect++;
+            if (bHasDefect) finalDefect++;
             else if (bHasUncertain) finalReview++;
             else finalOk++;
         });
@@ -1342,14 +1358,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Defect Pareto tally
         if (el.defectTallyList) {
             el.defectTallyList.innerHTML = '';
-            const sortedMissing = Object.keys(missingCounts).sort((a, b) => missingCounts[b] - missingCounts[a]);
-            if (sortedMissing.length === 0) {
-                el.defectTallyList.innerHTML = '<span class="text-muted">No missing components reported in this batch.</span>';
+            const sortedDefects = Object.keys(defectCounts).sort((a, b) => defectCounts[b] - defectCounts[a]);
+            if (sortedDefects.length === 0) {
+                el.defectTallyList.innerHTML = '<span class="text-muted">No defects (missing/tilted/misaligned) reported in this batch.</span>';
             } else {
-                sortedMissing.forEach(name => {
+                sortedDefects.forEach(key => {
                     const chip = document.createElement('span');
                     chip.className = 'defect-chip';
-                    chip.textContent = `${name}: ${missingCounts[name]} missing`;
+                    chip.textContent = `${key}: ${defectCounts[key]} defect(s)`;
                     el.defectTallyList.appendChild(chip);
                 });
             }
@@ -1365,24 +1381,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const results = state.lastInspectionData.results;
         const rows = [
-            ['Timestamp', 'Board_Filename', 'Board_Machine_Status', 'Board_Final_Status', 'Component', 'Machine_Status', 'Final_Status', 'ZNCC_Score', 'Patch_Diff', 'Operator_ID', 'Operator_Note', 'Diagnostic_Reason']
+            ['Timestamp', 'Board_Filename', 'Board_Machine_Status', 'Board_Final_Status', 'Component', 'Machine_Status', 'Final_Status', 'ZNCC_Score', 'Patch_Diff', 'Tilt_Deg', 'Shift_Px', 'Operator_ID', 'Operator_Note', 'Diagnostic_Reason']
         ];
 
         const ts = new Date().toISOString();
         results.forEach(res => {
             const bSign = state.signoffs[res.filename] || {};
-            let bHasMissing = false, bHasUncertain = false;
+            let bHasDefect = false, bHasUncertain = false;
             res.components.forEach(c => {
                 const sign = bSign[c.name];
                 const eff = sign ? sign.final_status : c.status;
-                if (eff === 'MISSING') bHasMissing = true;
+                if (['MISSING', 'TILTED', 'MISALIGNED'].includes(eff)) bHasDefect = true;
                 else if (eff === 'UNCERTAIN') bHasUncertain = true;
             });
-            const finalBStatus = bHasMissing ? 'DEFECT' : (bHasUncertain ? 'REVIEW' : 'OK');
+            const finalBStatus = bHasDefect ? 'DEFECT' : (bHasUncertain ? 'REVIEW' : 'OK');
 
             res.components.forEach(c => {
                 const sign = bSign[c.name] || {};
                 const eff = sign.final_status || c.status;
+                const tiltVal = (c.scores && c.scores.tilt_deg !== undefined) ? c.scores.tilt_deg.toFixed(2) : '0.00';
+                const shiftVal = (c.scores && c.scores.shift_dist_px !== undefined) ? c.scores.shift_dist_px.toFixed(2) : '0.00';
                 rows.push([
                     ts,
                     res.filename,
@@ -1393,6 +1411,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     eff,
                     c.scores.zncc.toFixed(4),
                     c.scores.patch_diff.toFixed(4),
+                    tiltVal,
+                    shiftVal,
                     sign.operator_id || '',
                     sign.note || '',
                     `"${(c.reason || '').replace(/"/g, '""')}"`
@@ -1431,13 +1451,13 @@ document.addEventListener('DOMContentLoaded', () => {
         results.forEach(res => {
             if (res.board_status === 'OK') machineOk++;
             const bSign = state.signoffs[res.filename] || {};
-            let hasMiss = false, hasUnc = false;
+            let hasDefect = false, hasUnc = false;
             res.components.forEach(c => {
                 const eff = (bSign[c.name] && bSign[c.name].final_status) || c.status;
-                if (eff === 'MISSING') hasMiss = true;
+                if (['MISSING', 'TILTED', 'MISALIGNED'].includes(eff)) hasDefect = true;
                 else if (eff === 'UNCERTAIN') hasUnc = true;
             });
-            if (!hasMiss && !hasUnc) finalOk++;
+            if (!hasDefect && !hasUnc) finalOk++;
         });
 
         const fpy = total > 0 ? ((machineOk / total) * 100).toFixed(1) : '0.0';
@@ -1446,18 +1466,20 @@ document.addEventListener('DOMContentLoaded', () => {
         let tableRows = '';
         results.forEach(res => {
             const bSign = state.signoffs[res.filename] || {};
-            let hasMiss = false, hasUnc = false;
+            let hasDefect = false, hasUnc = false;
             res.components.forEach(c => {
                 const eff = (bSign[c.name] && bSign[c.name].final_status) || c.status;
-                if (eff === 'MISSING') hasMiss = true;
+                if (['MISSING', 'TILTED', 'MISALIGNED'].includes(eff)) hasDefect = true;
                 else if (eff === 'UNCERTAIN') hasUnc = true;
             });
-            const finalBStatus = hasMiss ? 'DEFECT' : (hasUnc ? 'REVIEW' : 'OK');
+            const finalBStatus = hasDefect ? 'DEFECT' : (hasUnc ? 'REVIEW' : 'OK');
 
             res.components.forEach(c => {
                 const sign = bSign[c.name];
                 const eff = sign ? sign.final_status : c.status;
                 const signText = sign ? `${sign.final_status} (by ${sign.operator_id}${sign.note ? ': ' + sign.note : ''})` : '-';
+                const tiltStr = (c.scores && c.scores.tilt_deg !== undefined) ? (c.scores.tilt_deg > 0 ? `+${c.scores.tilt_deg.toFixed(1)}°` : `${c.scores.tilt_deg.toFixed(1)}°`) : '0.0°';
+                const shiftStr = (c.scores && c.scores.shift_dist_px !== undefined) ? `${c.scores.shift_dist_px.toFixed(1)}px` : '0.0px';
                 tableRows += `
                     <tr>
                         <td>${res.filename}</td>
@@ -1465,7 +1487,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${c.status}</td>
                         <td><strong>${eff}</strong></td>
                         <td>${c.scores.zncc.toFixed(4)}</td>
-                        <td>${c.scores.patch_diff.toFixed(4)}</td>
+                        <td>${tiltStr}</td>
+                        <td>${shiftStr}</td>
                         <td>${signText}</td>
                     </tr>
                 `;
@@ -1497,7 +1520,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <th>Machine Verdict</th>
                         <th>Final Verdict</th>
                         <th>ZNCC</th>
-                        <th>Diff</th>
+                        <th>Tilt (°)</th>
+                        <th>Shift (px)</th>
                         <th>Operator Sign-Off</th>
                     </tr>
                 </thead>
@@ -1554,6 +1578,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     color = '#f85149'; // Red for MISSING
                     fillColor = 'rgba(248, 81, 73, 0.35)';
                     tagText = `${comp.name} [MISSING]`;
+                } else if (comp.status === 'TILTED') {
+                    color = '#f0883e'; // Orange for TILTED
+                    fillColor = 'rgba(240, 136, 62, 0.35)';
+                    const tDeg = (comp.scores && comp.scores.tilt_deg !== undefined) ? (comp.scores.tilt_deg > 0 ? `+${comp.scores.tilt_deg}°` : `${comp.scores.tilt_deg}°`) : '';
+                    tagText = `${comp.name} [TILT ${tDeg}]`;
+                } else if (comp.status === 'MISALIGNED') {
+                    color = '#a371f7'; // Purple for MISALIGNED
+                    fillColor = 'rgba(163, 113, 247, 0.35)';
+                    const sDist = (comp.scores && comp.scores.shift_dist_px !== undefined) ? `${comp.scores.shift_dist_px}px` : '';
+                    tagText = `${comp.name} [SHIFT ${sDist}]`;
                 } else if (comp.status === 'UNCERTAIN') {
                     color = '#e3b341'; // Amber for UNCERTAIN
                     fillColor = 'rgba(227, 179, 65, 0.25)';

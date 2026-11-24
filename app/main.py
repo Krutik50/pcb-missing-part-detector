@@ -433,6 +433,8 @@ async def inspect_test_images(
                     "scores": {
                         "zncc": round(float(insp["zncc_score"]), 4),
                         "patch_diff": round(float(insp["patch_diff"]), 4),
+                        "tilt_deg": insp.get("tilt_deg", 0.0),
+                        "shift_dist_px": insp.get("shift_dist_px", 0.0),
                     },
                     "reason": dec["reason"],
                     "box": {
@@ -449,21 +451,16 @@ async def inspect_test_images(
             b_eval = aggregate_board_status(comp_results)
             board_stat = b_eval["board_status"]
             missing_list = b_eval["missing_components"]
+            tilted_list = b_eval.get("tilted_components", [])
+            misaligned_list = b_eval.get("misaligned_components", [])
             uncertain_list = b_eval["uncertain_components"]
 
             t_elapsed_ms = round((time.perf_counter() - t_start) * 1000.0, 1)
 
-            if board_stat == "DEFECT":
-                summary = f"{len(missing_list)} missing component(s) detected: {missing_list}"
-            elif board_stat == "REVIEW":
-                summary = f"0 missing components, {len(uncertain_list)} component(s) flagged for visual review: {uncertain_list}"
-            else:
-                summary = "All components confirmed PRESENT (OK)"
-
             results.append({
                 "filename": fname,
                 "board_status": board_stat,
-                "summary": summary,
+                "summary": b_eval["summary"],
                 "elapsed_ms": t_elapsed_ms,
                 "alignment": {
                     "success": bool(align_meta["success"]),
@@ -474,6 +471,8 @@ async def inspect_test_images(
                     "message": align_meta.get("fallback_reason") or "EUCLIDEAN alignment succeeded",
                 },
                 "missing_components": missing_list,
+                "tilted_components": tilted_list,
+                "misaligned_components": misaligned_list,
                 "uncertain_components": uncertain_list,
                 "components": comp_results,
             })

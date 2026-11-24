@@ -25,6 +25,10 @@ class DetectionConfig:
     # Local template matching parameters
     search_margin_px: int = 16               # Search slack around reference bounding box (±px)
 
+    # SMT Placement Tolerances (IPC-A-610 Class 2/3 Compliance)
+    max_allowed_tilt_deg: float = 3.5       # Maximum allowable angular tilt/skew in degrees (±3.5°)
+    max_allowed_shift_px: float = 5.0       # Maximum allowable translation shift in pixels (5.0 px)
+
     # Baseline Decision Thresholds (Calibrated empirically on 20 calibration boards)
     # ZNCC Appearance Match: [-1.0, 1.0]
     # Present range: 0.911 to 0.997 | Missing range: 0.140 to 0.859
@@ -58,6 +62,8 @@ class DetectionConfig:
                 "zncc_low": min(0.90, base_zncc_low + 0.08),
                 "diff_low": max(0.10, base_diff_low - 0.05),
                 "diff_high": max(0.15, base_diff_high - 0.05),
+                "max_allowed_tilt_deg": max(1.5, self.max_allowed_tilt_deg - 1.5),
+                "max_allowed_shift_px": max(2.5, self.max_allowed_shift_px - 1.5),
             }
         elif mode == "lenient":
             return {
@@ -65,6 +71,8 @@ class DetectionConfig:
                 "zncc_low": max(0.25, base_zncc_low - 0.08),
                 "diff_low": min(0.40, base_diff_low + 0.06),
                 "diff_high": min(0.55, base_diff_high + 0.06),
+                "max_allowed_tilt_deg": self.max_allowed_tilt_deg + 2.5,
+                "max_allowed_shift_px": self.max_allowed_shift_px + 3.0,
             }
         else:  # "balanced"
             return {
@@ -72,6 +80,8 @@ class DetectionConfig:
                 "zncc_low": base_zncc_low,
                 "diff_low": base_diff_low,
                 "diff_high": base_diff_high,
+                "max_allowed_tilt_deg": self.max_allowed_tilt_deg,
+                "max_allowed_shift_px": self.max_allowed_shift_px,
             }
 
     def to_dict(self) -> Dict[str, Any]:

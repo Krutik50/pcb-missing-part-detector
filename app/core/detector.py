@@ -8,6 +8,52 @@ import cv2
 import numpy as np
 
 
+def estimate_angular_tilt(
+    template_gray: np.ndarray,
+    search_region_gray: np.ndarray,
+    angle_range: float = 12.0,
+) -> Tuple[float, float]:
+    """
+    Estimates the angular tilt / rotation (in degrees) of the component within search_region_gray.
+    Matches rotated versions of template_gray across search_region_gray to be invariant to both
+    rotation and translation jitter.
+    """
+    th, tw = template_gray.shape[:2]
+    sh, sw = search_region_gray.shape[:2]
+    if th < 6 or tw < 6 or sh < th or sw < tw:
+        return 0.0, 0.0
+
+    center = (tw / 2.0, th / 2.0)
+    best_angle = 0.0
+    best_corr = -1.0
+
+    # Coarse pass: 1.0 deg steps
+    for a in np.arange(-angle_range, angle_range + 0.5, 1.0):
+        M = cv2.getRotationMatrix2D(center, float(a), 1.0)
+        rotated_t = cv2.warpAffine(template_gray, M, (tw, th), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+        res = cv2.matchTemplate(search_region_gray, rotated_t, cv2.TM_CCOEFF_NORMED)
+        min_v, max_v, min_l, max_l = cv2.minMaxLoc(res)
+        c_val = float(max_v)
+        if c_val > best_corr:
+            best_corr = c_val
+            best_angle = float(a)
+
+    # Fine pass around best_angle: 0.25 deg steps
+    for a in np.arange(best_angle - 1.0, best_angle + 1.25, 0.25):
+        if abs(a) > angle_range:
+            continue
+        M = cv2.getRotationMatrix2D(center, float(a), 1.0)
+        rotated_t = cv2.warpAffine(template_gray, M, (tw, th), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+        res = cv2.matchTemplate(search_region_gray, rotated_t, cv2.TM_CCOEFF_NORMED)
+        min_v, max_v, min_l, max_l = cv2.minMaxLoc(res)
+        c_val = float(max_v)
+        if c_val > best_corr:
+            best_corr = c_val
+            best_angle = float(a)
+
+    return round(best_angle, 2), round(best_corr, 4)
+
+
 def inspect_component(
     ref_img: np.ndarray,
     aligned_test_img: np.ndarray,
@@ -118,11 +164,22 @@ def inspect_component(
     std_t = float(np.std(t_f))
     is_low_texture = std_t < 10.0
 
+    # Step 3: Sub-pixel Rotational Tilt & Placement Displacement Estimation
+    tilt_deg = 0.0
+    rot_zncc = peak_zncc
+    if not is_low_texture and (peak_zncc >= 0.50 or s_h >= h):
+        tilt_deg, rot_zncc = estimate_angular_tilt(template_gray, search_region_gray)
+
+    shift_dist_px = round(float(np.sqrt(shift_x**2 + shift_y**2)), 2)
+
     return {
         "zncc_score": round(peak_zncc, 4),
         "patch_diff": round(patch_diff, 4),
         "best_bbox": [match_x, match_y, w, h],
         "shift_px": (shift_x, shift_y),
+        "shift_dist_px": shift_dist_px,
+        "tilt_deg": tilt_deg,
+        "rot_zncc": rot_zncc,
         "is_low_texture": is_low_texture,
         "template_std": round(std_t, 2),
     }

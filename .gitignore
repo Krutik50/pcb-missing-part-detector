@@ -37,3 +37,8 @@ Thumbs.db
 # Temporary uploads / cache
 uploads/
 *.log
+
+# Generated multi-board dataset variations (auto-generated via scripts/generate_physical_multiboard_dataset.py)
+data/multiboard/train/
+data/multiboard/test/
+

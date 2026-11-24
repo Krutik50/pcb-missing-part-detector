@@ -1,7 +1,7 @@
 {
   "endpoint": "POST /api/inspect",
   "request": {
-    "session_id": "0d1d953469474c32babfee028a962112",
+    "session_id": "f0e35992936e491ca3983f03ed236ca0",
     "sensitivity": "balanced",
     "test_images_count": 4,
     "filenames": [
@@ -17,14 +17,16 @@
       "zncc_high": 0.89,
       "zncc_low": 0.86,
       "diff_low": 0.065,
-      "diff_high": 0.09
+      "diff_high": 0.09,
+      "max_allowed_tilt_deg": 3.5,
+      "max_allowed_shift_px": 5.0
     },
     "total_images_inspected": 4,
     "results": [
       {
         "filename": "calib_01_all_ok_nominal.png",
         "board_status": "OK",
-        "summary": "All components confirmed PRESENT (OK)",
+        "summary": "All parts present and aligned within tolerance",
         "alignment": {
           "success": true,
           "fallback_used": false,
@@ -39,9 +41,11 @@
             "status": "PRESENT",
             "scores": {
               "zncc": 0.9945,
-              "patch_diff": 0.0145
+              "patch_diff": 0.0145,
+              "tilt_deg": -0.25,
+              "shift_dist_px": 0.0
             },
-            "reason": "High confidence match (ZNCC: 0.99 >= 0.89, Diff: 0.01 <= 0.07)",
+            "reason": "Verified present & aligned (ZNCC: 0.99, Tilt: -0.2\u00b0, Shift: 0.0px)",
             "box": {
               "pixel": [
                 480,
@@ -62,9 +66,11 @@
             "status": "PRESENT",
             "scores": {
               "zncc": 0.9932,
-              "patch_diff": 0.0161
+              "patch_diff": 0.0161,
+              "tilt_deg": 0.25,
+              "shift_dist_px": 0.0
             },
-            "reason": "High confidence match (ZNCC: 0.99 >= 0.89, Diff: 0.02 <= 0.07)",
+            "reason": "Verified present & aligned (ZNCC: 0.99, Tilt: +0.2\u00b0, Shift: 0.0px)",
             "box": {
               "pixel": [
                 480,
@@ -85,7 +91,7 @@
       {
         "filename": "calib_08_missing_u1_mcu.png",
         "board_status": "DEFECT",
-        "summary": "1 missing component(s) detected: ['U1_MCU']",
+        "summary": "Defect detected: 1 missing: U1_MCU",
         "alignment": {
           "success": true,
           "fallback_used": false,
@@ -100,9 +106,11 @@
             "status": "PRESENT",
             "scores": {
               "zncc": 0.9941,
-              "patch_diff": 0.0162
+              "patch_diff": 0.0162,
+              "tilt_deg": -0.25,
+              "shift_dist_px": 0.0
             },
-            "reason": "High confidence match (ZNCC: 0.99 >= 0.89, Diff: 0.02 <= 0.07)",
+            "reason": "Verified present & aligned (ZNCC: 0.99, Tilt: -0.2\u00b0, Shift: 0.0px)",
             "box": {
               "pixel": [
                 480,
@@ -123,9 +131,11 @@
             "status": "PRESENT",
             "scores": {
               "zncc": 0.9949,
-              "patch_diff": 0.0158
+              "patch_diff": 0.0158,
+              "tilt_deg": 0.25,
+              "shift_dist_px": 0.0
             },
-            "reason": "High confidence match (ZNCC: 0.99 >= 0.89, Diff: 0.02 <= 0.07)",
+            "reason": "Verified present & aligned (ZNCC: 0.99, Tilt: +0.2\u00b0, Shift: 0.0px)",
             "box": {
               "pixel": [
                 480,
@@ -146,7 +156,7 @@
       {
         "filename": "calib_09_missing_c1.png",
         "board_status": "DEFECT",
-        "summary": "1 missing component(s) detected: ['C1_DECOUP']",
+        "summary": "Defect detected: 1 missing: C1_DECOUP",
         "alignment": {
           "success": true,
           "fallback_used": false,
@@ -161,7 +171,9 @@
             "status": "MISSING",
             "scores": {
               "zncc": 0.8255,
-              "patch_diff": 0.1358
+              "patch_diff": 0.1358,
+              "tilt_deg": 0.75,
+              "shift_dist_px": 0.0
             },
             "reason": "Surface mismatch & high pad residual (ZNCC: 0.83 < 0.86, Diff: 0.14 > 0.09)",
             "box": {
@@ -184,9 +196,11 @@
             "status": "PRESENT",
             "scores": {
               "zncc": 0.9935,
-              "patch_diff": 0.0196
+              "patch_diff": 0.0196,
+              "tilt_deg": 0.25,
+              "shift_dist_px": 0.0
             },
-            "reason": "High confidence match (ZNCC: 0.99 >= 0.89, Diff: 0.02 <= 0.07)",
+            "reason": "Verified present & aligned (ZNCC: 0.99, Tilt: +0.2\u00b0, Shift: 0.0px)",
             "box": {
               "pixel": [
                 480,
@@ -207,7 +221,7 @@
       {
         "filename": "calib_12_missing_adj_c1_c2.png",
         "board_status": "DEFECT",
-        "summary": "2 missing component(s) detected: ['C1_DECOUP', 'C2_DECOUP']",
+        "summary": "Defect detected: 2 missing: C1_DECOUP, C2_DECOUP",
         "alignment": {
           "success": true,
           "fallback_used": false,
@@ -222,7 +236,9 @@
             "status": "MISSING",
             "scores": {
               "zncc": 0.8224,
-              "patch_diff": 0.1468
+              "patch_diff": 0.1468,
+              "tilt_deg": 0.75,
+              "shift_dist_px": 0.0
             },
             "reason": "Surface mismatch & high pad residual (ZNCC: 0.82 < 0.86, Diff: 0.15 > 0.09)",
             "box": {
@@ -245,7 +261,9 @@
             "status": "MISSING",
             "scores": {
               "zncc": 0.8288,
-              "patch_diff": 0.143
+              "patch_diff": 0.143,
+              "tilt_deg": 0.75,
+              "shift_dist_px": 0.0
             },
             "reason": "Surface mismatch & high pad residual (ZNCC: 0.83 < 0.86, Diff: 0.14 > 0.09)",
             "box": {

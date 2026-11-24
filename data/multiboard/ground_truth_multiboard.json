@@ -1,0 +1,1843 @@
+{
+  "metadata": {
+    "title": "Industrial Multi-Board Physical SMT Placement Dataset",
+    "split_ratio": "70% Training / Calibration, 30% Held-Out Testing",
+    "resolution": [
+      1920,
+      1080
+    ],
+    "ipc_tolerances": {
+      "max_allowed_tilt_deg": 3.5,
+      "max_allowed_shift_px": 5.0
+    }
+  },
+  "boards": {
+    "arduino_uno": {
+      "name": "Arduino Uno R3 Physical Microcontroller",
+      "reference_image": "arduino_uno\\reference.png",
+      "components": {
+        "U1_ATMEGA328": {
+          "bbox": [
+            560,
+            420,
+            160,
+            160
+          ],
+          "normalized_bbox": [
+            0.2917,
+            0.3889,
+            0.0833,
+            0.1481
+          ],
+          "type": "QFP32"
+        },
+        "U2_CH340G": {
+          "bbox": [
+            320,
+            260,
+            120,
+            70
+          ],
+          "normalized_bbox": [
+            0.1667,
+            0.2407,
+            0.0625,
+            0.0648
+          ],
+          "type": "SOIC16"
+        },
+        "U3_AMS1117": {
+          "bbox": [
+            280,
+            420,
+            90,
+            70
+          ],
+          "normalized_bbox": [
+            0.1458,
+            0.3889,
+            0.0469,
+            0.0648
+          ],
+          "type": "SOT223"
+        },
+        "Y1_CRYSTAL_16M": {
+          "bbox": [
+            470,
+            480,
+            60,
+            30
+          ],
+          "normalized_bbox": [
+            0.2448,
+            0.4444,
+            0.0312,
+            0.0278
+          ],
+          "type": "XTAL"
+        },
+        "C1_BULK": {
+          "bbox": [
+            200,
+            360,
+            70,
+            70
+          ],
+          "normalized_bbox": [
+            0.1042,
+            0.3333,
+            0.0365,
+            0.0648
+          ],
+          "type": "CAP_CAN"
+        },
+        "C2_BULK": {
+          "bbox": [
+            200,
+            480,
+            70,
+            70
+          ],
+          "normalized_bbox": [
+            0.1042,
+            0.4444,
+            0.0365,
+            0.0648
+          ],
+          "type": "CAP_CAN"
+        },
+        "C3_DECOUP": {
+          "bbox": [
+            530,
+            410,
+            24,
+            40
+          ],
+          "normalized_bbox": [
+            0.276,
+            0.3796,
+            0.0125,
+            0.037
+          ],
+          "type": "C0805"
+        },
+        "C4_DECOUP": {
+          "bbox": [
+            730,
+            520,
+            24,
+            40
+          ],
+          "normalized_bbox": [
+            0.3802,
+            0.4815,
+            0.0125,
+            0.037
+          ],
+          "type": "C0805"
+        },
+        "R1_PULLUP": {
+          "bbox": [
+            490,
+            380,
+            24,
+            40
+          ],
+          "normalized_bbox": [
+            0.2552,
+            0.3519,
+            0.0125,
+            0.037
+          ],
+          "type": "R0805"
+        },
+        "R2_LED": {
+          "bbox": [
+            750,
+            420,
+            24,
+            40
+          ],
+          "normalized_bbox": [
+            0.3906,
+            0.3889,
+            0.0125,
+            0.037
+          ],
+          "type": "R0805"
+        },
+        "D1_LED_ON": {
+          "bbox": [
+            790,
+            420,
+            24,
+            40
+          ],
+          "normalized_bbox": [
+            0.4115,
+            0.3889,
+            0.0125,
+            0.037
+          ],
+          "type": "R0805"
+        }
+      }
+    },
+    "esp32_devkit": {
+      "name": "ESP32-WROOM-32 IoT Module",
+      "reference_image": "esp32_devkit\\reference.png",
+      "components": {
+        "U1_ESP32_MODULE": {
+          "bbox": [
+            600,
+            260,
+            260,
+            320
+          ],
+          "normalized_bbox": [
+            0.3125,
+            0.2407,
+            0.1354,
+            0.2963
+          ],
+          "type": "QFN_SHIELD"
+        },
+        "U2_CP2102": {
+          "bbox": [
+            420,
+            480,
+            90,
+            90
+          ],
+          "normalized_bbox": [
+            0.2188,
+            0.4444,
+            0.0469,
+            0.0833
+          ],
+          "type": "QFN28"
+        },
+        "U3_ME6211_LDO": {
+          "bbox": [
+            420,
+            360,
+            80,
+            60
+          ],
+          "normalized_bbox": [
+            0.2188,
+            0.3333,
+            0.0417,
+            0.0556
+          ],
+          "type": "SOT223"
+        },
+        "C1_RF_DECOUP": {
+          "bbox": [
+            570,
+            300,
+            20,
+            32
+          ],
+          "normalized_bbox": [
+            0.2969,
+            0.2778,
+            0.0104,
+            0.0296
+          ],
+          "type": "C0603"
+        },
+        "C2_RF_DECOUP": {
+          "bbox": [
+            570,
+            360,
+            20,
+            32
+          ],
+          "normalized_bbox": [
+            0.2969,
+            0.3333,
+            0.0104,
+            0.0296
+          ],
+          "type": "C0603"
+        },
+        "R1_BOOT_PULLUP": {
+          "bbox": [
+            540,
+            480,
+            20,
+            32
+          ],
+          "normalized_bbox": [
+            0.2812,
+            0.4444,
+            0.0104,
+            0.0296
+          ],
+          "type": "R0603"
+        },
+        "R2_TXD_RES": {
+          "bbox": [
+            540,
+            530,
+            20,
+            32
+          ],
+          "normalized_bbox": [
+            0.2812,
+            0.4907,
+            0.0104,
+            0.0296
+          ],
+          "type": "R0603"
+        },
+        "D1_PWR_LED": {
+          "bbox": [
+            360,
+            360,
+            20,
+            32
+          ],
+          "normalized_bbox": [
+            0.1875,
+            0.3333,
+            0.0104,
+            0.0296
+          ],
+          "type": "R0603"
+        }
+      }
+    },
+    "power_buck_lm2596": {
+      "name": "LM2596 High-Efficiency Step-Down Buck Converter",
+      "reference_image": "power_buck_lm2596\\reference.png",
+      "components": {
+        "U1_LM2596_SW": {
+          "bbox": [
+            480,
+            340,
+            160,
+            140
+          ],
+          "normalized_bbox": [
+            0.25,
+            0.3148,
+            0.0833,
+            0.1296
+          ],
+          "type": "TO263"
+        },
+        "L1_POWER_INDUCTOR": {
+          "bbox": [
+            680,
+            330,
+            140,
+            140
+          ],
+          "normalized_bbox": [
+            0.3542,
+            0.3056,
+            0.0729,
+            0.1296
+          ],
+          "type": "INDUCTOR"
+        },
+        "C1_INPUT_FILTER": {
+          "bbox": [
+            320,
+            340,
+            90,
+            90
+          ],
+          "normalized_bbox": [
+            0.1667,
+            0.3148,
+            0.0469,
+            0.0833
+          ],
+          "type": "CAP_CAN"
+        },
+        "C2_OUTPUT_FILTER": {
+          "bbox": [
+            860,
+            340,
+            90,
+            90
+          ],
+          "normalized_bbox": [
+            0.4479,
+            0.3148,
+            0.0469,
+            0.0833
+          ],
+          "type": "CAP_CAN"
+        },
+        "D1_SCHOTTKY": {
+          "bbox": [
+            520,
+            510,
+            80,
+            50
+          ],
+          "normalized_bbox": [
+            0.2708,
+            0.4722,
+            0.0417,
+            0.0463
+          ],
+          "type": "SMC_DIODE"
+        },
+        "R1_FEEDBACK": {
+          "bbox": [
+            670,
+            500,
+            30,
+            45
+          ],
+          "normalized_bbox": [
+            0.349,
+            0.463,
+            0.0156,
+            0.0417
+          ],
+          "type": "R0805"
+        },
+        "C3_FEEDBACK_CAP": {
+          "bbox": [
+            720,
+            500,
+            30,
+            45
+          ],
+          "normalized_bbox": [
+            0.375,
+            0.463,
+            0.0156,
+            0.0417
+          ],
+          "type": "C0805"
+        }
+      }
+    },
+    "sensor_mpu6050": {
+      "name": "MPU-6050 6-Axis MotionTracking IMU",
+      "reference_image": "sensor_mpu6050\\reference.png",
+      "components": {
+        "U1_MPU6050": {
+          "bbox": [
+            500,
+            380,
+            110,
+            110
+          ],
+          "normalized_bbox": [
+            0.2604,
+            0.3519,
+            0.0573,
+            0.1019
+          ],
+          "type": "QFN24"
+        },
+        "U2_KB33_LDO": {
+          "bbox": [
+            360,
+            390,
+            75,
+            60
+          ],
+          "normalized_bbox": [
+            0.1875,
+            0.3611,
+            0.0391,
+            0.0556
+          ],
+          "type": "SOT223"
+        },
+        "C1_CHARGE_PUMP": {
+          "bbox": [
+            630,
+            390,
+            20,
+            30
+          ],
+          "normalized_bbox": [
+            0.3281,
+            0.3611,
+            0.0104,
+            0.0278
+          ],
+          "type": "C0603"
+        },
+        "C2_VLOGIC": {
+          "bbox": [
+            630,
+            440,
+            20,
+            30
+          ],
+          "normalized_bbox": [
+            0.3281,
+            0.4074,
+            0.0104,
+            0.0278
+          ],
+          "type": "C0603"
+        },
+        "R1_I2C_SCL": {
+          "bbox": [
+            460,
+            340,
+            30,
+            20
+          ],
+          "normalized_bbox": [
+            0.2396,
+            0.3148,
+            0.0156,
+            0.0185
+          ],
+          "type": "R0603"
+        },
+        "R2_I2C_SDA": {
+          "bbox": [
+            510,
+            340,
+            30,
+            20
+          ],
+          "normalized_bbox": [
+            0.2656,
+            0.3148,
+            0.0156,
+            0.0185
+          ],
+          "type": "R0603"
+        },
+        "D1_POWER_LED": {
+          "bbox": [
+            320,
+            390,
+            20,
+            30
+          ],
+          "normalized_bbox": [
+            0.1667,
+            0.3611,
+            0.0104,
+            0.0278
+          ],
+          "type": "R0603"
+        }
+      }
+    },
+    "industrial_sensor_controller": {
+      "name": "Industrial Sensor Controller Rev 2.1 (Full Suite)",
+      "reference_image": "industrial_sensor_controller\\reference.png",
+      "components": {
+        "U1_MCU": {
+          "bbox": [
+            580,
+            400,
+            200,
+            200
+          ],
+          "normalized_bbox": [
+            0.3021,
+            0.3704,
+            0.1042,
+            0.1852
+          ],
+          "type": "QFP32"
+        },
+        "U2_REG": {
+          "bbox": [
+            940,
+            440,
+            140,
+            100
+          ],
+          "normalized_bbox": [
+            0.4896,
+            0.4074,
+            0.0729,
+            0.0926
+          ],
+          "type": "SOT223"
+        },
+        "U3_EEPROM": {
+          "bbox": [
+            940,
+            620,
+            120,
+            90
+          ],
+          "normalized_bbox": [
+            0.4896,
+            0.5741,
+            0.0625,
+            0.0833
+          ],
+          "type": "SOIC8"
+        },
+        "C1_DECOUP": {
+          "bbox": [
+            470,
+            430,
+            24,
+            30
+          ],
+          "normalized_bbox": [
+            0.2448,
+            0.3981,
+            0.0125,
+            0.0278
+          ],
+          "type": "C0805"
+        },
+        "C2_DECOUP": {
+          "bbox": [
+            470,
+            520,
+            24,
+            30
+          ],
+          "normalized_bbox": [
+            0.2448,
+            0.4815,
+            0.0125,
+            0.0278
+          ],
+          "type": "C0805"
+        },
+        "C3_DECOUP": {
+          "bbox": [
+            830,
+            430,
+            24,
+            30
+          ],
+          "normalized_bbox": [
+            0.4323,
+            0.3981,
+            0.0125,
+            0.0278
+          ],
+          "type": "C0805"
+        },
+        "C4_BULK": {
+          "bbox": [
+            1130,
+            470,
+            36,
+            45
+          ],
+          "normalized_bbox": [
+            0.5885,
+            0.4352,
+            0.0187,
+            0.0417
+          ],
+          "type": "C1206"
+        },
+        "R1_PULLUP": {
+          "bbox": [
+            880,
+            420,
+            24,
+            48
+          ],
+          "normalized_bbox": [
+            0.4583,
+            0.3889,
+            0.0125,
+            0.0444
+          ],
+          "type": "R0805"
+        },
+        "R2_PULLUP": {
+          "bbox": [
+            880,
+            490,
+            24,
+            48
+          ],
+          "normalized_bbox": [
+            0.4583,
+            0.4537,
+            0.0125,
+            0.0444
+          ],
+          "type": "R0805"
+        },
+        "R3_PULLUP": {
+          "bbox": [
+            880,
+            560,
+            24,
+            48
+          ],
+          "normalized_bbox": [
+            0.4583,
+            0.5185,
+            0.0125,
+            0.0444
+          ],
+          "type": "R0805"
+        },
+        "R4_PULLUP": {
+          "bbox": [
+            880,
+            630,
+            24,
+            48
+          ],
+          "normalized_bbox": [
+            0.4583,
+            0.5833,
+            0.0125,
+            0.0444
+          ],
+          "type": "R0805"
+        },
+        "R5_SHUNTR": {
+          "bbox": [
+            880,
+            700,
+            24,
+            48
+          ],
+          "normalized_bbox": [
+            0.4583,
+            0.6481,
+            0.0125,
+            0.0444
+          ],
+          "type": "R0805"
+        },
+        "D1_LED": {
+          "bbox": [
+            500,
+            670,
+            24,
+            35
+          ],
+          "normalized_bbox": [
+            0.2604,
+            0.6204,
+            0.0125,
+            0.0324
+          ],
+          "type": "LED0805"
+        },
+        "Y1_XTAL": {
+          "bbox": [
+            440,
+            460,
+            40,
+            80
+          ],
+          "normalized_bbox": [
+            0.2292,
+            0.4259,
+            0.0208,
+            0.0741
+          ],
+          "type": "XTAL"
+        }
+      }
+    }
+  },
+  "images": {
+    "train\\arduino_uno\\arduino_uno_01_nominal_ok.png": {
+      "board_type": "arduino_uno",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\arduino_uno\\arduino_uno_02_nominal_bright.png": {
+      "board_type": "arduino_uno",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\arduino_uno\\arduino_uno_03_nominal_dim.png": {
+      "board_type": "arduino_uno",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\arduino_uno\\arduino_uno_04_nominal_glare.png": {
+      "board_type": "arduino_uno",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\arduino_uno\\arduino_uno_05_missing_single.png": {
+      "board_type": "arduino_uno",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_BULK": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\arduino_uno\\arduino_uno_06_missing_double.png": {
+      "board_type": "arduino_uno",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C1_BULK": {
+          "type": "MISSING"
+        },
+        "C3_DECOUP": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 2,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\arduino_uno\\arduino_uno_07_tilted_part.png": {
+      "board_type": "arduino_uno",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_BULK": {
+          "type": "TILTED",
+          "angle": 7.5
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 1,
+        "misaligned": 0
+      }
+    },
+    "train\\arduino_uno\\arduino_uno_08_shifted_part.png": {
+      "board_type": "arduino_uno",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C3_DECOUP": {
+          "type": "MISALIGNED",
+          "shift": [
+            9,
+            3
+          ]
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 1
+      }
+    },
+    "train\\arduino_uno\\arduino_uno_09_mixed_missing_tilted.png": {
+      "board_type": "arduino_uno",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C1_BULK": {
+          "type": "TILTED",
+          "angle": -8.0
+        },
+        "Y1_CRYSTAL_16M": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 1,
+        "misaligned": 0
+      }
+    },
+    "train\\arduino_uno\\arduino_uno_10_mixed_all_defects.png": {
+      "board_type": "arduino_uno",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_BULK": {
+          "type": "MISSING"
+        },
+        "C3_DECOUP": {
+          "type": "TILTED",
+          "angle": 6.5
+        },
+        "C4_DECOUP": {
+          "type": "MISALIGNED",
+          "shift": [
+            -8,
+            6
+          ]
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 1,
+        "misaligned": 1
+      }
+    },
+    "test\\arduino_uno\\arduino_uno_test_01_all_ok_max_jitter.png": {
+      "board_type": "arduino_uno",
+      "split": "test",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "test\\arduino_uno\\arduino_uno_test_02_missing_critical_ic.png": {
+      "board_type": "arduino_uno",
+      "split": "test",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C1_BULK": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "test\\arduino_uno\\arduino_uno_test_03_tilted_severe_skew.png": {
+      "board_type": "arduino_uno",
+      "split": "test",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_BULK": {
+          "type": "TILTED",
+          "angle": 10.5
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 1,
+        "misaligned": 0
+      }
+    },
+    "test\\arduino_uno\\arduino_uno_test_04_misaligned_shifted_part.png": {
+      "board_type": "arduino_uno",
+      "split": "test",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C3_DECOUP": {
+          "type": "MISALIGNED",
+          "shift": [
+            12,
+            -4
+          ]
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 1
+      }
+    },
+    "train\\esp32_devkit\\esp32_devkit_01_nominal_ok.png": {
+      "board_type": "esp32_devkit",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\esp32_devkit\\esp32_devkit_02_nominal_bright.png": {
+      "board_type": "esp32_devkit",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\esp32_devkit\\esp32_devkit_03_nominal_dim.png": {
+      "board_type": "esp32_devkit",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\esp32_devkit\\esp32_devkit_04_nominal_glare.png": {
+      "board_type": "esp32_devkit",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\esp32_devkit\\esp32_devkit_05_missing_single.png": {
+      "board_type": "esp32_devkit",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_RF_DECOUP": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\esp32_devkit\\esp32_devkit_06_missing_double.png": {
+      "board_type": "esp32_devkit",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C1_RF_DECOUP": {
+          "type": "MISSING"
+        },
+        "D1_PWR_LED": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 2,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\esp32_devkit\\esp32_devkit_07_tilted_part.png": {
+      "board_type": "esp32_devkit",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_RF_DECOUP": {
+          "type": "TILTED",
+          "angle": 7.5
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 1,
+        "misaligned": 0
+      }
+    },
+    "train\\esp32_devkit\\esp32_devkit_08_shifted_part.png": {
+      "board_type": "esp32_devkit",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "D1_PWR_LED": {
+          "type": "MISALIGNED",
+          "shift": [
+            9,
+            3
+          ]
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 1
+      }
+    },
+    "train\\esp32_devkit\\esp32_devkit_09_mixed_missing_tilted.png": {
+      "board_type": "esp32_devkit",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C1_RF_DECOUP": {
+          "type": "TILTED",
+          "angle": -8.0
+        },
+        "U3_ME6211_LDO": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 1,
+        "misaligned": 0
+      }
+    },
+    "train\\esp32_devkit\\esp32_devkit_10_mixed_all_defects.png": {
+      "board_type": "esp32_devkit",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_RF_DECOUP": {
+          "type": "MISSING"
+        },
+        "D1_PWR_LED": {
+          "type": "TILTED",
+          "angle": 6.5
+        },
+        "R1_BOOT_PULLUP": {
+          "type": "MISALIGNED",
+          "shift": [
+            -8,
+            6
+          ]
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 1,
+        "misaligned": 1
+      }
+    },
+    "test\\esp32_devkit\\esp32_devkit_test_01_all_ok_max_jitter.png": {
+      "board_type": "esp32_devkit",
+      "split": "test",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "test\\esp32_devkit\\esp32_devkit_test_02_missing_critical_ic.png": {
+      "board_type": "esp32_devkit",
+      "split": "test",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C1_RF_DECOUP": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "test\\esp32_devkit\\esp32_devkit_test_03_tilted_severe_skew.png": {
+      "board_type": "esp32_devkit",
+      "split": "test",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_RF_DECOUP": {
+          "type": "TILTED",
+          "angle": 10.5
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 1,
+        "misaligned": 0
+      }
+    },
+    "test\\esp32_devkit\\esp32_devkit_test_04_misaligned_shifted_part.png": {
+      "board_type": "esp32_devkit",
+      "split": "test",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "D1_PWR_LED": {
+          "type": "MISALIGNED",
+          "shift": [
+            12,
+            -4
+          ]
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 1
+      }
+    },
+    "train\\power_buck_lm2596\\power_buck_lm2596_01_nominal_ok.png": {
+      "board_type": "power_buck_lm2596",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\power_buck_lm2596\\power_buck_lm2596_02_nominal_bright.png": {
+      "board_type": "power_buck_lm2596",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\power_buck_lm2596\\power_buck_lm2596_03_nominal_dim.png": {
+      "board_type": "power_buck_lm2596",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\power_buck_lm2596\\power_buck_lm2596_04_nominal_glare.png": {
+      "board_type": "power_buck_lm2596",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\power_buck_lm2596\\power_buck_lm2596_05_missing_single.png": {
+      "board_type": "power_buck_lm2596",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_OUTPUT_FILTER": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\power_buck_lm2596\\power_buck_lm2596_06_missing_double.png": {
+      "board_type": "power_buck_lm2596",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C1_INPUT_FILTER": {
+          "type": "MISSING"
+        },
+        "C3_FEEDBACK_CAP": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 2,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\power_buck_lm2596\\power_buck_lm2596_07_tilted_part.png": {
+      "board_type": "power_buck_lm2596",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_OUTPUT_FILTER": {
+          "type": "TILTED",
+          "angle": 7.5
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 1,
+        "misaligned": 0
+      }
+    },
+    "train\\power_buck_lm2596\\power_buck_lm2596_08_shifted_part.png": {
+      "board_type": "power_buck_lm2596",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C3_FEEDBACK_CAP": {
+          "type": "MISALIGNED",
+          "shift": [
+            9,
+            3
+          ]
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 1
+      }
+    },
+    "train\\power_buck_lm2596\\power_buck_lm2596_09_mixed_missing_tilted.png": {
+      "board_type": "power_buck_lm2596",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C1_INPUT_FILTER": {
+          "type": "TILTED",
+          "angle": -8.0
+        },
+        "U1_LM2596_SW": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 1,
+        "misaligned": 0
+      }
+    },
+    "train\\power_buck_lm2596\\power_buck_lm2596_10_mixed_all_defects.png": {
+      "board_type": "power_buck_lm2596",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_OUTPUT_FILTER": {
+          "type": "MISSING"
+        },
+        "C3_FEEDBACK_CAP": {
+          "type": "TILTED",
+          "angle": 6.5
+        },
+        "D1_SCHOTTKY": {
+          "type": "MISALIGNED",
+          "shift": [
+            -8,
+            6
+          ]
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 1,
+        "misaligned": 1
+      }
+    },
+    "test\\power_buck_lm2596\\power_buck_lm2596_test_01_all_ok_max_jitter.png": {
+      "board_type": "power_buck_lm2596",
+      "split": "test",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "test\\power_buck_lm2596\\power_buck_lm2596_test_02_missing_critical_ic.png": {
+      "board_type": "power_buck_lm2596",
+      "split": "test",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C1_INPUT_FILTER": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "test\\power_buck_lm2596\\power_buck_lm2596_test_03_tilted_severe_skew.png": {
+      "board_type": "power_buck_lm2596",
+      "split": "test",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_OUTPUT_FILTER": {
+          "type": "TILTED",
+          "angle": 10.5
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 1,
+        "misaligned": 0
+      }
+    },
+    "test\\power_buck_lm2596\\power_buck_lm2596_test_04_misaligned_shifted_part.png": {
+      "board_type": "power_buck_lm2596",
+      "split": "test",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C3_FEEDBACK_CAP": {
+          "type": "MISALIGNED",
+          "shift": [
+            12,
+            -4
+          ]
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 1
+      }
+    },
+    "train\\sensor_mpu6050\\sensor_mpu6050_01_nominal_ok.png": {
+      "board_type": "sensor_mpu6050",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\sensor_mpu6050\\sensor_mpu6050_02_nominal_bright.png": {
+      "board_type": "sensor_mpu6050",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\sensor_mpu6050\\sensor_mpu6050_03_nominal_dim.png": {
+      "board_type": "sensor_mpu6050",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\sensor_mpu6050\\sensor_mpu6050_04_nominal_glare.png": {
+      "board_type": "sensor_mpu6050",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\sensor_mpu6050\\sensor_mpu6050_05_missing_single.png": {
+      "board_type": "sensor_mpu6050",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_VLOGIC": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\sensor_mpu6050\\sensor_mpu6050_06_missing_double.png": {
+      "board_type": "sensor_mpu6050",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C1_CHARGE_PUMP": {
+          "type": "MISSING"
+        },
+        "D1_POWER_LED": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 2,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\sensor_mpu6050\\sensor_mpu6050_07_tilted_part.png": {
+      "board_type": "sensor_mpu6050",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_VLOGIC": {
+          "type": "TILTED",
+          "angle": 7.5
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 1,
+        "misaligned": 0
+      }
+    },
+    "train\\sensor_mpu6050\\sensor_mpu6050_08_shifted_part.png": {
+      "board_type": "sensor_mpu6050",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "D1_POWER_LED": {
+          "type": "MISALIGNED",
+          "shift": [
+            9,
+            3
+          ]
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 1
+      }
+    },
+    "train\\sensor_mpu6050\\sensor_mpu6050_09_mixed_missing_tilted.png": {
+      "board_type": "sensor_mpu6050",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C1_CHARGE_PUMP": {
+          "type": "TILTED",
+          "angle": -8.0
+        },
+        "U2_KB33_LDO": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 1,
+        "misaligned": 0
+      }
+    },
+    "train\\sensor_mpu6050\\sensor_mpu6050_10_mixed_all_defects.png": {
+      "board_type": "sensor_mpu6050",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_VLOGIC": {
+          "type": "MISSING"
+        },
+        "D1_POWER_LED": {
+          "type": "TILTED",
+          "angle": 6.5
+        },
+        "R1_I2C_SCL": {
+          "type": "MISALIGNED",
+          "shift": [
+            -8,
+            6
+          ]
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 1,
+        "misaligned": 1
+      }
+    },
+    "test\\sensor_mpu6050\\sensor_mpu6050_test_01_all_ok_max_jitter.png": {
+      "board_type": "sensor_mpu6050",
+      "split": "test",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "test\\sensor_mpu6050\\sensor_mpu6050_test_02_missing_critical_ic.png": {
+      "board_type": "sensor_mpu6050",
+      "split": "test",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C1_CHARGE_PUMP": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "test\\sensor_mpu6050\\sensor_mpu6050_test_03_tilted_severe_skew.png": {
+      "board_type": "sensor_mpu6050",
+      "split": "test",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_VLOGIC": {
+          "type": "TILTED",
+          "angle": 10.5
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 1,
+        "misaligned": 0
+      }
+    },
+    "test\\sensor_mpu6050\\sensor_mpu6050_test_04_misaligned_shifted_part.png": {
+      "board_type": "sensor_mpu6050",
+      "split": "test",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "D1_POWER_LED": {
+          "type": "MISALIGNED",
+          "shift": [
+            12,
+            -4
+          ]
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 1
+      }
+    },
+    "train\\industrial_sensor_controller\\industrial_sensor_controller_01_nominal_ok.png": {
+      "board_type": "industrial_sensor_controller",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\industrial_sensor_controller\\industrial_sensor_controller_02_nominal_bright.png": {
+      "board_type": "industrial_sensor_controller",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\industrial_sensor_controller\\industrial_sensor_controller_03_nominal_dim.png": {
+      "board_type": "industrial_sensor_controller",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\industrial_sensor_controller\\industrial_sensor_controller_04_nominal_glare.png": {
+      "board_type": "industrial_sensor_controller",
+      "split": "train",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\industrial_sensor_controller\\industrial_sensor_controller_05_missing_single.png": {
+      "board_type": "industrial_sensor_controller",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_DECOUP": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\industrial_sensor_controller\\industrial_sensor_controller_06_missing_double.png": {
+      "board_type": "industrial_sensor_controller",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C1_DECOUP": {
+          "type": "MISSING"
+        },
+        "C3_DECOUP": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 2,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "train\\industrial_sensor_controller\\industrial_sensor_controller_07_tilted_part.png": {
+      "board_type": "industrial_sensor_controller",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_DECOUP": {
+          "type": "TILTED",
+          "angle": 7.5
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 1,
+        "misaligned": 0
+      }
+    },
+    "train\\industrial_sensor_controller\\industrial_sensor_controller_08_shifted_part.png": {
+      "board_type": "industrial_sensor_controller",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C3_DECOUP": {
+          "type": "MISALIGNED",
+          "shift": [
+            9,
+            3
+          ]
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 1
+      }
+    },
+    "train\\industrial_sensor_controller\\industrial_sensor_controller_09_mixed_missing_tilted.png": {
+      "board_type": "industrial_sensor_controller",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C1_DECOUP": {
+          "type": "TILTED",
+          "angle": -8.0
+        },
+        "Y1_XTAL": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 1,
+        "misaligned": 0
+      }
+    },
+    "train\\industrial_sensor_controller\\industrial_sensor_controller_10_mixed_all_defects.png": {
+      "board_type": "industrial_sensor_controller",
+      "split": "train",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_DECOUP": {
+          "type": "MISSING"
+        },
+        "C3_DECOUP": {
+          "type": "TILTED",
+          "angle": 6.5
+        },
+        "C4_BULK": {
+          "type": "MISALIGNED",
+          "shift": [
+            -8,
+            6
+          ]
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 1,
+        "misaligned": 1
+      }
+    },
+    "test\\industrial_sensor_controller\\industrial_sensor_controller_test_01_all_ok_max_jitter.png": {
+      "board_type": "industrial_sensor_controller",
+      "split": "test",
+      "expected_board_status": "OK",
+      "defects": {},
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "test\\industrial_sensor_controller\\industrial_sensor_controller_test_02_missing_critical_ic.png": {
+      "board_type": "industrial_sensor_controller",
+      "split": "test",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C1_DECOUP": {
+          "type": "MISSING"
+        }
+      },
+      "defect_counts": {
+        "missing": 1,
+        "tilted": 0,
+        "misaligned": 0
+      }
+    },
+    "test\\industrial_sensor_controller\\industrial_sensor_controller_test_03_tilted_severe_skew.png": {
+      "board_type": "industrial_sensor_controller",
+      "split": "test",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C2_DECOUP": {
+          "type": "TILTED",
+          "angle": 10.5
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 1,
+        "misaligned": 0
+      }
+    },
+    "test\\industrial_sensor_controller\\industrial_sensor_controller_test_04_misaligned_shifted_part.png": {
+      "board_type": "industrial_sensor_controller",
+      "split": "test",
+      "expected_board_status": "DEFECT",
+      "defects": {
+        "C3_DECOUP": {
+          "type": "MISALIGNED",
+          "shift": [
+            12,
+            -4
+          ]
+        }
+      },
+      "defect_counts": {
+        "missing": 0,
+        "tilted": 0,
+        "misaligned": 1
+      }
+    }
+  }
+}
