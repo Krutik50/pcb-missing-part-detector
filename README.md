@@ -235,7 +235,6 @@ curl -X POST "http://127.0.0.1:8000/api/inspect" \
 ├── generate_samples.py         # Synthetic PCB test image generator with physical defects
 ├── run.py                      # Application launch entrypoint
 ├── ARCHITECTURE.md             # Formal System Architecture & IEEE 830 SRS
-├── AI_COLLAB.md                # Human-in-the-Loop engineering & decision log
 └── RESEARCH.md                 # Academic literature review & formal citations
 ```
 
