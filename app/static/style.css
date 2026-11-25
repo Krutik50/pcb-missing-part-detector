@@ -2679,6 +2679,12 @@ body {
     text-transform: uppercase;
 }
 
+.role-badge.role-operator {
+    background: #1e3a8a;
+    border: 1px solid #2563eb;
+    color: #93c5fd;
+}
+
 .role-badge.role-inspector {
     background: #064e3b;
     border: 1px solid #059669;

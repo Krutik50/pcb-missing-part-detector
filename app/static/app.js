@@ -17,11 +17,11 @@ document.addEventListener('DOMContentLoaded', () => {
         lastInspectionData: null,
         signoffs: {}, // filename -> { compName: { final_status, operator_id, note, timestamp } }
         currentUser: {
-            operator_id: 'OP-8402',
-            name: 'Sarah Jenkins',
-            role: 'INSPECTOR',
-            role_label: 'Senior AOI Inspector',
-            badge: 'OP-8402',
+            operator_id: 'OP-101',
+            name: 'Lead SMT Operator',
+            role: 'OPERATOR',
+            role_label: 'SMT Operator',
+            badge: 'OP-101',
         },
         presets: [],
         activePreset: null,
@@ -52,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
         customAuthForm: document.getElementById('custom-auth-form'),
         inputOpBadge: document.getElementById('input-op-badge'),
         inputOpName: document.getElementById('input-op-name'),
-        selectOpRole: document.getElementById('select-op-role'),
 
         // Presets
         presetsContainer: document.getElementById('presets-container'),
@@ -194,31 +193,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- OPERATOR AUTHENTICATION & RBAC ---
     function getUserRole() {
-        return (state.currentUser && state.currentUser.role) ? state.currentUser.role.toUpperCase() : 'INSPECTOR';
+        return (state.currentUser && state.currentUser.role) ? state.currentUser.role.toUpperCase() : 'OPERATOR';
     }
 
     function isInspector() {
-        return getUserRole() === 'INSPECTOR';
+        return false;
     }
 
     function isSupervisor() {
-        return getUserRole() === 'SUPERVISOR';
+        return false;
     }
 
     function isAdmin() {
-        return getUserRole() === 'ADMIN';
+        return false;
     }
 
     function canAuthorFootprints() {
-        return !isInspector();
+        return true;
     }
 
     function canOverrideDefects() {
-        return !isInspector();
+        return true;
     }
 
     function canTuneTolerances() {
-        return isAdmin();
+        return true;
     }
 
     function applyRBACPermissions() {
@@ -227,31 +226,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Step 2 Footprint Authoring Controls & Banner
         const step2Banner = document.getElementById('step2-rbac-banner');
-        const canvasContainer = el.canvasContainer || document.getElementById('canvas-container');
-
-        if (canAuthorFootprints()) {
-            if (step2Banner) {
-                step2Banner.className = 'rbac-notice-banner rbac-authorized';
-                step2Banner.innerHTML = `
-                    <svg class="ui-icon"><use href="#icon-check"></use></svg>
-                    <span id="step2-rbac-text"><strong>Layout Modification Authorized:</strong> Footprint authoring and component geometry editing unlocked for ${roleLabel}.</span>
-                `;
-            }
-            if (canvasContainer) canvasContainer.classList.remove('canvas-locked');
-            if (el.btnClearComps) el.btnClearComps.disabled = false;
-            if (el.btnImportRecipe) el.btnImportRecipe.disabled = false;
-        } else {
-            if (step2Banner) {
-                step2Banner.className = 'rbac-notice-banner rbac-locked';
-                step2Banner.innerHTML = `
-                    <svg class="ui-icon"><use href="#icon-alert"></use></svg>
-                    <span id="step2-rbac-text"><strong>Read-Only Layout Mode:</strong> Component footprint authoring is restricted to SMT Supervisors and QA Admins. Line Inspectors have view-only access.</span>
-                `;
-            }
-            if (canvasContainer) canvasContainer.classList.add('canvas-locked');
-            if (el.btnClearComps) el.btnClearComps.disabled = true;
-            if (el.btnImportRecipe) el.btnImportRecipe.disabled = true;
+        if (step2Banner) {
+            step2Banner.style.display = 'none';
         }
+        const canvasContainer = el.canvasContainer || document.getElementById('canvas-container');
+        if (canvasContainer) canvasContainer.classList.remove('canvas-locked');
+        if (el.btnClearComps) el.btnClearComps.disabled = false;
+        if (el.btnImportRecipe) el.btnImportRecipe.disabled = false;
 
         // Update Component List UI if present
         if (state.components && state.components.length > 0) {
@@ -269,9 +250,8 @@ document.addEventListener('DOMContentLoaded', () => {
         state.currentUser = user;
         if (el.headerOperatorName) el.headerOperatorName.textContent = user.name;
         if (el.headerOperatorBadge) {
-            el.headerOperatorBadge.textContent = `${user.badge} (${user.role})`;
-            const roleClass = user.role === 'ADMIN' ? 'role-admin' : (user.role === 'SUPERVISOR' ? 'role-supervisor' : 'role-inspector');
-            el.headerOperatorBadge.className = `header-operator-badge role-badge ${roleClass}`;
+            el.headerOperatorBadge.textContent = `${user.badge} (${user.role || 'OPERATOR'})`;
+            el.headerOperatorBadge.className = 'header-operator-badge role-badge role-operator';
         }
         applyRBACPermissions();
     }
@@ -293,7 +273,6 @@ document.addEventListener('DOMContentLoaded', () => {
         profiles.forEach(p => {
             const item = document.createElement('div');
             item.className = 'auth-profile-card';
-            const roleColor = p.role === 'ADMIN' ? 'preset-badge-amber' : (p.role === 'SUPERVISOR' ? 'preset-badge-blue' : 'preset-badge-green');
             item.innerHTML = `
                 <div class="auth-profile-left">
                     <svg class="ui-icon" style="width:18px;height:18px;color:var(--color-blue);"><use href="#icon-user"></use></svg>
@@ -303,12 +282,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <span class="preset-badge ${roleColor}">${p.badge}</span>
+                    <span class="preset-badge preset-badge-blue">${p.badge}</span>
                     <span style="font-size:0.8rem; color:var(--color-blue); font-weight:600;">Select &rarr;</span>
                 </div>
             `;
             item.addEventListener('click', () => {
-                handleLogin({ operator_id: p.operator_id, name: p.name, role: p.role });
+                handleLogin({ operator_id: p.operator_id, name: p.name, role: p.role || 'OPERATOR' });
             });
             el.authProfilesList.appendChild(item);
         });
@@ -361,9 +340,8 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const badge = el.inputOpBadge.value.trim();
             const name = el.inputOpName.value.trim();
-            const role = el.selectOpRole.value;
             if (!badge || !name) return;
-            handleLogin({ operator_id: badge, name: name, role: role });
+            handleLogin({ operator_id: badge, name: name, role: 'OPERATOR' });
         });
     }
 
@@ -1587,7 +1565,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     signoffHtml = `
                         <div style="margin-top:0.35rem;">
                             <span class="${signBadge}">${signIcon}: ${isPres ? 'VERIFIED PRESENT' : 'CONFIRMED DEFECT'}</span>
-                            <span style="font-size:0.75rem; color:#8b949e; margin-left:0.3rem;">(By ${sign.operator_id} [${sign.operator_role || 'INSPECTOR'}]${sign.note ? ' &bull; ' + sign.note : ''})</span>
+                            <span style="font-size:0.75rem; color:#8b949e; margin-left:0.3rem;">(By ${sign.operator_id} [${sign.operator_role || 'OPERATOR'}]${sign.note ? ' &bull; ' + sign.note : ''})</span>
                             <button type="button" class="btn-link btn-edit-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" style="margin-left:0.5rem; font-size:0.75rem; color:#58a6ff;">Edit</button>
                         </div>
                         <div style="font-size:0.75rem; color:#8b949e; margin-top:2px;">Original Machine Verdict: UNCERTAIN</div>
@@ -1597,7 +1575,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="signoff-box">
                             <div class="signoff-header-text">Operator Sign-Off Required for Discrepancy</div>
                             <div class="signoff-controls-row">
-                                <input type="text" class="signoff-input signoff-input-badge" id="badge-${resIdx}-${c.name}" placeholder="Badge ID" value="${state.currentUser ? state.currentUser.badge : 'OP-8402'}">
+                                <input type="text" class="signoff-input signoff-input-badge" id="badge-${resIdx}-${c.name}" placeholder="Badge ID" value="${state.currentUser ? state.currentUser.badge : 'OP-101'}">
                                 <input type="text" class="signoff-input signoff-input-note" id="note-${resIdx}-${c.name}" placeholder="Optional note (e.g. glare on lead)">
                                 <button type="button" class="btn btn-sm btn-success btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="PRESENT">Verify Present</button>
                                 <button type="button" class="btn btn-sm btn-danger btn-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" data-verdict="MISSING">Confirm Defect</button>
@@ -1610,12 +1588,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     signoffHtml = `
                         <div style="margin-top:0.35rem;">
                             <span class="badge-override-active">OVERRIDE: PRESENT</span>
-                            <span style="font-size:0.75rem; color:#8b949e; margin-left:0.3rem;">(By ${sign.operator_id} [${sign.operator_role || 'SUPERVISOR'}]${sign.note ? ' &bull; ' + sign.note : ''})</span>
-                            ${canOverrideDefects() ? `<button type="button" class="btn-link btn-edit-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" style="margin-left:0.5rem; font-size:0.75rem; color:#58a6ff;">Revert</button>` : ''}
+                            <span style="font-size:0.75rem; color:#8b949e; margin-left:0.3rem;">(By ${sign.operator_id} [${sign.operator_role || 'OPERATOR'}]${sign.note ? ' &bull; ' + sign.note : ''})</span>
+                            <button type="button" class="btn-link btn-edit-signoff" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}" style="margin-left:0.5rem; font-size:0.75rem; color:#58a6ff;">Revert</button>
                         </div>
                         <div style="font-size:0.75rem; color:#8b949e; margin-top:2px;">Original Machine Verdict: ${c.status}</div>
                     `;
-                } else if (canOverrideDefects()) {
+                } else {
                     signoffHtml = `
                         <div style="margin-top:0.35rem;">
                             <button type="button" class="btn-trigger-override" data-target="override-${resIdx}-${c.name}">
@@ -1624,21 +1602,15 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div id="override-${resIdx}-${c.name}" class="override-box d-none">
                                 <div class="override-title">
                                     <svg class="ui-icon" style="width:14px;height:14px;"><use href="#icon-alert"></use></svg>
-                                    Supervisor Disposition Override (IPC-A-610)
+                                    Operator Disposition Override (IPC-A-610)
                                 </div>
                                 <div class="override-controls-row">
-                                    <input type="text" class="signoff-input signoff-input-badge" id="ovr-badge-${resIdx}-${c.name}" placeholder="Supervisor ID" value="${state.currentUser ? state.currentUser.badge : 'LEAD-104'}">
+                                    <input type="text" class="signoff-input signoff-input-badge" id="ovr-badge-${resIdx}-${c.name}" placeholder="Operator ID" value="${state.currentUser ? state.currentUser.badge : 'OP-101'}">
                                     <input type="text" class="signoff-input signoff-input-note" id="ovr-note-${resIdx}-${c.name}" placeholder="Mandatory engineering rationale (e.g. verified under loupe)" style="flex:1; min-width:220px;">
                                     <button type="button" class="btn btn-sm btn-primary btn-confirm-override" data-res-idx="${resIdx}" data-fname="${res.filename}" data-comp="${c.name}">Authorize Pass</button>
                                     <button type="button" class="btn btn-sm btn-outline btn-cancel-override" data-target="override-${resIdx}-${c.name}">Cancel</button>
                                 </div>
                             </div>
-                        </div>
-                    `;
-                } else {
-                    signoffHtml = `
-                        <div style="margin-top:0.35rem; font-size:0.75rem; color:#8b949e;">
-                            Defect flagged by AOI &bull; Overrides locked to Supervisor / Admin
                         </div>
                     `;
                 }
@@ -2075,9 +2047,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const badgeEl = document.getElementById(`badge-${resIdx}-${comp}`);
                 const noteEl = document.getElementById(`note-${resIdx}-${comp}`);
-                const badge = (badgeEl && badgeEl.value.trim()) || (state.currentUser ? state.currentUser.badge : 'OP-8402');
+                const badge = (badgeEl && badgeEl.value.trim()) || (state.currentUser ? state.currentUser.badge : 'OP-101');
                 const note = (noteEl && noteEl.value.trim()) || '';
-                const role = state.currentUser ? state.currentUser.role : 'INSPECTOR';
+                const role = state.currentUser ? state.currentUser.role : 'OPERATOR';
 
                 if (!state.signoffs[fname]) state.signoffs[fname] = {};
                 state.signoffs[fname][comp] = {
@@ -2149,18 +2121,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const badgeEl = document.getElementById(`ovr-badge-${resIdx}-${comp}`);
                 const noteEl = document.getElementById(`ovr-note-${resIdx}-${comp}`);
-                const badge = (badgeEl && badgeEl.value.trim()) || (state.currentUser ? state.currentUser.badge : 'LEAD-104');
+                const badge = (badgeEl && badgeEl.value.trim()) || (state.currentUser ? state.currentUser.badge : 'OP-101');
                 const note = (noteEl && noteEl.value.trim()) || '';
-                const role = state.currentUser ? state.currentUser.role : 'SUPERVISOR';
+                const role = state.currentUser ? state.currentUser.role : 'OPERATOR';
 
                 if (!note) {
                     showAlert('ISO 9001 Compliance: An engineering rationale is required when overriding a machine defect to PASS.', 'warning');
                     if (noteEl) noteEl.focus();
-                    return;
-                }
-
-                if (!canOverrideDefects()) {
-                    showAlert('Unauthorized: Defect overrides require SMT Supervisor or QA Admin authorization.', 'danger');
                     return;
                 }
 
@@ -2504,9 +2471,9 @@ document.addEventListener('DOMContentLoaded', () => {
             ? 'BATCH ACCEPTED — ZERO DEFECTS' 
             : `CRITICAL ANOMALIES DETECTED — ${totalDefects} DEFECT(S) RECORDED`;
 
-        const leadName = state.currentUser ? state.currentUser.name : 'Sarah Jenkins';
-        const leadBadge = state.currentUser ? state.currentUser.badge : 'OP-8402';
-        const leadRole = state.currentUser ? state.currentUser.role : 'Lead QA Inspector';
+        const leadName = state.currentUser ? state.currentUser.name : 'Lead SMT Operator';
+        const leadBadge = state.currentUser ? state.currentUser.badge : 'OP-101';
+        const leadRole = state.currentUser ? (state.currentUser.role_label || state.currentUser.role) : 'SMT Operator';
 
         // Defect breakdown chips
         const breakdownParts = [];
@@ -3065,7 +3032,7 @@ document.addEventListener('DOMContentLoaded', () => {
             parts: totalParts,
             defects: defects,
             verdict: defects > 0 ? 'DEFECT' : 'OK',
-            inspector: state.currentUser ? `${state.currentUser.name} (${state.currentUser.badge})` : 'Sarah Jenkins (OP-8402)'
+            inspector: state.currentUser ? `${state.currentUser.name} (${state.currentUser.badge})` : 'Lead SMT Operator (OP-101)'
         });
     }
 

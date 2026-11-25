@@ -282,12 +282,6 @@
                                 </div>
                             </div>
 
-                            <!-- RBAC Footprint Authoring Banner -->
-                            <div class="rbac-notice-banner rbac-locked" id="step2-rbac-banner">
-                                <svg class="ui-icon"><use href="#icon-alert"></use></svg>
-                                <span id="step2-rbac-text"><strong>Read-Only Layout Mode:</strong> Component footprint authoring is restricted to SMT Supervisors and QA Admins. Line Inspectors have view-only access.</span>
-                            </div>
-
                             <div class="annotation-layout">
                                 <!-- Left: Interactive Canvas -->
                                 <div class="canvas-wrapper">
@@ -654,10 +648,10 @@
                 </div>
                 <button type="button" class="btn-icon" id="btn-close-auth">&times;</button>
             </div>
-            <p class="modal-sub">Authenticate inspector badge ID for ISO 9001 lot traceability and discrepancy overrides.</p>
+            <p class="modal-sub">Authenticate operator badge ID for ISO 9001 lot traceability and discrepancy overrides.</p>
 
             <div class="auth-profiles-section" style="margin-bottom: 1.2rem;">
-                <label class="control-label-sm" style="font-weight:600; color:var(--text-primary); margin-bottom:0.5rem; display:block;">Select Preset Inspector Profile:</label>
+                <label class="control-label-sm" style="font-weight:600; color:var(--text-primary); margin-bottom:0.5rem; display:block;">Select Preset Operator Profile:</label>
                 <div class="auth-profiles-grid" id="auth-profiles-list" style="display:flex; flex-direction:column; gap:0.5rem;">
                     <!-- Populated via /api/auth/profiles -->
                 </div>
@@ -671,21 +665,11 @@
                 <div class="form-group-row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin-bottom:0.8rem;">
                     <div class="form-col">
                         <label for="input-op-badge" class="control-label-sm" style="display:block; margin-bottom:0.3rem;">Badge ID:</label>
-                        <input type="text" id="input-op-badge" class="text-input" placeholder="e.g. OP-9012" required style="width:100%;">
+                        <input type="text" id="input-op-badge" class="text-input" placeholder="e.g. OP-101" required style="width:100%;">
                     </div>
                     <div class="form-col">
                         <label for="input-op-name" class="control-label-sm" style="display:block; margin-bottom:0.3rem;">Operator Name:</label>
-                        <input type="text" id="input-op-name" class="text-input" placeholder="e.g. Tech Operator" required style="width:100%;">
-                    </div>
-                </div>
-                <div class="form-group-row" style="margin-bottom:0.8rem;">
-                    <div class="form-col">
-                        <label for="select-op-role" class="control-label-sm" style="display:block; margin-bottom:0.3rem;">Authorized Role:</label>
-                        <select id="select-op-role" class="device-select" style="width:100%;">
-                            <option value="INSPECTOR">Quality Inspector (Visual inspection, review verifications)</option>
-                            <option value="SUPERVISOR">Line Supervisor (Discrepancy overrides, batch sign-off)</option>
-                            <option value="ADMIN">Quality Manager (Full audit logs, tolerance configuration)</option>
-                        </select>
+                        <input type="text" id="input-op-name" class="text-input" placeholder="e.g. Lead SMT Operator" required style="width:100%;">
                     </div>
                 </div>
                 <div class="modal-actions" style="margin-top:1rem; display:flex; justify-content:flex-end; gap:0.5rem;">

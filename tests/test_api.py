@@ -370,6 +370,39 @@ class TestBackendAPI(unittest.TestCase):
         self.assertIn("OP-702", csv_text)
         self.assertIn("Verified under microscope", csv_text)
 
+    def test_operator_defect_override_permitted(self):
+        # 1. Upload reference
+        with open(SAMPLE_DIR / "reference.png", "rb") as f:
+            ref_resp = client.post("/api/reference", files={"file": ("reference.png", f, "image/png")})
+        session_id = ref_resp.json()["session_id"]
+
+        # 2. Register components
+        client.post(
+            f"/api/sessions/{session_id}/components",
+            json={"components": [{"name": "U1_MCU", "bbox": [580, 400, 200, 200]}]},
+        )
+
+        # 3. Inspect a test board that has a missing component
+        with open(SAMPLE_DIR / "calibration/calib_08_missing_u1_mcu.png", "rb") as fp:
+            client.post(
+                "/api/inspect",
+                data={"session_id": session_id, "sensitivity": "balanced"},
+                files=[("test_images", ("board_missing.png", fp, "image/png"))],
+            )
+
+        # 4. Standard unified operator overrides the defect to PRESENT without 403 restriction
+        signoff_payload = {
+            "filename": "board_missing.png",
+            "component_name": "U1_MCU",
+            "final_status": "PRESENT",
+            "operator_id": "OP-101",
+            "operator_role": "OPERATOR",
+            "note": "Authorized override by SMT Operator",
+        }
+        sign_resp = client.post(f"/api/sessions/{session_id}/signoff", json=signoff_payload)
+        self.assertEqual(sign_resp.status_code, 200)
+        self.assertEqual(sign_resp.json()["status"], "success")
+
     def test_validate_recipe_dimension_mismatch(self):
         recipe = {
             "recipe_version": "1.0",
@@ -435,33 +468,31 @@ class TestBackendAPI(unittest.TestCase):
         data = response.json()
         self.assertIn("profiles", data)
         profiles = data["profiles"]
-        self.assertGreaterEqual(len(profiles), 3)
+        self.assertGreaterEqual(len(profiles), 1)
         op_ids = [p["operator_id"] for p in profiles]
-        self.assertIn("OP-8402", op_ids)
-        self.assertIn("LEAD-104", op_ids)
-        self.assertIn("QA-DIR-01", op_ids)
+        self.assertIn("OP-101", op_ids)
 
     def test_operator_login_flow(self):
         # 1. Login with existing profile
-        resp = client.post("/api/auth/login", json={"operator_id": "OP-8402"})
+        resp = client.post("/api/auth/login", json={"operator_id": "OP-101"})
         self.assertEqual(resp.status_code, 200)
         data = resp.json()
         self.assertTrue(data["success"])
-        self.assertEqual(data["user"]["name"], "Sarah Jenkins")
-        self.assertEqual(data["user"]["role"], "INSPECTOR")
+        self.assertEqual(data["user"]["name"], "Lead SMT Operator")
+        self.assertEqual(data["user"]["role"], "OPERATOR")
         self.assertIn("session_token", data["user"])
 
         # 2. Login with custom operator
         resp_custom = client.post(
             "/api/auth/login",
-            json={"operator_id": "TECH-505", "name": "Alex Mercer", "role": "SUPERVISOR"}
+            json={"operator_id": "TECH-505", "name": "Alex Mercer", "role": "OPERATOR"}
         )
         self.assertEqual(resp_custom.status_code, 200)
         data_custom = resp_custom.json()
         self.assertTrue(data_custom["success"])
         self.assertEqual(data_custom["user"]["operator_id"], "TECH-505")
         self.assertEqual(data_custom["user"]["name"], "Alex Mercer")
-        self.assertEqual(data_custom["user"]["role"], "SUPERVISOR")
+        self.assertEqual(data_custom["user"]["role"], "OPERATOR")
 
 
 if __name__ == "__main__":
