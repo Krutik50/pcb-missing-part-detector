@@ -87,10 +87,15 @@ Following the design principles of Tier-1 industrial AOI manufacturers (**Keyenc
   - Trains locally on CPU in $<60\text{ seconds}$ across 4,100 component crops.
   - Pre-trained weights stored in `app/core/physical_metric_weights.pt` and benchmark report in `results/deep_classifier_benchmark.json`.
 * **Zero Missed Escapes (0 FN):** 100% defect detection rate across real physical test boards (100% missing, 100% tilt, 100% shift).
-* **Enterprise Operator Authentication & RBAC:**
-  - Role-Based Access Control (`INSPECTOR`, `SUPERVISOR`, `ADMIN`).
+* **Enterprise Operator Authentication & Station Sign-Off:**
+  - Unified SMT Station Operator role with full footprint authoring, threshold tuning, and defect disposition permissions.
   - 1-click fast demo profiles (Sarah Jenkins, Marcus Vance, Dr. Elena Rostova) or custom badge sign-in.
-  - Interactive operator sign-off audit logging and dual-signed ISO 9001 printable report modal.
+  - Interactive operator sign-off audit logging and printable ISO 9001 quality certificate modal.
+* **High-Accuracy 3× Digital Optical Loupe & Blink Comparator:**
+  - Server-side subpixel ECC-aligned crops directly from the normalized master and test board.
+  - Illumination-compensated difference residual heatmap eliminating ambient light false positives.
+  - Multi-zoom (1×, 2×, 3×, 5×) with calibrated IPC-A-610 optical measurement reticle, subpixel crosshairs, graduation ticks, and misalignment vector arrow ($\Delta x, \Delta y$).
+  - Built-in optical blink comparator (2.5 Hz) for instantaneous defect detection.
 * **Microsecond Tact Time:** Full 1080p board inspection takes $\approx 94.4\text{ ms}$ on CPU, well within high-speed SMT assembly line requirements ($<1.5\text{s}$ tact time).
 * **Shop-Floor Modern Web UI:** Sleek, high-contrast dark industrial interface with 1-click golden presets, visual photo thumbnails, interactive canvas annotation, live camera support, KPI yield dashboard, and CSV export.
 
@@ -270,7 +275,7 @@ curl -X POST "http://127.0.0.1:8000/api/inspect" \
 ├── diagnostics/                # Specialized diagnostic and reconciliation scripts
 ├── results/                    # Calibration reports, held-out outputs, UI screenshots
 ├── sample_data/                # Legacy reference board, calibration boards, held-out boards
-├── tests/                      # 35 passing unit and integration test suite
+├── tests/                      # 38 passing unit and integration test suite
 ├── evaluate.py                 # Evaluation harness for calibration and test splits
 ├── evaluate_cascade.py         # Benchmark CLI (Rule-Based vs. Hybrid Cascade)
 ├── evaluate_multiboard.py      # Multi-board physical benchmark CLI (500 boards, 5 architectures)
