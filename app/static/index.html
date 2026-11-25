@@ -366,11 +366,7 @@
                                             <svg class="ui-icon btn-svg-icon"><use href="#icon-camera"></use></svg> Capture Test Board
                                         </button>
                                     </div>
-                                    <div class="preset-test-batch-box" id="preset-test-batch-box" style="margin-top: 0.8rem;">
-                                        <button type="button" class="btn btn-sm btn-outline btn-block" id="btn-load-preset-batch" style="padding: 0.65rem 0.9rem; font-weight: 500;">
-                                            Load Physical Test Batch for This Board
-                                        </button>
-                                    </div>
+
                                 </div>
 
                                 <!-- Right: Direct Inspection Action -->
@@ -655,6 +651,70 @@
 
             <div id="printable-report-content" class="printable-area">
                 <!-- Dynamically generated printable inspection report -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Recipe Prompt Modal (Between Step 2 & Step 3) -->
+    <div id="recipe-save-modal" class="modal-backdrop d-none">
+        <div class="modal-card modal-card-recipe" style="max-width: 520px;">
+            <div class="modal-camera-header">
+                <div class="camera-title-group">
+                    <h3 style="display: flex; align-items: center; gap: 0.5rem; margin: 0; font-size: 1.1rem; color: var(--text-primary);">
+                        <svg class="ui-icon" style="color: var(--color-blue); width: 1.2rem; height: 1.2rem;"><use href="#icon-chip"></use></svg>
+                        Save Recipe to Board &amp; CAD Studio?
+                    </h3>
+                </div>
+                <button type="button" class="btn-icon" id="btn-close-recipe-modal" title="Cancel">&times;</button>
+            </div>
+            <p class="modal-sub" style="margin-top: 0.4rem; margin-bottom: 1.15rem; font-size: 0.82rem; line-height: 1.4;">
+                Save this golden board reference and annotated footprints permanently to the <strong>Board &amp; CAD Studio</strong> so anyone can reload it with 1 click in future inspections.
+            </p>
+
+            <!-- Board Snapshot Summary Card -->
+            <div style="display: flex; gap: 1rem; align-items: center; background: var(--bg-card-subtle); border: 1px solid var(--border-color); border-radius: 6px; padding: 0.85rem; margin-bottom: 1.15rem;">
+                <div style="width: 84px; height: 64px; background: #060a10; border-radius: 4px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-color);">
+                    <img id="recipe-modal-preview-img" src="" alt="Board Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 0.92rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;" id="recipe-modal-comp-count">
+                        0 Annotated Parts
+                    </div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);" id="recipe-modal-dim-info">
+                        Working Canvas: 1024 &times; 1024 px
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recipe Name Input -->
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem;">
+                    Board Recipe Name:
+                </label>
+                <input type="text" id="recipe-modal-name-input" class="text-input" placeholder="e.g. Appliance AC Power &amp; Control Board" maxlength="64" style="width: 100%; padding: 0.55rem 0.75rem;">
+            </div>
+
+            <!-- Recipe Tier Selection -->
+            <div style="margin-bottom: 1.35rem;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem;">
+                    Board Category / Tier:
+                </label>
+                <select id="recipe-modal-tier-select" class="recipe-select-input" style="width: 100%; padding: 0.55rem 0.75rem; background: var(--bg-card-subtle); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 4px; font-size: 0.85rem;">
+                    <option value="Custom Recipe" selected>Shop-Floor Custom Recipe</option>
+                    <option value="Industrial">Industrial Power / Controller</option>
+                    <option value="High Density">High Density SMT</option>
+                    <option value="Consumer">Consumer Electronics</option>
+                </select>
+            </div>
+
+            <!-- Decision Action Buttons -->
+            <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+                <button type="button" class="btn btn-primary btn-block" id="btn-recipe-modal-save-proceed" style="padding: 0.75rem 1rem; font-weight: 700; font-size: 0.92rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <svg class="ui-icon btn-svg-icon"><use href="#icon-chip"></use></svg> Yes, Save to Board &amp; CAD Studio &amp; Proceed &rarr;
+                </button>
+                <button type="button" class="btn btn-outline btn-block" id="btn-recipe-modal-skip-proceed" style="padding: 0.65rem 1rem; font-size: 0.85rem; color: var(--text-secondary);">
+                    No, Skip Saving &amp; Proceed to Batch Inspection &rarr;
+                </button>
             </div>
         </div>
     </div>

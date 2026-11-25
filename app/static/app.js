@@ -56,7 +56,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Presets
         presetsContainer: document.getElementById('presets-container'),
-        btnLoadPresetBatch: document.getElementById('btn-load-preset-batch'),
+        recipeSaveModal: document.getElementById('recipe-save-modal'),
+        btnCloseRecipeModal: document.getElementById('btn-close-recipe-modal'),
+        recipeModalPreviewImg: document.getElementById('recipe-modal-preview-img'),
+        recipeModalCompCount: document.getElementById('recipe-modal-comp-count'),
+        recipeModalDimInfo: document.getElementById('recipe-modal-dim-info'),
+        recipeModalNameInput: document.getElementById('recipe-modal-name-input'),
+        recipeModalTierSelect: document.getElementById('recipe-modal-tier-select'),
+        btnRecipeModalSaveProceed: document.getElementById('btn-recipe-modal-save-proceed'),
+        btnRecipeModalSkipProceed: document.getElementById('btn-recipe-modal-skip-proceed'),
 
         // Step Navigation
         stepNav1: document.getElementById('step-nav-1'),
@@ -82,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnToolRect: document.getElementById('tool-rect'),
         btnToolPencil: document.getElementById('tool-pencil'),
         btnToolPoly: document.getElementById('tool-poly'),
+        btnAutoDetect: document.getElementById('btn-auto-detect'),
         componentListContainer: document.getElementById('component-list-container'),
         emptyCompsMsg: document.getElementById('empty-comps-msg'),
         compCount: document.getElementById('comp-count'),
@@ -376,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadAuthProfiles();
 
-    // --- PHYSICAL BOARD PRESETS ---
+    // --- PHYSICAL BOARD PRESETS & RECIPES ---
     async function loadPhysicalPresets() {
         try {
             const res = await fetch('/api/presets');
@@ -385,6 +394,10 @@ document.addEventListener('DOMContentLoaded', () => {
             state.presets = data.presets || [];
             renderPresets(state.presets);
             renderStudioGrid();
+            const navBadge = document.querySelector('#nav-item-recipe .sidebar-badge');
+            if (navBadge) {
+                navBadge.textContent = `${state.presets.length} PRESETS`;
+            }
         } catch (e) {
             console.warn('Failed to load physical presets:', e);
         }
@@ -1111,76 +1124,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- RECIPE SAVE & LOAD ---
-    el.btnExportRecipe.addEventListener('click', async () => {
+    el.btnExportRecipe.addEventListener('click', () => {
         hideAlert();
         if (state.components.length === 0) {
             showAlert('Cannot save empty recipe: please mark at least one component first.', 'danger');
             return;
         }
-
-        const defaultName = (state.activePreset ? state.activePreset.name + ' Copy' : 'PCB_RECIPE_' + new Date().toISOString().slice(0, 10).replace(/-/g, ''));
-        const boardName = prompt('Enter a name for this PCB Board Recipe to save it permanently:', defaultName);
-        if (!boardName || !boardName.trim()) return;
-
-        const cleanName = boardName.trim();
-
-        // 1. If active backend session, permanently save recipe to server disk in data/recipes/
-        if (state.sessionId) {
-            try {
-                showAlert(`Saving recipe "${cleanName}" to server disk...`, 'info');
-                const res = await fetch(`/api/sessions/${state.sessionId}/save-recipe`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: cleanName,
-                        tier: 'Custom Recipe',
-                        category: 'Shop-Floor Custom'
-                    })
-                });
-                const data = await res.json();
-                if (res.ok && data.status === 'success') {
-                    await loadPhysicalPresets();
-                    showAlert(`Recipe "${cleanName}" permanently saved! It is now accessible in Board & CAD Studio.`, 'success');
-                } else {
-                    console.warn('Backend save recipe warning:', data);
-                }
-            } catch (err) {
-                console.warn('Backend save recipe error:', err);
-            }
-        }
-
-        // 2. Also trigger client-side JSON download backup
-        const recipe = {
-            recipe_version: '2.0',
-            board_name: cleanName,
-            created_at: new Date().toISOString(),
-            image_size: {
-                width: state.workingDim.width,
-                height: state.workingDim.height,
-                aspect_ratio: Number((state.workingDim.width / state.workingDim.height).toFixed(4)),
-            },
-            image_fingerprint: state.referenceFingerprint || null,
-            sensitivity: state.activeSensitivity,
-            components: state.components.map(c => ({
-                name: c.name,
-                normalized_bbox: c.normalized,
-                pixel_bbox: c.bbox,
-                shape_type: c.shape_type || 'rectangle',
-                polygon: c.polygon || null,
-            })),
-        };
-
-        const jsonStr = JSON.stringify(recipe, null, 2);
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const safeFilename = (cleanName.toLowerCase().replace(/[^a-z0-9_-]/g, '_') || 'pcb_recipe') + '.json';
-        a.download = safeFilename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        openRecipeSaveModal();
     });
 
     // --- CV-ASSISTED AUTO-DETECT FOOTPRINTS ---
@@ -1531,46 +1481,143 @@ document.addEventListener('DOMContentLoaded', () => {
     el.btnCaptureAsRef.addEventListener('click', () => captureCameraFrame('ref'));
     el.btnCaptureAsTest.addEventListener('click', () => captureCameraFrame('test'));
 
-    // Step 2 Proceed to Step 3
-    el.btnProceedToStep3.addEventListener('click', async () => {
+    // --- MODAL: SAVE BOARD RECIPE TO CAD STUDIO (IN-BETWEEN STEP 2 & STEP 3) ---
+    function openRecipeSaveModal() {
         if (state.components.length === 0) {
             showAlert('Please mark at least one component before proceeding.', 'danger');
             return;
         }
 
-        try {
-            el.btnProceedToStep3.disabled = true;
-            el.btnProceedToStep3.textContent = 'Saving annotations...';
-
-            const payload = {
-                components: state.components.map(c => ({
-                    name: c.name,
-                    bbox: c.bbox,
-                    shape_type: c.shape_type || 'rectangle',
-                    polygon: c.polygon || null,
-                    is_normalized: false,
-                })),
-            };
-
-            const resp = await fetch(`/api/sessions/${state.sessionId}/components`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            if (!resp.ok) {
-                const err = await resp.json();
-                throw new Error(err.detail || 'Failed to save components');
+        if (el.recipeModalPreviewImg) {
+            if (state.referenceImg && state.referenceImg.src) {
+                el.recipeModalPreviewImg.src = state.referenceImg.src;
+            } else if (state.activePreset && state.activePreset.reference_url) {
+                el.recipeModalPreviewImg.src = state.activePreset.reference_url;
+            } else {
+                el.recipeModalPreviewImg.src = '';
             }
-
-            setStep(3);
-        } catch (err) {
-            showAlert(`Error saving components: ${err.message}`, 'danger');
-        } finally {
-            el.btnProceedToStep3.disabled = false;
-            el.btnProceedToStep3.textContent = 'Proceed to Inspection →';
         }
+
+        if (el.recipeModalCompCount) {
+            el.recipeModalCompCount.textContent = `${state.components.length} Annotated Component Footprints`;
+        }
+
+        if (el.recipeModalDimInfo) {
+            el.recipeModalDimInfo.textContent = `Working Canvas: ${state.workingDim.width} × ${state.workingDim.height} px`;
+        }
+
+        if (el.recipeModalNameInput) {
+            const defaultName = (state.activePreset ? state.activePreset.name : 'PCB_RECIPE_' + new Date().toISOString().slice(0, 10).replace(/-/g, ''));
+            el.recipeModalNameInput.value = defaultName;
+        }
+
+        if (el.recipeSaveModal) {
+            el.recipeSaveModal.classList.remove('d-none');
+            if (el.recipeModalNameInput) el.recipeModalNameInput.focus();
+        }
+    }
+
+    function closeRecipeSaveModal() {
+        if (el.recipeSaveModal) {
+            el.recipeSaveModal.classList.add('d-none');
+        }
+    }
+
+    // Step 2 Proceed to Step 3 - Prompts user with option to save recipe to Board & CAD Studio
+    el.btnProceedToStep3.addEventListener('click', () => {
+        hideAlert();
+        if (state.components.length === 0) {
+            showAlert('Please mark at least one component before proceeding.', 'danger');
+            return;
+        }
+        openRecipeSaveModal();
     });
+
+    if (el.btnRecipeModalSaveProceed) {
+        el.btnRecipeModalSaveProceed.addEventListener('click', async () => {
+            const boardName = (el.recipeModalNameInput && el.recipeModalNameInput.value.trim()) || 'Custom PCB Recipe';
+            const tier = (el.recipeModalTierSelect && el.recipeModalTierSelect.value) || 'Custom Recipe';
+
+            try {
+                el.btnRecipeModalSaveProceed.disabled = true;
+                el.btnRecipeModalSaveProceed.textContent = 'Saving to Board & CAD Studio...';
+
+                // 1. Sync annotations to current backend session
+                await fetch(`/api/sessions/${state.sessionId}/components`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        components: state.components.map(c => ({
+                            name: c.name,
+                            bbox: c.bbox,
+                            shape_type: c.shape_type || 'rectangle',
+                            polygon: c.polygon || null,
+                            is_normalized: false,
+                        })),
+                    }),
+                });
+
+                // 2. Permanently save recipe to disk so it appears in Board & CAD Studio
+                const saveResp = await fetch(`/api/sessions/${state.sessionId}/save-recipe`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: boardName,
+                        tier: tier,
+                        category: 'Shop-Floor Custom'
+                    })
+                });
+                const saveData = await saveResp.json();
+                if (saveResp.ok && saveData.status === 'success') {
+                    await loadPhysicalPresets();
+                    state.activePreset = saveData.recipe;
+                    showAlert(`Board recipe "${boardName}" permanently saved to Board & CAD Studio! Proceeding to Batch Inspection.`, 'success');
+                } else {
+                    console.warn('Save recipe warning:', saveData);
+                }
+
+                closeRecipeSaveModal();
+                setStep(3);
+            } catch (err) {
+                showAlert(`Failed to save recipe: ${err.message}`, 'danger');
+            } finally {
+                el.btnRecipeModalSaveProceed.disabled = false;
+                el.btnRecipeModalSaveProceed.innerHTML = '<svg class="ui-icon btn-svg-icon"><use href="#icon-chip"></use></svg> Yes, Save to Board &amp; CAD Studio &amp; Proceed &rarr;';
+            }
+        });
+    }
+
+    if (el.btnRecipeModalSkipProceed) {
+        el.btnRecipeModalSkipProceed.addEventListener('click', async () => {
+            try {
+                el.btnRecipeModalSkipProceed.disabled = true;
+                // Save annotations in-memory for session without writing permanently to disk
+                await fetch(`/api/sessions/${state.sessionId}/components`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        components: state.components.map(c => ({
+                            name: c.name,
+                            bbox: c.bbox,
+                            shape_type: c.shape_type || 'rectangle',
+                            polygon: c.polygon || null,
+                            is_normalized: false,
+                        })),
+                    }),
+                });
+                closeRecipeSaveModal();
+                setStep(3);
+            } catch (err) {
+                showAlert(`Failed to proceed: ${err.message}`, 'danger');
+            } finally {
+                el.btnRecipeModalSkipProceed.disabled = false;
+            }
+        });
+    }
+
+    if (el.btnCloseRecipeModal) {
+        el.btnCloseRecipeModal.addEventListener('click', closeRecipeSaveModal);
+    }
 
     // --- STEP 3: TEST INSPECTION ---
     el.btnBrowseTest.addEventListener('click', () => el.testFileInput.click());
@@ -3512,6 +3559,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (el.nameModal && !el.nameModal.classList.contains('d-none')) {
                 el.nameModal.classList.add('d-none');
+            }
+            if (el.recipeSaveModal && !el.recipeSaveModal.classList.contains('d-none')) {
+                closeRecipeSaveModal();
             }
         }
     });
