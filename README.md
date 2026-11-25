@@ -78,10 +78,6 @@ Following the design principles of Tier-1 industrial AOI manufacturers (**Keyenc
 * **Large-Scale Physical PCB Dataset (500 Boards across 5 Architectures):**
   - 500 boards generated from real physical hardware photographs across 5 physical hardware architectures (100 boards per architecture: 70 train, 30 held-out test).
   - Master ground truth manifest tracked in `data/multiboard/ground_truth_multiboard.json`.
-* **Standard YOLO Dataset Export (`data/yolo_dataset/`):**
-  - Fully partitioned dataset in standard YOLO format (`images/train/`, `images/val/`, `labels/train/`, `labels/val/`).
-  - Class definitions configured in `dataset.yaml` across 7 classes: `ok_component`, `missing`, `tilted`, `misaligned`, `bridged`, `polarity_reversed`, `tombstoned`.
-  - Ready for drop-in training with Ultralytics YOLOv8 / YOLOv11 / RT-DETR.
 * **Offline Deep Neural Classifier Pipeline (`scripts/train_smt_deep_classifier.py`):**
   - 100% offline PyTorch ConvNet classifier (`SMTDeepDefectClassifier`) with 3 convolutional stages, batch normalization, adaptive average pooling, and 7-class linear head.
   - Trains locally on CPU in $<60\text{ seconds}$ across 4,100 component crops.
@@ -272,7 +268,6 @@ curl -X POST "http://127.0.0.1:8000/api/inspect" \
 │   └── main.py                 # FastAPI backend gateway & static server
 ├── data/
 │   └── multiboard/             # 500-board physical dataset (70:30 train/test split across 5 boards)
-├── diagnostics/                # Specialized diagnostic and reconciliation scripts
 ├── results/                    # Calibration reports, held-out outputs, UI screenshots
 ├── sample_data/                # Legacy reference board, calibration boards, held-out boards
 ├── tests/                      # 38 passing unit and integration test suite
