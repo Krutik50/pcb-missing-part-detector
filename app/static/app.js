@@ -88,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnLoadSampleComps: document.getElementById('btn-load-sample-comps'),
         btnClearComps: document.getElementById('btn-clear-comps'),
         btnExportRecipe: document.getElementById('btn-export-recipe'),
+        btnAutoDetect: document.getElementById('btn-auto-detect'),
         btnImportRecipe: document.getElementById('btn-import-recipe'),
         recipeFileInput: document.getElementById('recipe-file-input'),
         btnProceedToStep3: document.getElementById('btn-proceed-to-step3'),
@@ -383,6 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             state.presets = data.presets || [];
             renderPresets(state.presets);
+            renderStudioGrid();
         } catch (e) {
             console.warn('Failed to load physical presets:', e);
         }
@@ -404,25 +406,52 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const compCount = preset.components ? preset.components.length : 0;
-            const tierBadgeClass = preset.tier === 'High Density' ? 'preset-badge-amber' : (preset.tier === 'Industrial' ? 'preset-badge-blue' : 'preset-badge-green');
+            const tierBadgeClass = preset.is_custom ? 'preset-badge-amber' : (preset.tier === 'High Density' ? 'preset-badge-amber' : (preset.tier === 'Industrial' ? 'preset-badge-blue' : 'preset-badge-green'));
+            const customBadgeStyle = preset.is_custom ? 'style="background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.4);"' : '';
 
             card.innerHTML = `
                 <div>
                     <div class="preset-thumb-wrapper">
                         <img src="${preset.reference_url}" class="preset-thumb" alt="${preset.name}" loading="lazy">
                     </div>
-                    <span class="preset-badge ${tierBadgeClass}">${preset.tier}</span>
+                    <span class="preset-badge ${tierBadgeClass}" ${customBadgeStyle}>${preset.tier}</span>
                     <div class="preset-title">${preset.name}</div>
                     <div class="preset-meta">${compCount} Pre-Calibrated Parts &bull; ${preset.resolution[0]}×${preset.resolution[1]} px</div>
                 </div>
-                <button type="button" class="btn btn-sm btn-outline preset-btn-load" data-preset-id="${preset.id}">
-                    Load Golden Preset →
-                </button>
+                <div style="display:flex; gap:0.5rem; align-items:center; margin-top:0.75rem;">
+                    <button type="button" class="btn btn-sm btn-outline preset-btn-load" data-preset-id="${preset.id}" style="flex:1;">
+                        Load ${preset.is_custom ? 'Recipe' : 'Preset'} →
+                    </button>
+                    ${preset.is_custom ? `
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-delete-recipe" data-recipe-id="${preset.id}" title="Delete Custom Recipe" style="padding:0.35rem 0.6rem; color:#ef4444; border-color:rgba(239,68,68,0.4);">
+                        <svg class="ui-icon btn-svg-icon" style="width:13px;height:13px;"><use href="#icon-trash"></use></svg>
+                    </button>` : ''}
+                </div>
             `;
 
-            card.addEventListener('click', () => {
+            card.addEventListener('click', (e) => {
+                if (e.target.closest('.btn-delete-recipe')) return;
                 applyPreset(preset);
             });
+
+            const delBtn = card.querySelector('.btn-delete-recipe');
+            if (delBtn) {
+                delBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (!confirm(`Are you sure you want to permanently delete custom recipe "${preset.name}"?`)) return;
+                    try {
+                        const delRes = await fetch(`/api/recipes/${preset.id}`, { method: 'DELETE' });
+                        if (delRes.ok) {
+                            showAlert(`Custom recipe "${preset.name}" deleted.`, 'info');
+                            await loadPhysicalPresets();
+                        } else {
+                            showAlert('Failed to delete recipe.', 'danger');
+                        }
+                    } catch (err) {
+                        showAlert(`Delete failed: ${err.message}`, 'danger');
+                    }
+                });
+            }
 
             el.presetsContainer.appendChild(card);
         });
@@ -1082,19 +1111,48 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- RECIPE SAVE & LOAD ---
-    el.btnExportRecipe.addEventListener('click', () => {
+    el.btnExportRecipe.addEventListener('click', async () => {
         hideAlert();
         if (state.components.length === 0) {
             showAlert('Cannot save empty recipe: please mark at least one component first.', 'danger');
             return;
         }
 
-        const defaultName = 'PCB_BOARD_RECIPE_' + new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        const boardName = prompt('Enter a name for this PCB Board Recipe:', defaultName) || defaultName;
+        const defaultName = (state.activePreset ? state.activePreset.name + ' Copy' : 'PCB_RECIPE_' + new Date().toISOString().slice(0, 10).replace(/-/g, ''));
+        const boardName = prompt('Enter a name for this PCB Board Recipe to save it permanently:', defaultName);
+        if (!boardName || !boardName.trim()) return;
 
+        const cleanName = boardName.trim();
+
+        // 1. If active backend session, permanently save recipe to server disk in data/recipes/
+        if (state.sessionId) {
+            try {
+                showAlert(`Saving recipe "${cleanName}" to server disk...`, 'info');
+                const res = await fetch(`/api/sessions/${state.sessionId}/save-recipe`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: cleanName,
+                        tier: 'Custom Recipe',
+                        category: 'Shop-Floor Custom'
+                    })
+                });
+                const data = await res.json();
+                if (res.ok && data.status === 'success') {
+                    await loadPhysicalPresets();
+                    showAlert(`Recipe "${cleanName}" permanently saved! It is now accessible in Board & CAD Studio.`, 'success');
+                } else {
+                    console.warn('Backend save recipe warning:', data);
+                }
+            } catch (err) {
+                console.warn('Backend save recipe error:', err);
+            }
+        }
+
+        // 2. Also trigger client-side JSON download backup
         const recipe = {
-            recipe_version: '1.0',
-            board_name: boardName.trim(),
+            recipe_version: '2.0',
+            board_name: cleanName,
             created_at: new Date().toISOString(),
             image_size: {
                 width: state.workingDim.width,
@@ -1107,6 +1165,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: c.name,
                 normalized_bbox: c.normalized,
                 pixel_bbox: c.bbox,
+                shape_type: c.shape_type || 'rectangle',
+                polygon: c.polygon || null,
             })),
         };
 
@@ -1115,15 +1175,78 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        const safeFilename = (boardName.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_') || 'pcb_recipe') + '.json';
+        const safeFilename = (cleanName.toLowerCase().replace(/[^a-z0-9_-]/g, '_') || 'pcb_recipe') + '.json';
         a.download = safeFilename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-
-        showAlert(`Recipe "${boardName.trim()}" downloaded successfully as ${safeFilename}.`, 'success');
     });
+
+    // --- CV-ASSISTED AUTO-DETECT FOOTPRINTS ---
+    if (el.btnAutoDetect) {
+        el.btnAutoDetect.addEventListener('click', async () => {
+            if (!state.sessionId) {
+                showAlert('Please upload a Golden Reference image first in Step 1.', 'danger');
+                return;
+            }
+
+            try {
+                showAlert('Scanning reference board topography and auto-detecting component footprints...', 'info');
+                el.btnAutoDetect.disabled = true;
+                const res = await fetch(`/api/sessions/${state.sessionId}/auto-detect-footprints`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                el.btnAutoDetect.disabled = false;
+
+                if (!res.ok || data.status !== 'success') {
+                    showAlert(`Auto-detect failed: ${data.detail || data.message || 'Unknown error'}`, 'danger');
+                    return;
+                }
+
+                if (!data.components || data.components.length === 0) {
+                    showAlert('No component footprints discovered with current optical filter. Try manual marking.', 'warning');
+                    return;
+                }
+
+                // Populate discovered footprints
+                state.components = data.components.map((c, idx) => {
+                    const [x, y, w, h] = c.bbox;
+                    return {
+                        id: 'autodetect_' + idx + '_' + Date.now(),
+                        name: c.name,
+                        bbox: [x, y, w, h],
+                        shape_type: c.shape_type || 'rectangle',
+                        polygon: c.polygon || null,
+                        warning: getBoxWarning(w, h, state.workingDim.width, state.workingDim.height),
+                        normalized: c.normalized
+                    };
+                });
+
+                // Sync with backend session
+                await fetch(`/api/sessions/${state.sessionId}/components`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        components: state.components.map(c => ({
+                            name: c.name,
+                            bbox: c.bbox,
+                            shape_type: c.shape_type || 'rectangle',
+                            polygon: c.polygon || null
+                        }))
+                    })
+                });
+
+                renderComponentsList();
+                redrawCanvas();
+                showAlert(`Auto-detected ${data.detected_count} component footprints! Review, adjust bounding boxes, or rename as needed.`, 'success');
+            } catch (err) {
+                el.btnAutoDetect.disabled = false;
+                showAlert(`Auto-detect request error: ${err.message}`, 'danger');
+            }
+        });
+    }
 
     el.btnImportRecipe.addEventListener('click', () => {
         hideAlert();
@@ -3271,7 +3394,80 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function switchWorkspace(targetId) {
+    // --- BOARD & CAD STUDIO GRID ---
+    function renderStudioGrid() {
+        const container = document.getElementById('studio-boards-grid');
+        if (!container || !state.presets) return;
+        container.innerHTML = '';
+
+        state.presets.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'studio-card';
+            card.style.cssText = 'background:var(--bg-card); border:1px solid var(--border-color); border-radius:6px; overflow:hidden; display:flex; flex-direction:column;';
+            const compCount = p.components ? p.components.length : 0;
+            const badgeClass = p.is_custom ? 'preset-badge-amber' : 'preset-badge-blue';
+            const customBadgeStyle = p.is_custom ? 'style="position:absolute; top:8px; right:8px; background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.4); font-size:0.7rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:3px;"' : 'style="position:absolute; top:8px; right:8px; font-size:0.7rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:3px;"';
+
+            card.innerHTML = `
+                <div class="studio-thumb-wrapper" style="position:relative; width:100%; height:180px; background:#060a10; overflow:hidden;">
+                    <img src="${p.reference_url}" alt="${p.name}" style="width:100%; height:100%; object-fit:cover;">
+                    <span class="preset-badge ${badgeClass}" ${customBadgeStyle}>${p.tier}</span>
+                </div>
+                <div class="studio-body" style="padding:1rem; display:flex; flex-direction:column; justify-content:space-between; flex:1;">
+                    <div>
+                        <h3 style="font-size:1.05rem; margin-bottom:0.3rem;">${p.name}</h3>
+                        <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.75rem;">
+                            ${compCount} ${p.is_custom ? 'Custom' : 'Pre-calibrated'} SMT footprints &bull; ${p.resolution ? p.resolution[0] + '×' + p.resolution[1] + ' px' : '1024×1024 px'}
+                        </p>
+                        <div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:1rem;">
+                            ${(p.components || []).slice(0, 6).map(c => `<span class="tag-chip" style="font-size:0.7rem; padding:0.15rem 0.4rem; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:3px;">${c.name}</span>`).join('')}
+                            ${compCount > 6 ? `<span class="tag-chip" style="font-size:0.7rem; padding:0.15rem 0.4rem; color:var(--text-muted);">+${compCount - 6} more</span>` : ''}
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+                        <button type="button" class="btn btn-sm btn-primary btn-load-studio" data-id="${p.id}" style="flex:1;">
+                            Load into Inspection Station &rarr;
+                        </button>
+                        ${p.is_custom ? `
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-delete-recipe" data-recipe-id="${p.id}" title="Delete Custom Recipe" style="padding:0.35rem 0.6rem; color:#ef4444; border-color:rgba(239,68,68,0.4);">
+                            <svg class="ui-icon btn-svg-icon" style="width:14px;height:14px;"><use href="#icon-trash"></use></svg>
+                        </button>` : ''}
+                    </div>
+                </div>
+            `;
+
+            const loadBtn = card.querySelector('.btn-load-studio');
+            if (loadBtn) {
+                loadBtn.addEventListener('click', async () => {
+                    switchWorkspace('workspace-inspect');
+                    await applyPreset(p);
+                });
+            }
+
+            const delBtn = card.querySelector('.btn-delete-recipe');
+            if (delBtn) {
+                delBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (!confirm(`Are you sure you want to permanently delete custom recipe "${p.name}"?`)) return;
+                    try {
+                        const delRes = await fetch(`/api/recipes/${p.id}`, { method: 'DELETE' });
+                        if (delRes.ok) {
+                            showAlert(`Custom recipe "${p.name}" deleted.`, 'info');
+                            await loadPhysicalPresets();
+                        } else {
+                            showAlert('Failed to delete recipe.', 'danger');
+                        }
+                    } catch (err) {
+                        showAlert(`Delete failed: ${err.message}`, 'danger');
+                    }
+                });
+            }
+
+            container.appendChild(card);
+        });
+    }
+
+        function switchWorkspace(targetId) {
         workspaceLinks.forEach(link => {
             if (link.getAttribute('data-workspace') === targetId) {
                 link.classList.add('active');

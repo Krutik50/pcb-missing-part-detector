@@ -110,6 +110,17 @@
             <polyline points="11 17 6 12 11 7"/>
             <polyline points="18 17 13 12 18 7"/>
         </symbol>
+        <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </symbol>
+        <symbol id="icon-wand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 4l5 5"></path>
+            <path d="M18 1l2 2"></path>
+            <path d="M9 10L2 17l5 5 7-7"></path>
+            <path d="M2 22l5-5"></path>
+            <path d="M14 14l5 5"></path>
+        </symbol>
     </svg>
 
     <div class="app-shell">
@@ -299,6 +310,9 @@
                                                 <svg class="ui-icon btn-svg-icon"><use href="#icon-poly"></use></svg> Polygon
                                             </button>
                                         </div>
+                                        <button type="button" class="btn btn-sm btn-outline" id="btn-auto-detect" title="Scan and automatically detect component footprints on golden reference image" style="border-color: rgba(56, 189, 248, 0.4); color: var(--color-blue); margin-left: 0.5rem;">
+                                            <svg class="ui-icon btn-svg-icon"><use href="#icon-wand"></use></svg> Auto-Detect Footprints
+                                        </button>
                                         <span class="toolbar-info" id="canvas-dim-info">Resolution: 1920 &times; 1080</span>
                                         <span class="toolbar-hint" id="canvas-tool-hint">Click and drag to draw component bounding box</span>
                                     </div>
