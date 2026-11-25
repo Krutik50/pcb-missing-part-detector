@@ -103,7 +103,7 @@ class TestDecisionLogic(unittest.TestCase):
 
     def test_classification_states(self):
         # Case 1: High match -> PRESENT
-        good_insp = {"zncc_score": 0.88, "patch_diff": 0.12, "best_bbox": [10, 10, 20, 20]}
+        good_insp = {"zncc_score": 0.95, "patch_diff": 0.04, "best_bbox": [10, 10, 20, 20]}
         v_good = classify_component("C1", good_insp, self.config)
         self.assertEqual(v_good["status"], "PRESENT")
 
@@ -112,8 +112,8 @@ class TestDecisionLogic(unittest.TestCase):
         v_bad = classify_component("U1", bad_insp, self.config)
         self.assertEqual(v_bad["status"], "MISSING")
 
-        # Case 3: Borderline scores -> UNCERTAIN
-        border_insp = {"zncc_score": 0.52, "patch_diff": 0.28, "best_bbox": [10, 10, 20, 20]}
+        # Case 3: Borderline scores -> UNCERTAIN (between zncc_low 0.86 and zncc_high 0.89)
+        border_insp = {"zncc_score": 0.875, "patch_diff": 0.08, "best_bbox": [10, 10, 20, 20]}
         v_border = classify_component("R1", border_insp, self.config)
         self.assertEqual(v_border["status"], "UNCERTAIN")
 
