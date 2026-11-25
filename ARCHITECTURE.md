@@ -87,7 +87,7 @@ graph TD
     end
 
     subgraph Persistence ["Data & Audit Tier"]
-        Recipe_Store["Disk Recipe Store (data/recipes/) & Studio Gallery"]
+        Recipe_Store["JSON Recipe Configurations & Studio Gallery"]
         Audit_Log["Inspection Records & Telemetry"]
     end
 
@@ -279,13 +279,13 @@ where $y = 1$ denotes identical component presence and $y = 0$ denotes component
 
 ---
 
-## 8. Verification & Test Suite Matrix (38 Passing Tests)
+## 8. Verification & Test Suite Matrix (35 Passing Tests)
 
 The repository enforces complete regression protection across 3 dedicated test suites executing in $< 2.5\text{ seconds}$ on standard CPU:
 
 | Test Suite | Target Scope | Passing Tests | Key Validations |
 | :--- | :--- | :---: | :--- |
-| `tests/test_api.py` | FastAPI Endpoints & Session Life-Cycle | 20 | Health check, session creation, golden board upload, component registration, automated inspection, RBAC roles, sign-off workflow, CSV telemetry export, custom recipe persistence (`data/recipes/`), CV footprint auto-discovery. |
+| `tests/test_api.py` | FastAPI Endpoints & Session Life-Cycle | 17 | Health check, session creation, golden board upload, component registration, automated inspection, RBAC roles, sign-off workflow, report CSV export, recipe validation. |
 | `tests/test_tilt_and_shift.py` | Physics & SMT Placement Tolerances | 8 | IPC-A-610 Class 2/3 placement envelopes, angular tilt ($|\theta| > 3.5^\circ$), positional shift ($\Delta > 5.0\text{ px}$), solder bridge, polarity reversal, tombstoned passives. |
 | `tests/test_core.py` | Algorithms & Statistical Metrics | 10 | Rigid Euclidean ECC registration, ZNCC search, normalized patch MAE, edge gradient invariance, board aggregation logic. |
-| **Total** | **Full System Regression Suite** | **38** | **100% Pass Rate (Deterministic & Air-Gapped)** |
+| **Total** | **Full System Regression Suite** | **35** | **100% Pass Rate (Deterministic & Air-Gapped)** |

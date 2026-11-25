@@ -157,7 +157,7 @@ http://127.0.0.1:8000
 
 ### 3. Run Automated Tests & Benchmarks
 ```bash
-# Execute full test suite (38 unit & integration tests)
+# Execute full test suite (35 unit & integration tests)
 python -m unittest discover tests
 
 # Execute SMT Component Tilt & Shift physics tolerance tests
@@ -188,19 +188,14 @@ The backend provides a complete RESTful API for headless integration with indust
 | :--- | :---: | :--- |
 | `/api/health` | `GET` | Health check, offline verification, and default threshold payload. |
 | `/api/presets` | `GET` | Fetch real physical board presets (reference URLs, component boxes, test batches). |
-| `/api/recipes` | `GET` | Retrieve all active golden board recipes (pre-calibrated system + user custom). |
-| `/api/recipes/{recipe_id}` | `DELETE` | Permanently delete user-authored custom board recipe from disk. |
 | `/api/calibration/profiles` | `GET` | Fetch SMT tolerance envelopes and auto-calibration baselines across all 5 board architectures. |
 | `/api/auth/profiles` | `GET` | Retrieve default operator profiles for 1-click RBAC login. |
 | `/api/auth/login` | `POST` | Authenticate operator badge ID and issue authenticated session token. |
 | `/api/reference` | `POST` | Upload Golden Board image, normalize EXIF/resolution, initialize session. |
 | `/api/sessions/{session_id}` | `GET` | Fetch session metadata and registered component bounding boxes. |
 | `/api/sessions/{session_id}/components` | `POST` | Register component ROIs (supports pixel and normalized $[0, 1]$ coordinates). |
-| `/api/sessions/{session_id}/auto-detect-footprints` | `POST` | CV-assisted component footprint auto-discovery with granularity tuning (`fine` vs `standard`). |
-| `/api/sessions/{session_id}/save-recipe` | `POST` | Permanently save current board & annotated footprints into Board & CAD Studio (`data/recipes/`). |
 | `/api/sessions/{session_id}/signoff` | `POST` | Submit operator sign-off, override, or verification for a component. |
 | `/api/sessions/{session_id}/report.csv` | `GET` | Export complete batch inspection results and audit sign-offs as CSV. |
-| `/api/sessions/{session_id}/export-csv` | `GET` | Export complete batch inspection telemetry as downloadable CSV. |
 | `/api/inspect` | `POST` | Inspect 1 to $N$ test images with sensitivity selection, tilt/shift, and DL triage. |
 
 ### Sample cURL Inspection Request
@@ -271,12 +266,11 @@ curl -X POST "http://127.0.0.1:8000/api/inspect" \
 │   │   └── style.css           # High-contrast accessible styling (zero external CSS)
 │   └── main.py                 # FastAPI backend gateway & static server
 ├── data/
-│   ├── multiboard/             # 500-board physical dataset (70:30 train/test split across 5 boards)
-│   └── recipes/                # Persisted custom board templates & CAD geometries
+│   └── multiboard/             # 500-board physical dataset (70:30 train/test split across 5 boards)
 ├── diagnostics/                # Specialized diagnostic and reconciliation scripts
 ├── results/                    # Calibration reports, held-out outputs, UI screenshots
 ├── sample_data/                # Legacy reference board, calibration boards, held-out boards
-├── tests/                      # 38 passing unit and integration test suite
+├── tests/                      # 35 passing unit and integration test suite
 ├── evaluate.py                 # Evaluation harness for calibration and test splits
 ├── evaluate_cascade.py         # Benchmark CLI (Rule-Based vs. Hybrid Cascade)
 ├── evaluate_multiboard.py      # Multi-board physical benchmark CLI (500 boards, 5 architectures)
