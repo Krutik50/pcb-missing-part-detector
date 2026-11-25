@@ -5,16 +5,16 @@
   "status": "pass",
   "type": "architecture",
   "quality": "showcase",
-  "startedAt": "2026-11-23T22:52:40.753Z",
+  "startedAt": "2026-11-25T12:52:16.432Z",
   "specification": {
     "path": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.candidate.json",
-    "sha256": "995a6f75123b8fda48802a39e2777d764215023ec55b2a12dcf519510331536d",
-    "bytes": 8383
+    "sha256": "e5ec4ac9c66dc00f8ce0c63d1f11b1b4d20f043deacfb2940759cc5545bb5e4c",
+    "bytes": 11937
   },
   "artifact": {
     "path": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.html",
-    "sha256": "65bf887d6dd00eb45138efb99a502e6f5912d1e6a68f04caf736e3e20de90523",
-    "bytes": 955943
+    "sha256": "640461a1cc95fd052d80924cc2fa474b7bf50bdf67d4c9032522df406bd50294",
+    "bytes": 975942
   },
   "stages": {
     "validate": {
@@ -38,8 +38,8 @@
         "ok": true,
         "command": "validate",
         "specification": {
-          "sha256": "995a6f75123b8fda48802a39e2777d764215023ec55b2a12dcf519510331536d",
-          "bytes": 8383
+          "sha256": "e5ec4ac9c66dc00f8ce0c63d1f11b1b4d20f043deacfb2940759cc5545bb5e4c",
+          "bytes": 11937
         },
         "validation": {
           "checksPassed": 9,
@@ -54,7 +54,7 @@
     "deliver": {
       "status": "pass",
       "exitCode": 0,
-      "durationMs": 2140,
+      "durationMs": 3600,
       "command": [
         "C:\\Program Files\\nodejs\\node.exe",
         "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\.agents\\skills\\archify\\bin\\archify.mjs",
@@ -68,19 +68,19 @@
       ],
       "receipt": {
         "schemaVersion": 1,
-        "receiptId": "df4fdc02-64c0-4bc0-ba3e-7bc30da5da55",
+        "receiptId": "29344da2-f0e6-4806-a2d2-b3724486ac09",
         "ok": true,
         "command": "deliver",
         "type": "architecture",
         "input": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.candidate.json",
         "output": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.html",
         "specification": {
-          "sha256": "995a6f75123b8fda48802a39e2777d764215023ec55b2a12dcf519510331536d",
-          "bytes": 8383
+          "sha256": "e5ec4ac9c66dc00f8ce0c63d1f11b1b4d20f043deacfb2940759cc5545bb5e4c",
+          "bytes": 11937
         },
         "artifact": {
-          "sha256": "65bf887d6dd00eb45138efb99a502e6f5912d1e6a68f04caf736e3e20de90523",
-          "bytes": 955943
+          "sha256": "640461a1cc95fd052d80924cc2fa474b7bf50bdf67d4c9032522df406bd50294",
+          "bytes": 975942
         },
         "validation": {
           "checksPassed": 9,
@@ -106,7 +106,7 @@
     "check": {
       "status": "pass",
       "exitCode": 0,
-      "durationMs": 249,
+      "durationMs": 227,
       "command": [
         "C:\\Program Files\\nodejs\\node.exe",
         "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\.agents\\skills\\archify\\bin\\archify.mjs",
@@ -118,8 +118,8 @@
         "ok": true,
         "file": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.html",
         "artifact": {
-          "sha256": "65bf887d6dd00eb45138efb99a502e6f5912d1e6a68f04caf736e3e20de90523",
-          "bytes": 955943
+          "sha256": "640461a1cc95fd052d80924cc2fa474b7bf50bdf67d4c9032522df406bd50294",
+          "bytes": 975942
         },
         "checks": [
           {
@@ -186,16 +186,16 @@
             "containerBorderRuns": 0,
             "labelRouteClearanceIssues": 0,
             "labelCanvasOverflowIssues": 0,
-            "minLabelRouteClearance": 6.6,
+            "minLabelRouteClearance": 8,
             "desktopReadabilityIssues": 0,
             "viewportHeightIssues": 0,
-            "minProjectedNodeTextPx": 7.433392539964476,
-            "maxBends": 2,
-            "routesOverSuggestedBends": 0,
-            "maxStretch": 1.11,
-            "routesOverSuggestedStretch": 0,
-            "minSegmentPx": 24,
-            "minInteriorSegmentPx": 183.1,
+            "minProjectedNodeTextPx": 9,
+            "maxBends": 5,
+            "routesOverSuggestedBends": 2,
+            "maxStretch": 1.462,
+            "routesOverSuggestedStretch": 1,
+            "minSegmentPx": 18,
+            "minInteriorSegmentPx": 64.7,
             "shortSegmentCount": 0,
             "shortEndpointSegmentCount": 0,
             "shortInteriorSegmentCount": 0,
@@ -211,147 +211,205 @@
             "crossings": [
               {
                 "left": {
-                  "id": "c3",
-                  "from": "recipe_manager",
-                  "to": "roi_editor",
-                  "label": "Load Recipe JSON",
-                  "collectionIndex": 2,
-                  "artifactIndex": 3
-                },
-                "right": {
-                  "id": "c13",
-                  "from": "operator",
-                  "to": "signoff_console",
-                  "label": "Operator Badge ID &amp; Verdict Override",
-                  "collectionIndex": 12,
-                  "artifactIndex": 13
-                },
-                "point": [
-                  316,
-                  242
-                ]
-              },
-              {
-                "left": {
-                  "id": "c4",
-                  "from": "camera_station",
+                  "id": "c5",
+                  "from": "save_modal",
                   "to": "api_router",
-                  "label": "Captured Frames (Base64/Multipart)",
-                  "collectionIndex": 3,
-                  "artifactIndex": 4
+                  "label": "Save Recipe to CAD Studio",
+                  "collectionIndex": 4,
+                  "artifactIndex": 5
                 },
                 "right": {
-                  "id": "c12",
-                  "from": "api_router",
-                  "to": "inspection_ui",
-                  "label": "JSON Inspection Results",
-                  "collectionIndex": 11,
-                  "artifactIndex": 12
+                  "id": "c21",
+                  "from": "loupe_crop_srv",
+                  "to": "digital_loupe",
+                  "label": "Ref, Test &amp; Heatmap Base64",
+                  "collectionIndex": 20,
+                  "artifactIndex": 21
                 },
                 "point": [
-                  706.3,
-                  424
-                ],
-                "sharedNode": "api_router"
-              },
-              {
-                "left": {
-                  "id": "c4",
-                  "from": "camera_station",
-                  "to": "api_router",
-                  "label": "Captured Frames (Base64/Multipart)",
-                  "collectionIndex": 3,
-                  "artifactIndex": 4
-                },
-                "right": {
-                  "id": "c15",
-                  "from": "signoff_console",
-                  "to": "report_exporter",
-                  "label": "GET /export_report",
-                  "collectionIndex": 14,
-                  "artifactIndex": 15
-                },
-                "point": [
-                  706.3,
-                  406
+                  551,
+                  802
                 ]
               },
               {
                 "left": {
                   "id": "c5",
-                  "from": "roi_editor",
+                  "from": "save_modal",
                   "to": "api_router",
-                  "label": "POST /components",
+                  "label": "Save Recipe to CAD Studio",
                   "collectionIndex": 4,
                   "artifactIndex": 5
                 },
                 "right": {
-                  "id": "c15",
+                  "id": "c23",
                   "from": "signoff_console",
-                  "to": "report_exporter",
-                  "label": "GET /export_report",
-                  "collectionIndex": 14,
-                  "artifactIndex": 15
+                  "to": "api_router",
+                  "label": "POST /signoff",
+                  "collectionIndex": 22,
+                  "artifactIndex": 23
                 },
                 "point": [
-                  457.15,
-                  406
-                ]
+                  511,
+                  522
+                ],
+                "sharedNode": "api_router"
               },
               {
                 "left": {
-                  "id": "c6",
+                  "id": "c8",
                   "from": "inspection_ui",
                   "to": "api_router",
-                  "label": "POST /inspect (Batch Images)",
-                  "collectionIndex": 5,
-                  "artifactIndex": 6
+                  "label": "POST /inspect (Batch Boards)",
+                  "collectionIndex": 7,
+                  "artifactIndex": 8
                 },
                 "right": {
-                  "id": "c15",
-                  "from": "signoff_console",
-                  "to": "report_exporter",
-                  "label": "GET /export_report",
-                  "collectionIndex": 14,
-                  "artifactIndex": 15
+                  "id": "c21",
+                  "from": "loupe_crop_srv",
+                  "to": "digital_loupe",
+                  "label": "Ref, Test &amp; Heatmap Base64",
+                  "collectionIndex": 20,
+                  "artifactIndex": 21
                 },
                 "point": [
-                  721.65,
-                  536
+                  463,
+                  802
                 ]
               },
               {
                 "left": {
-                  "id": "c12",
-                  "from": "api_router",
-                  "to": "inspection_ui",
-                  "label": "JSON Inspection Results",
-                  "collectionIndex": 11,
-                  "artifactIndex": 12
+                  "id": "c16",
+                  "from": "classifier",
+                  "to": "api_router",
+                  "label": "7-Class Component Verdicts",
+                  "collectionIndex": 15,
+                  "artifactIndex": 16
                 },
                 "right": {
-                  "id": "c15",
-                  "from": "signoff_console",
-                  "to": "report_exporter",
-                  "label": "GET /export_report",
-                  "collectionIndex": 14,
-                  "artifactIndex": 15
+                  "id": "c20",
+                  "from": "api_router",
+                  "to": "loupe_crop_srv",
+                  "label": "Extract Exact Subpixel ROI",
+                  "collectionIndex": 19,
+                  "artifactIndex": 20
                 },
                 "point": [
-                  721.65,
-                  424
+                  618,
+                  1123
+                ],
+                "sharedNode": "api_router"
+              },
+              {
+                "left": {
+                  "id": "c17",
+                  "from": "api_router",
+                  "to": "inspection_ui",
+                  "label": "Inspection Telemetry &amp; Chips",
+                  "collectionIndex": 16,
+                  "artifactIndex": 17
+                },
+                "right": {
+                  "id": "c21",
+                  "from": "loupe_crop_srv",
+                  "to": "digital_loupe",
+                  "label": "Ref, Test &amp; Heatmap Base64",
+                  "collectionIndex": 20,
+                  "artifactIndex": 21
+                },
+                "point": [
+                  421,
+                  802
+                ]
+              },
+              {
+                "left": {
+                  "id": "c21",
+                  "from": "loupe_crop_srv",
+                  "to": "digital_loupe",
+                  "label": "Ref, Test &amp; Heatmap Base64",
+                  "collectionIndex": 20,
+                  "artifactIndex": 21
+                },
+                "right": {
+                  "id": "c23",
+                  "from": "signoff_console",
+                  "to": "api_router",
+                  "label": "POST /signoff",
+                  "collectionIndex": 22,
+                  "artifactIndex": 23
+                },
+                "point": [
+                  511,
+                  802
                 ]
               }
             ],
-            "detours": []
+            "detours": [
+              {
+                "relationship": {
+                  "id": "c16",
+                  "from": "classifier",
+                  "to": "api_router",
+                  "label": "7-Class Component Verdicts",
+                  "collectionIndex": 15,
+                  "artifactIndex": 16
+                },
+                "bends": 5,
+                "stretch": 1.462,
+                "directCorridorBlockers": [
+                  {
+                    "id": "aligner",
+                    "label": "Global ECC Aligner",
+                    "box": [
+                      360,
+                      1126,
+                      178,
+                      72
+                    ]
+                  },
+                  {
+                    "id": "correlator",
+                    "label": "Bounded ZNCC Search",
+                    "box": [
+                      356.5,
+                      1266,
+                      185,
+                      72
+                    ]
+                  },
+                  {
+                    "id": "geometry_analyzer",
+                    "label": "Geometry &amp; Shift Engine",
+                    "box": [
+                      342,
+                      1406,
+                      214,
+                      72
+                    ]
+                  }
+                ]
+              },
+              {
+                "relationship": {
+                  "id": "c24",
+                  "from": "signoff_console",
+                  "to": "report_exporter",
+                  "label": "GET /export_report &amp; Print",
+                  "collectionIndex": 23,
+                  "artifactIndex": 24
+                },
+                "bends": 3,
+                "stretch": 1.27
+              }
+            ]
           },
           "leadingSpace": {
             "measured": true,
             "emptyTopPx": 48,
-            "emptyTopRatio": 0.042,
+            "emptyTopRatio": 0.026,
             "occupiedTop": 48,
             "viewBoxTop": 0,
-            "canvasHeight": 1150,
+            "canvasHeight": 1850,
             "typicalNodeHeight": 72,
             "reviewSuggested": false
           },
@@ -362,27 +420,27 @@
             "actualBudgetPx": 930,
             "limit": "legacy",
             "requestedTargetPx": 7.5,
-            "requestedTargetMet": false,
+            "requestedTargetMet": true,
             "hardFloorPx": 6,
             "hardFloorMet": true,
             "minimumOwner": {
-              "kind": "boundary",
-              "id": null
+              "kind": "node",
+              "id": "digital_loupe"
             },
             "minimumSourceTextPx": 9,
-            "minimumProjectedTextPx": 7.433392539964476,
-            "semanticTextCount": 41
+            "minimumProjectedTextPx": 9,
+            "semanticTextCount": 60
           },
           "issues": []
         },
         "provenance": "current",
-        "deliveryReceiptId": "df4fdc02-64c0-4bc0-ba3e-7bc30da5da55"
+        "deliveryReceiptId": "29344da2-f0e6-4806-a2d2-b3724486ac09"
       }
     },
     "browser-check": {
       "status": "pass",
       "exitCode": 0,
-      "durationMs": 2199,
+      "durationMs": 1889,
       "command": [
         "C:\\Program Files\\nodejs\\node.exe",
         "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\.agents\\skills\\archify\\bin\\archify.mjs",
@@ -400,11 +458,11 @@
         "status": "pass",
         "visualReview": "not-requested",
         "provenance": "current",
-        "deliveryReceiptId": "df4fdc02-64c0-4bc0-ba3e-7bc30da5da55",
+        "deliveryReceiptId": "29344da2-f0e6-4806-a2d2-b3724486ac09",
         "artifact": {
           "path": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.html",
-          "sha256": "65bf887d6dd00eb45138efb99a502e6f5912d1e6a68f04caf736e3e20de90523",
-          "bytes": 955943
+          "sha256": "640461a1cc95fd052d80924cc2fa474b7bf50bdf67d4c9032522df406bd50294",
+          "bytes": 975942
         },
         "state": {
           "detail": "read",
@@ -426,7 +484,7 @@
               "innerWidth": 1440,
               "innerHeight": 900,
               "scrollWidth": 1440,
-              "scrollHeight": 1149,
+              "scrollHeight": 1750,
               "overflowX": false,
               "overflowY": true,
               "verticalScrollAccepted": true,
@@ -435,25 +493,25 @@
               "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 969,
-              "diagramWidth": 939,
+              "readerWidth": 960,
+              "diagramWidth": 745,
               "pageComposition": {
                 "bodyPaddingPx": 12,
-                "headerPx": 99,
+                "headerPx": 115,
                 "diagramChromePx": 78,
-                "svgPx": 959,
+                "svgPx": 1543,
                 "cardsPx": 0,
-                "viewBoxHeight": 1150
+                "viewBoxHeight": 1850
               },
-              "viewBoxWidth": 1126,
-              "minimumProjectedNodeTextPx": 7.505328596802842,
-              "minimumProjectedNonEdgeTextPx": 7.505328596802842,
-              "minimumProjectedEdgeTextPx": 8.339253996447603,
-              "minimumProjectedNodeText": "Browser Client (100% Offline, Zero-CDN)",
-              "minimumProjectedNodeTextDetail": "boundary",
+              "viewBoxWidth": 893,
+              "minimumProjectedNodeTextPx": 7.508398656215006,
+              "minimumProjectedNonEdgeTextPx": 7.508398656215006,
+              "minimumProjectedEdgeTextPx": 8.342665173572229,
+              "minimumProjectedNodeText": "1×, 2×, 3×, 5× Optical Zoom",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "boundary",
-                "id": null
+                "kind": "node",
+                "id": "digital_loupe"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -476,7 +534,7 @@
               "innerWidth": 1600,
               "innerHeight": 1000,
               "scrollWidth": 1600,
-              "scrollHeight": 1215,
+              "scrollHeight": 1816,
               "overflowX": false,
               "overflowY": true,
               "verticalScrollAccepted": true,
@@ -485,25 +543,25 @@
               "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 969,
-              "diagramWidth": 939,
+              "readerWidth": 960,
+              "diagramWidth": 745,
               "pageComposition": {
                 "bodyPaddingPx": 64,
-                "headerPx": 107,
+                "headerPx": 123,
                 "diagramChromePx": 84,
-                "svgPx": 959,
+                "svgPx": 1543,
                 "cardsPx": 0,
-                "viewBoxHeight": 1150
+                "viewBoxHeight": 1850
               },
-              "viewBoxWidth": 1126,
-              "minimumProjectedNodeTextPx": 7.505328596802842,
-              "minimumProjectedNonEdgeTextPx": 7.505328596802842,
-              "minimumProjectedEdgeTextPx": 8.339253996447603,
-              "minimumProjectedNodeText": "Browser Client (100% Offline, Zero-CDN)",
-              "minimumProjectedNodeTextDetail": "boundary",
+              "viewBoxWidth": 893,
+              "minimumProjectedNodeTextPx": 7.508398656215006,
+              "minimumProjectedNonEdgeTextPx": 7.508398656215006,
+              "minimumProjectedEdgeTextPx": 8.342665173572229,
+              "minimumProjectedNodeText": "1×, 2×, 3×, 5× Optical Zoom",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "boundary",
-                "id": null
+                "kind": "node",
+                "id": "digital_loupe"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -526,7 +584,7 @@
               "innerWidth": 1920,
               "innerHeight": 1080,
               "scrollWidth": 1920,
-              "scrollHeight": 1215,
+              "scrollHeight": 1816,
               "overflowX": false,
               "overflowY": true,
               "verticalScrollAccepted": true,
@@ -535,25 +593,25 @@
               "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 969,
-              "diagramWidth": 939,
+              "readerWidth": 960,
+              "diagramWidth": 745,
               "pageComposition": {
                 "bodyPaddingPx": 64,
-                "headerPx": 107,
+                "headerPx": 123,
                 "diagramChromePx": 84,
-                "svgPx": 959,
+                "svgPx": 1543,
                 "cardsPx": 0,
-                "viewBoxHeight": 1150
+                "viewBoxHeight": 1850
               },
-              "viewBoxWidth": 1126,
-              "minimumProjectedNodeTextPx": 7.505328596802842,
-              "minimumProjectedNonEdgeTextPx": 7.505328596802842,
-              "minimumProjectedEdgeTextPx": 8.339253996447603,
-              "minimumProjectedNodeText": "Browser Client (100% Offline, Zero-CDN)",
-              "minimumProjectedNodeTextDetail": "boundary",
+              "viewBoxWidth": 893,
+              "minimumProjectedNodeTextPx": 7.508398656215006,
+              "minimumProjectedNonEdgeTextPx": 7.508398656215006,
+              "minimumProjectedEdgeTextPx": 8.342665173572229,
+              "minimumProjectedNodeText": "1×, 2×, 3×, 5× Optical Zoom",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "boundary",
-                "id": null
+                "kind": "node",
+                "id": "digital_loupe"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -576,34 +634,34 @@
               "innerWidth": 2048,
               "innerHeight": 1320,
               "scrollWidth": 2048,
-              "scrollHeight": 1320,
+              "scrollHeight": 1834,
               "overflowX": false,
-              "overflowY": false,
-              "verticalScrollAccepted": false,
-              "overflowDisposition": "contained",
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
               "readerLayout": "adaptive",
-              "readerOverflow": null,
+              "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 1063,
-              "diagramWidth": 1013,
+              "readerWidth": 960,
+              "diagramWidth": 745,
               "pageComposition": {
                 "bodyPaddingPx": 64,
-                "headerPx": 115,
+                "headerPx": 131,
                 "diagramChromePx": 94,
-                "svgPx": 1035,
+                "svgPx": 1543,
                 "cardsPx": 0,
-                "viewBoxHeight": 1150
+                "viewBoxHeight": 1850
               },
-              "viewBoxWidth": 1126,
-              "minimumProjectedNodeTextPx": 8.096802841918295,
-              "minimumProjectedNonEdgeTextPx": 8.096802841918295,
-              "minimumProjectedEdgeTextPx": 8.99644760213144,
-              "minimumProjectedNodeText": "Browser Client (100% Offline, Zero-CDN)",
-              "minimumProjectedNodeTextDetail": "boundary",
+              "viewBoxWidth": 893,
+              "minimumProjectedNodeTextPx": 7.508398656215006,
+              "minimumProjectedNonEdgeTextPx": 7.508398656215006,
+              "minimumProjectedEdgeTextPx": 8.342665173572229,
+              "minimumProjectedNodeText": "1×, 2×, 3×, 5× Optical Zoom",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "boundary",
-                "id": null
+                "kind": "node",
+                "id": "digital_loupe"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -679,7 +737,7 @@
               "innerWidth": 1440,
               "innerHeight": 900,
               "scrollWidth": 1440,
-              "scrollHeight": 1149,
+              "scrollHeight": 1750,
               "overflowX": false,
               "overflowY": true,
               "verticalScrollAccepted": true,
@@ -688,25 +746,25 @@
               "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 969,
-              "diagramWidth": 939,
+              "readerWidth": 960,
+              "diagramWidth": 745,
               "pageComposition": {
                 "bodyPaddingPx": 12,
-                "headerPx": 99,
+                "headerPx": 115,
                 "diagramChromePx": 78,
-                "svgPx": 959,
+                "svgPx": 1543,
                 "cardsPx": 0,
-                "viewBoxHeight": 1150
+                "viewBoxHeight": 1850
               },
-              "viewBoxWidth": 1126,
-              "minimumProjectedNodeTextPx": 7.505328596802842,
-              "minimumProjectedNonEdgeTextPx": 7.505328596802842,
-              "minimumProjectedEdgeTextPx": 8.339253996447603,
-              "minimumProjectedNodeText": "Browser Client (100% Offline, Zero-CDN)",
-              "minimumProjectedNodeTextDetail": "boundary",
+              "viewBoxWidth": 893,
+              "minimumProjectedNodeTextPx": 7.508398656215006,
+              "minimumProjectedNonEdgeTextPx": 7.508398656215006,
+              "minimumProjectedEdgeTextPx": 8.342665173572229,
+              "minimumProjectedNodeText": "1×, 2×, 3×, 5× Optical Zoom",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "boundary",
-                "id": null
+                "kind": "node",
+                "id": "digital_loupe"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -729,7 +787,7 @@
               "innerWidth": 1600,
               "innerHeight": 1000,
               "scrollWidth": 1600,
-              "scrollHeight": 1215,
+              "scrollHeight": 1816,
               "overflowX": false,
               "overflowY": true,
               "verticalScrollAccepted": true,
@@ -738,25 +796,25 @@
               "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 969,
-              "diagramWidth": 939,
+              "readerWidth": 960,
+              "diagramWidth": 745,
               "pageComposition": {
                 "bodyPaddingPx": 64,
-                "headerPx": 107,
+                "headerPx": 123,
                 "diagramChromePx": 84,
-                "svgPx": 959,
+                "svgPx": 1543,
                 "cardsPx": 0,
-                "viewBoxHeight": 1150
+                "viewBoxHeight": 1850
               },
-              "viewBoxWidth": 1126,
-              "minimumProjectedNodeTextPx": 7.505328596802842,
-              "minimumProjectedNonEdgeTextPx": 7.505328596802842,
-              "minimumProjectedEdgeTextPx": 8.339253996447603,
-              "minimumProjectedNodeText": "Browser Client (100% Offline, Zero-CDN)",
-              "minimumProjectedNodeTextDetail": "boundary",
+              "viewBoxWidth": 893,
+              "minimumProjectedNodeTextPx": 7.508398656215006,
+              "minimumProjectedNonEdgeTextPx": 7.508398656215006,
+              "minimumProjectedEdgeTextPx": 8.342665173572229,
+              "minimumProjectedNodeText": "1×, 2×, 3×, 5× Optical Zoom",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "boundary",
-                "id": null
+                "kind": "node",
+                "id": "digital_loupe"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -779,7 +837,7 @@
               "innerWidth": 1920,
               "innerHeight": 1080,
               "scrollWidth": 1920,
-              "scrollHeight": 1215,
+              "scrollHeight": 1816,
               "overflowX": false,
               "overflowY": true,
               "verticalScrollAccepted": true,
@@ -788,25 +846,25 @@
               "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 969,
-              "diagramWidth": 939,
+              "readerWidth": 960,
+              "diagramWidth": 745,
               "pageComposition": {
                 "bodyPaddingPx": 64,
-                "headerPx": 107,
+                "headerPx": 123,
                 "diagramChromePx": 84,
-                "svgPx": 959,
+                "svgPx": 1543,
                 "cardsPx": 0,
-                "viewBoxHeight": 1150
+                "viewBoxHeight": 1850
               },
-              "viewBoxWidth": 1126,
-              "minimumProjectedNodeTextPx": 7.505328596802842,
-              "minimumProjectedNonEdgeTextPx": 7.505328596802842,
-              "minimumProjectedEdgeTextPx": 8.339253996447603,
-              "minimumProjectedNodeText": "Browser Client (100% Offline, Zero-CDN)",
-              "minimumProjectedNodeTextDetail": "boundary",
+              "viewBoxWidth": 893,
+              "minimumProjectedNodeTextPx": 7.508398656215006,
+              "minimumProjectedNonEdgeTextPx": 7.508398656215006,
+              "minimumProjectedEdgeTextPx": 8.342665173572229,
+              "minimumProjectedNodeText": "1×, 2×, 3×, 5× Optical Zoom",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "boundary",
-                "id": null
+                "kind": "node",
+                "id": "digital_loupe"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -829,34 +887,34 @@
               "innerWidth": 2048,
               "innerHeight": 1320,
               "scrollWidth": 2048,
-              "scrollHeight": 1320,
+              "scrollHeight": 1834,
               "overflowX": false,
-              "overflowY": false,
-              "verticalScrollAccepted": false,
-              "overflowDisposition": "contained",
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
               "readerLayout": "adaptive",
-              "readerOverflow": null,
+              "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 1063,
-              "diagramWidth": 1013,
+              "readerWidth": 960,
+              "diagramWidth": 745,
               "pageComposition": {
                 "bodyPaddingPx": 64,
-                "headerPx": 115,
+                "headerPx": 131,
                 "diagramChromePx": 94,
-                "svgPx": 1035,
+                "svgPx": 1543,
                 "cardsPx": 0,
-                "viewBoxHeight": 1150
+                "viewBoxHeight": 1850
               },
-              "viewBoxWidth": 1126,
-              "minimumProjectedNodeTextPx": 8.096802841918295,
-              "minimumProjectedNonEdgeTextPx": 8.096802841918295,
-              "minimumProjectedEdgeTextPx": 8.99644760213144,
-              "minimumProjectedNodeText": "Browser Client (100% Offline, Zero-CDN)",
-              "minimumProjectedNodeTextDetail": "boundary",
+              "viewBoxWidth": 893,
+              "minimumProjectedNodeTextPx": 7.508398656215006,
+              "minimumProjectedNonEdgeTextPx": 7.508398656215006,
+              "minimumProjectedEdgeTextPx": 8.342665173572229,
+              "minimumProjectedNodeText": "1×, 2×, 3×, 5× Optical Zoom",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "boundary",
-                "id": null
+                "kind": "node",
+                "id": "digital_loupe"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -884,7 +942,7 @@
               "innerWidth": 1440,
               "innerHeight": 900,
               "scrollWidth": 1440,
-              "scrollHeight": 1149,
+              "scrollHeight": 1750,
               "overflowX": false,
               "overflowY": true,
               "verticalScrollAccepted": true,
@@ -893,25 +951,25 @@
               "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 969,
-              "diagramWidth": 939,
+              "readerWidth": 960,
+              "diagramWidth": 745,
               "pageComposition": {
                 "bodyPaddingPx": 12,
-                "headerPx": 99,
+                "headerPx": 115,
                 "diagramChromePx": 78,
-                "svgPx": 959,
+                "svgPx": 1543,
                 "cardsPx": 0,
-                "viewBoxHeight": 1150
+                "viewBoxHeight": 1850
               },
-              "viewBoxWidth": 1126,
-              "minimumProjectedNodeTextPx": 7.505328596802842,
-              "minimumProjectedNonEdgeTextPx": 7.505328596802842,
-              "minimumProjectedEdgeTextPx": 8.339253996447603,
-              "minimumProjectedNodeText": "Browser Client (100% Offline, Zero-CDN)",
-              "minimumProjectedNodeTextDetail": "boundary",
+              "viewBoxWidth": 893,
+              "minimumProjectedNodeTextPx": 7.508398656215006,
+              "minimumProjectedNonEdgeTextPx": 7.508398656215006,
+              "minimumProjectedEdgeTextPx": 8.342665173572229,
+              "minimumProjectedNodeText": "1×, 2×, 3×, 5× Optical Zoom",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "boundary",
-                "id": null
+                "kind": "node",
+                "id": "digital_loupe"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -934,7 +992,7 @@
               "innerWidth": 1600,
               "innerHeight": 1000,
               "scrollWidth": 1600,
-              "scrollHeight": 1215,
+              "scrollHeight": 1816,
               "overflowX": false,
               "overflowY": true,
               "verticalScrollAccepted": true,
@@ -943,25 +1001,25 @@
               "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 969,
-              "diagramWidth": 939,
+              "readerWidth": 960,
+              "diagramWidth": 745,
               "pageComposition": {
                 "bodyPaddingPx": 64,
-                "headerPx": 107,
+                "headerPx": 123,
                 "diagramChromePx": 84,
-                "svgPx": 959,
+                "svgPx": 1543,
                 "cardsPx": 0,
-                "viewBoxHeight": 1150
+                "viewBoxHeight": 1850
               },
-              "viewBoxWidth": 1126,
-              "minimumProjectedNodeTextPx": 7.505328596802842,
-              "minimumProjectedNonEdgeTextPx": 7.505328596802842,
-              "minimumProjectedEdgeTextPx": 8.339253996447603,
-              "minimumProjectedNodeText": "Browser Client (100% Offline, Zero-CDN)",
-              "minimumProjectedNodeTextDetail": "boundary",
+              "viewBoxWidth": 893,
+              "minimumProjectedNodeTextPx": 7.508398656215006,
+              "minimumProjectedNonEdgeTextPx": 7.508398656215006,
+              "minimumProjectedEdgeTextPx": 8.342665173572229,
+              "minimumProjectedNodeText": "1×, 2×, 3×, 5× Optical Zoom",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "boundary",
-                "id": null
+                "kind": "node",
+                "id": "digital_loupe"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -984,7 +1042,7 @@
               "innerWidth": 1920,
               "innerHeight": 1080,
               "scrollWidth": 1920,
-              "scrollHeight": 1215,
+              "scrollHeight": 1816,
               "overflowX": false,
               "overflowY": true,
               "verticalScrollAccepted": true,
@@ -993,25 +1051,25 @@
               "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 969,
-              "diagramWidth": 939,
+              "readerWidth": 960,
+              "diagramWidth": 745,
               "pageComposition": {
                 "bodyPaddingPx": 64,
-                "headerPx": 107,
+                "headerPx": 123,
                 "diagramChromePx": 84,
-                "svgPx": 959,
+                "svgPx": 1543,
                 "cardsPx": 0,
-                "viewBoxHeight": 1150
+                "viewBoxHeight": 1850
               },
-              "viewBoxWidth": 1126,
-              "minimumProjectedNodeTextPx": 7.505328596802842,
-              "minimumProjectedNonEdgeTextPx": 7.505328596802842,
-              "minimumProjectedEdgeTextPx": 8.339253996447603,
-              "minimumProjectedNodeText": "Browser Client (100% Offline, Zero-CDN)",
-              "minimumProjectedNodeTextDetail": "boundary",
+              "viewBoxWidth": 893,
+              "minimumProjectedNodeTextPx": 7.508398656215006,
+              "minimumProjectedNonEdgeTextPx": 7.508398656215006,
+              "minimumProjectedEdgeTextPx": 8.342665173572229,
+              "minimumProjectedNodeText": "1×, 2×, 3×, 5× Optical Zoom",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "boundary",
-                "id": null
+                "kind": "node",
+                "id": "digital_loupe"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -1034,34 +1092,34 @@
               "innerWidth": 2048,
               "innerHeight": 1320,
               "scrollWidth": 2048,
-              "scrollHeight": 1320,
+              "scrollHeight": 1834,
               "overflowX": false,
-              "overflowY": false,
-              "verticalScrollAccepted": false,
-              "overflowDisposition": "contained",
+              "overflowY": true,
+              "verticalScrollAccepted": true,
+              "overflowDisposition": "readable-vertical-scroll",
               "readerLayout": "adaptive",
-              "readerOverflow": null,
+              "readerOverflow": "authored",
               "readerFit": "intrinsic-height",
               "ok": true,
-              "readerWidth": 1063,
-              "diagramWidth": 1013,
+              "readerWidth": 960,
+              "diagramWidth": 745,
               "pageComposition": {
                 "bodyPaddingPx": 64,
-                "headerPx": 115,
+                "headerPx": 131,
                 "diagramChromePx": 94,
-                "svgPx": 1035,
+                "svgPx": 1543,
                 "cardsPx": 0,
-                "viewBoxHeight": 1150
+                "viewBoxHeight": 1850
               },
-              "viewBoxWidth": 1126,
-              "minimumProjectedNodeTextPx": 8.096802841918295,
-              "minimumProjectedNonEdgeTextPx": 8.096802841918295,
-              "minimumProjectedEdgeTextPx": 8.99644760213144,
-              "minimumProjectedNodeText": "Browser Client (100% Offline, Zero-CDN)",
-              "minimumProjectedNodeTextDetail": "boundary",
+              "viewBoxWidth": 893,
+              "minimumProjectedNodeTextPx": 7.508398656215006,
+              "minimumProjectedNonEdgeTextPx": 7.508398656215006,
+              "minimumProjectedEdgeTextPx": 8.342665173572229,
+              "minimumProjectedNodeText": "1×, 2×, 3×, 5× Optical Zoom",
+              "minimumProjectedNodeTextDetail": "context",
               "minimumProjectedNodeTextOwner": {
-                "kind": "boundary",
-                "id": null
+                "kind": "node",
+                "id": "digital_loupe"
               },
               "minimumRequiredNodeTextPx": 6,
               "readabilityOk": true,
@@ -1102,16 +1160,19 @@
     "browserCheckReceipt": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.browser-check.json"
   },
   "visualReview": "not-requested",
-  "finishedAt": "2026-11-23T22:52:46.483Z",
-  "durationMs": 5729,
+  "finishedAt": "2026-11-25T12:52:22.895Z",
+  "durationMs": 6463,
   "update": {
-    "status": "current",
+    "status": "update_available",
     "installedVersion": "3.3.0",
-    "availableVersion": "3.3.0",
-    "releaseNotes": null,
-    "checkedAt": "2026-11-23T22:52:41.039Z",
-    "source": "network",
-    "noticeRequired": false,
-    "noticeText": null
+    "availableVersion": "3.3.1",
+    "releaseNotes": "https://github.com/tt-a1i/archify/releases/tag/v3.3.1",
+    "severity": "normal",
+    "summary": "Polishes automatic Architecture layout, spine labels, crossing reduction, and Classic styling, and deduplicates cited Explainer files.",
+    "checkedAt": "2026-11-25T12:50:21.380Z",
+    "source": "cache",
+    "noticeRequired": true,
+    "noticeText": "Archify update: 3.3.0 → 3.3.1. A previous check at 2026-11-25T12:50:21.380Z found a newer release. Release notes: https://github.com/tt-a1i/archify/releases/tag/v3.3.1. Would you like me to update Archify?",
+    "eventKey": "archify@sha256:b92b4d55446966fd74e5338a45d6de9a7a1b194420cd5eb14d2cdc39f1053b80"
   }
 }

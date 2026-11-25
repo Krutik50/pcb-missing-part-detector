@@ -7,13 +7,13 @@
   "quality": "showcase",
   "specification": {
     "path": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.candidate.json",
-    "sha256": "995a6f75123b8fda48802a39e2777d764215023ec55b2a12dcf519510331536d",
-    "bytes": 8383
+    "sha256": "e5ec4ac9c66dc00f8ce0c63d1f11b1b4d20f043deacfb2940759cc5545bb5e4c",
+    "bytes": 11937
   },
   "artifact": {
     "path": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.html",
-    "sha256": "65bf887d6dd00eb45138efb99a502e6f5912d1e6a68f04caf736e3e20de90523",
-    "bytes": 955943
+    "sha256": "640461a1cc95fd052d80924cc2fa474b7bf50bdf67d4c9032522df406bd50294",
+    "bytes": 975942
   },
   "gates": {
     "validate": "pass",
@@ -33,17 +33,20 @@
     "browserCheckReceipt": "C:\\Users\\Admin\\OneDrive\\Desktop\\PCB_missing_component_detector\\docs\\architecture.browser-check.json"
   },
   "update": {
-    "status": "current",
+    "status": "update_available",
     "installedVersion": "3.3.0",
-    "availableVersion": "3.3.0",
-    "releaseNotes": null,
-    "checkedAt": "2026-11-23T22:52:41.039Z",
-    "source": "network",
-    "noticeRequired": false,
-    "noticeText": null
+    "availableVersion": "3.3.1",
+    "releaseNotes": "https://github.com/tt-a1i/archify/releases/tag/v3.3.1",
+    "severity": "normal",
+    "summary": "Polishes automatic Architecture layout, spine labels, crossing reduction, and Classic styling, and deduplicates cited Explainer files.",
+    "checkedAt": "2026-11-25T12:50:21.380Z",
+    "source": "cache",
+    "noticeRequired": true,
+    "noticeText": "Archify update: 3.3.0 → 3.3.1. A previous check at 2026-11-25T12:50:21.380Z found a newer release. Release notes: https://github.com/tt-a1i/archify/releases/tag/v3.3.1. Would you like me to update Archify?",
+    "eventKey": "archify@sha256:b92b4d55446966fd74e5338a45d6de9a7a1b194420cd5eb14d2cdc39f1053b80"
   },
   "visualReview": "not-requested",
-  "durationMs": 5729,
+  "durationMs": 6463,
   "browserCheck": {
     "requested": true,
     "ran": true
@@ -51,155 +54,216 @@
   "visualReviewRecommendation": {
     "action": "inspect-route-readability",
     "signals": {
-      "resolvedCrossovers": 6
+      "resolvedCrossovers": 6,
+      "routesOverSuggestedBends": 2,
+      "routesOverSuggestedStretch": 1
     },
     "reason": "Automated gates passed, but crossings or detours still need perceptual review before claiming visual quality.",
     "affectedRoutes": {
       "crossings": [
         {
           "left": {
-            "id": "c3",
-            "from": "recipe_manager",
-            "to": "roi_editor",
-            "label": "Load Recipe JSON",
-            "collectionIndex": 2,
-            "artifactIndex": 3
-          },
-          "right": {
-            "id": "c13",
-            "from": "operator",
-            "to": "signoff_console",
-            "label": "Operator Badge ID &amp; Verdict Override",
-            "collectionIndex": 12,
-            "artifactIndex": 13
-          },
-          "point": [
-            316,
-            242
-          ]
-        },
-        {
-          "left": {
-            "id": "c4",
-            "from": "camera_station",
+            "id": "c5",
+            "from": "save_modal",
             "to": "api_router",
-            "label": "Captured Frames (Base64/Multipart)",
-            "collectionIndex": 3,
-            "artifactIndex": 4
+            "label": "Save Recipe to CAD Studio",
+            "collectionIndex": 4,
+            "artifactIndex": 5
           },
           "right": {
-            "id": "c12",
-            "from": "api_router",
-            "to": "inspection_ui",
-            "label": "JSON Inspection Results",
-            "collectionIndex": 11,
-            "artifactIndex": 12
+            "id": "c21",
+            "from": "loupe_crop_srv",
+            "to": "digital_loupe",
+            "label": "Ref, Test &amp; Heatmap Base64",
+            "collectionIndex": 20,
+            "artifactIndex": 21
           },
           "point": [
-            706.3,
-            424
-          ],
-          "sharedNode": "api_router"
-        },
-        {
-          "left": {
-            "id": "c4",
-            "from": "camera_station",
-            "to": "api_router",
-            "label": "Captured Frames (Base64/Multipart)",
-            "collectionIndex": 3,
-            "artifactIndex": 4
-          },
-          "right": {
-            "id": "c15",
-            "from": "signoff_console",
-            "to": "report_exporter",
-            "label": "GET /export_report",
-            "collectionIndex": 14,
-            "artifactIndex": 15
-          },
-          "point": [
-            706.3,
-            406
+            551,
+            802
           ]
         },
         {
           "left": {
             "id": "c5",
-            "from": "roi_editor",
+            "from": "save_modal",
             "to": "api_router",
-            "label": "POST /components",
+            "label": "Save Recipe to CAD Studio",
             "collectionIndex": 4,
             "artifactIndex": 5
           },
           "right": {
-            "id": "c15",
+            "id": "c23",
             "from": "signoff_console",
-            "to": "report_exporter",
-            "label": "GET /export_report",
-            "collectionIndex": 14,
-            "artifactIndex": 15
+            "to": "api_router",
+            "label": "POST /signoff",
+            "collectionIndex": 22,
+            "artifactIndex": 23
           },
           "point": [
-            457.15,
-            406
-          ]
+            511,
+            522
+          ],
+          "sharedNode": "api_router"
         },
         {
           "left": {
-            "id": "c6",
+            "id": "c8",
             "from": "inspection_ui",
             "to": "api_router",
-            "label": "POST /inspect (Batch Images)",
-            "collectionIndex": 5,
-            "artifactIndex": 6
+            "label": "POST /inspect (Batch Boards)",
+            "collectionIndex": 7,
+            "artifactIndex": 8
           },
           "right": {
-            "id": "c15",
-            "from": "signoff_console",
-            "to": "report_exporter",
-            "label": "GET /export_report",
-            "collectionIndex": 14,
-            "artifactIndex": 15
+            "id": "c21",
+            "from": "loupe_crop_srv",
+            "to": "digital_loupe",
+            "label": "Ref, Test &amp; Heatmap Base64",
+            "collectionIndex": 20,
+            "artifactIndex": 21
           },
           "point": [
-            721.65,
-            536
+            463,
+            802
           ]
         },
         {
           "left": {
-            "id": "c12",
-            "from": "api_router",
-            "to": "inspection_ui",
-            "label": "JSON Inspection Results",
-            "collectionIndex": 11,
-            "artifactIndex": 12
+            "id": "c16",
+            "from": "classifier",
+            "to": "api_router",
+            "label": "7-Class Component Verdicts",
+            "collectionIndex": 15,
+            "artifactIndex": 16
           },
           "right": {
-            "id": "c15",
-            "from": "signoff_console",
-            "to": "report_exporter",
-            "label": "GET /export_report",
-            "collectionIndex": 14,
-            "artifactIndex": 15
+            "id": "c20",
+            "from": "api_router",
+            "to": "loupe_crop_srv",
+            "label": "Extract Exact Subpixel ROI",
+            "collectionIndex": 19,
+            "artifactIndex": 20
           },
           "point": [
-            721.65,
-            424
+            618,
+            1123
+          ],
+          "sharedNode": "api_router"
+        },
+        {
+          "left": {
+            "id": "c17",
+            "from": "api_router",
+            "to": "inspection_ui",
+            "label": "Inspection Telemetry &amp; Chips",
+            "collectionIndex": 16,
+            "artifactIndex": 17
+          },
+          "right": {
+            "id": "c21",
+            "from": "loupe_crop_srv",
+            "to": "digital_loupe",
+            "label": "Ref, Test &amp; Heatmap Base64",
+            "collectionIndex": 20,
+            "artifactIndex": 21
+          },
+          "point": [
+            421,
+            802
+          ]
+        },
+        {
+          "left": {
+            "id": "c21",
+            "from": "loupe_crop_srv",
+            "to": "digital_loupe",
+            "label": "Ref, Test &amp; Heatmap Base64",
+            "collectionIndex": 20,
+            "artifactIndex": 21
+          },
+          "right": {
+            "id": "c23",
+            "from": "signoff_console",
+            "to": "api_router",
+            "label": "POST /signoff",
+            "collectionIndex": 22,
+            "artifactIndex": 23
+          },
+          "point": [
+            511,
+            802
           ]
         }
       ],
-      "detours": [],
+      "detours": [
+        {
+          "relationship": {
+            "id": "c16",
+            "from": "classifier",
+            "to": "api_router",
+            "label": "7-Class Component Verdicts",
+            "collectionIndex": 15,
+            "artifactIndex": 16
+          },
+          "bends": 5,
+          "stretch": 1.462,
+          "directCorridorBlockers": [
+            {
+              "id": "aligner",
+              "label": "Global ECC Aligner",
+              "box": [
+                360,
+                1126,
+                178,
+                72
+              ]
+            },
+            {
+              "id": "correlator",
+              "label": "Bounded ZNCC Search",
+              "box": [
+                356.5,
+                1266,
+                185,
+                72
+              ]
+            },
+            {
+              "id": "geometry_analyzer",
+              "label": "Geometry &amp; Shift Engine",
+              "box": [
+                342,
+                1406,
+                214,
+                72
+              ]
+            }
+          ]
+        },
+        {
+          "relationship": {
+            "id": "c24",
+            "from": "signoff_console",
+            "to": "report_exporter",
+            "label": "GET /export_report &amp; Print",
+            "collectionIndex": 23,
+            "artifactIndex": 24
+          },
+          "bends": 3,
+          "stretch": 1.27
+        }
+      ],
       "truncated": false
     },
     "hints": [
-      "recipe_manager → roi_editor crosses operator → signoff_console: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
-      "camera_station → api_router and api_router → inspection_ui cross next to api_router: move node camera_station or inspection_ui so the two reach api_router from different sides (for example one level with it, one directly above or below it).",
-      "camera_station → api_router crosses signoff_console → report_exporter: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
-      "roi_editor → api_router crosses signoff_console → report_exporter: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
-      "inspection_ui → api_router crosses signoff_console → report_exporter: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
-      "api_router → inspection_ui crosses signoff_console → report_exporter: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor."
+      "save_modal → api_router crosses loupe_crop_srv → digital_loupe: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
+      "save_modal → api_router and signoff_console → api_router cross next to api_router: move node save_modal or signoff_console so the two reach api_router from different sides (for example one level with it, one directly above or below it).",
+      "inspection_ui → api_router crosses loupe_crop_srv → digital_loupe: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
+      "classifier → api_router and api_router → loupe_crop_srv cross next to api_router: move node classifier or loupe_crop_srv so the two reach api_router from different sides (for example one level with it, one directly above or below it).",
+      "api_router → inspection_ui crosses loupe_crop_srv → digital_loupe: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
+      "loupe_crop_srv → digital_loupe crosses signoff_console → api_router: move the node of whichever is a branch, return, or second entrance to the other side of the main path, so that relationship runs through an empty corridor.",
+      "signoff_console → report_exporter needs 3 bends: move node signoff_console or report_exporter so they share a row or column with matching centers, or sit diagonally with a clear corner."
     ],
     "repair": "Trace these relationships at the desktop viewport. For Architecture, use references/architecture-layout-repair.md: reflow a blocked main path or tangled connected scene, and repair an isolated defect locally only when the surrounding composition is accepted. Preserve all semantic content and user-fixed geometry. Rerun finalize once after the edit."
   }

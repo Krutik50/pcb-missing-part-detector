@@ -2,8 +2,8 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "PCB Missing Component Detector (Task B)",
-    "subtitle": "Offline Automated Optical Inspection (AOI) with ECC Alignment, Local ZNCC, Recipe Management & Operator Sign-off",
+    "title": "PCB Missing Component Detector & Industrial AOI Station",
+    "subtitle": "Offline Automated Optical Inspection with ECC Alignment, CAD Recipe Studio, 7-Class IPC-A-610 Engine & 3× Digital Optical Loupe",
     "output": "docs/architecture.html",
     "quality_profile": "showcase"
   },
@@ -14,245 +14,344 @@
     {
       "id": "operator",
       "type": "external",
-      "label": "Assembly Operator",
+      "label": "SMT Station Operator",
       "sublabel": "Production Line Inspector",
       "icon": "person",
-      "explanation": "Human operator capturing PCB images, adjusting sensitivity, reviewing flagged defects, and signing off on uncertain components."
+      "explanation": "Human operator authoring footprints, executing batch inspections, examining components under 3x optical loupe, and signing off on quality disposition."
     },
     {
-      "id": "camera_station",
+      "id": "cad_studio",
       "type": "frontend",
-      "label": "Live Camera Station",
-      "sublabel": "navigator.mediaDevices",
-      "tag": "Offline WebRTC",
+      "label": "CAD Recipe Studio",
+      "sublabel": "5 Golden Presets + Custom",
+      "tag": "1-Click Board Load",
       "icon": "frontend",
-      "explanation": "Client-side video stream capture station with live crosshairs, fixed positioning guidance, and frame freezing for reference and test boards."
-    },
-    {
-      "id": "recipe_manager",
-      "type": "frontend",
-      "label": "Recipe Engine",
-      "sublabel": "Save / Load JSON",
-      "tag": "256-bit aHash",
-      "icon": "frontend",
-      "explanation": "Exports and imports JSON inspection recipes with 256-bit luminance Average Hash (aHash) fingerprinting and aspect-ratio mismatch warnings."
+      "explanation": "Pre-calibrated hardware golden masters across 5 physical PCB architectures (Arduino Uno, Appliance Power, PMS-63 Scale, Analog, SMPS) plus custom recipe persistence."
     },
     {
       "id": "roi_editor",
       "type": "frontend",
-      "label": "Interactive ROI Canvas",
-      "sublabel": "HTML5 Canvas 2D",
-      "tag": "Normalized BBox",
+      "label": "Footprint Authoring",
+      "sublabel": "Rectangle, Pencil, Polygon",
+      "tag": "CV Auto-Detect",
       "icon": "frontend",
-      "explanation": "Allows drawing and editing normalized bounding boxes [x1, y1, x2, y2] on golden reference boards with sensitivity controls."
+      "explanation": "Interactive CAD footprint authoring canvas with Rectangle, Freehand Pencil, Polygon tools, and automated CV contour detection."
+    },
+    {
+      "id": "save_modal",
+      "type": "frontend",
+      "label": "Recipe Save Prompt",
+      "sublabel": "Save Board Yes / No",
+      "tag": "Studio Persistence",
+      "icon": "frontend",
+      "explanation": "Interstitial modal prompting the operator to persist currently loaded reference board and annotated footprints directly into CAD Studio before batch inspection."
     },
     {
       "id": "inspection_ui",
       "type": "frontend",
-      "label": "Batch Inspection UI",
-      "sublabel": "Multi-Image Console",
-      "tag": "Zero CDN / Vanilla JS",
+      "label": "Batch Inspection Station",
+      "sublabel": "Multi-Board Console",
+      "tag": "Side-by-Side & Split",
       "icon": "frontend",
-      "explanation": "Multi-board batch upload console with live status chips, side-by-side reference vs test crop diff viewer, and alignment metrics."
+      "explanation": "Multi-board inspection console with live defect chips, side-by-side comparison, split-slider view, and real-time pass/fail indicators."
+    },
+    {
+      "id": "digital_loupe",
+      "type": "frontend",
+      "label": "3× Digital Optical Loupe",
+      "sublabel": "1×, 2×, 3×, 5× Optical Zoom",
+      "tag": "Reticle & Blink Mode",
+      "icon": "frontend",
+      "explanation": "High-accuracy component microscope pop-out with server-aligned crops, illumination-compensated difference heatmap, measurement reticle, shift vectors, and 2.5 Hz blink comparator."
     },
     {
       "id": "signoff_console",
       "type": "frontend",
       "label": "Operator Sign-Off & KPI",
-      "sublabel": "Human-in-the-Loop Triage",
-      "tag": "FPY & Pareto Tally",
+      "sublabel": "Unified Operator Role",
+      "tag": "FPY & Audit Trail",
       "icon": "frontend",
-      "explanation": "Interactive audit panel for verifying PRESENT or confirming MISSING on uncertain parts with badge ID and notes, dynamic yield calculations, and printable reports."
+      "explanation": "Interactive audit panel for verifying PRESENT or confirming DEFECT with badge ID and notes, dynamic yield calculations, and printable ISO 9001 reports."
     },
     {
       "id": "api_router",
       "type": "backend",
-      "label": "FastAPI Web Server",
+      "label": "FastAPI Gateway",
       "sublabel": "Uvicorn :8000",
-      "tag": "REST Endpoints",
+      "tag": "Air-Gapped REST API",
       "icon": "backend",
-      "explanation": "FastAPI application managing REST endpoints for reference upload, recipe validation, multi-board inspection, audit export, and static asset serving."
+      "explanation": "High-throughput asynchronous REST gateway managing session lifecycle, CAD recipes, batch inspections, aligned images, loupe data, and static assets."
     },
     {
       "id": "session_store",
       "type": "database",
-      "label": "Session State Store",
+      "label": "Session Buffer & Cache",
       "sublabel": "In-Memory Thread-Safe",
-      "tag": "Volatile Session",
+      "tag": "Aligned Images Buffer",
       "icon": "database",
-      "explanation": "In-memory dictionary mapping session UUIDs to golden reference OpenCV matrices, component coordinates, inspection run history, and audit logs."
+      "explanation": "In-memory thread-safe dictionary mapping session UUIDs to golden reference templates, component coordinates, aligned test images, and inspection run history."
+    },
+    {
+      "id": "recipe_db",
+      "type": "database",
+      "label": "Recipe File Persistence",
+      "sublabel": "data/custom_recipes/",
+      "tag": "JSON Recipes",
+      "icon": "database",
+      "explanation": "Stores custom board master images and component coordinate manifests for persistent reuse across sessions and one-click CAD Studio loading."
     },
     {
       "id": "aligner",
       "type": "backend",
       "label": "Global ECC Aligner",
       "sublabel": "cv2.findTransformECC",
-      "tag": "Euclidean Warp",
+      "tag": "Subpixel Rigid Warp",
       "icon": "backend",
-      "explanation": "Computes Enhanced Correlation Coefficient maximization matrix to rigidly align incoming test boards to golden reference coordinates down to sub-pixel accuracy."
+      "explanation": "Computes Enhanced Correlation Coefficient maximization matrix to rigidly align test board coordinates (translation +/-50px, rotation +/-5 deg) down to sub-pixel accuracy."
+    },
+    {
+      "id": "aligned_image_srv",
+      "type": "backend",
+      "label": "Aligned Image Service",
+      "sublabel": "GET /aligned-image/{fn}",
+      "tag": "Zero Misalignment",
+      "icon": "backend",
+      "explanation": "Serves pixel-perfect aligned full test board images to eliminate camera displacement on the main inspection canvas overlay."
     },
     {
       "id": "correlator",
       "type": "backend",
-      "label": "Local ZNCC Correlator",
-      "sublabel": "Grid Search +/-4px",
+      "label": "Bounded ZNCC Search",
+      "sublabel": "Grid Search +/-16px",
       "tag": "Multi-Channel ZNCC",
       "icon": "backend",
-      "explanation": "Performs local sub-pixel translation search and Zero-mean Normalized Cross-Correlation alongside normalized Mean Absolute Difference (Patch Diff)."
+      "explanation": "Performs bounded local search computing Zero-mean Normalized Cross-Correlation alongside normalized Patch Mean Absolute Error (MAE)."
+    },
+    {
+      "id": "geometry_analyzer",
+      "type": "backend",
+      "label": "Geometry & Shift Engine",
+      "sublabel": "Tilt & Vector [dx, dy]",
+      "tag": "Rotated Templates",
+      "icon": "backend",
+      "explanation": "Measures rotational skew angle and calculates subpixel centroid displacement vectors [dx, dy] for misaligned components."
     },
     {
       "id": "classifier",
       "type": "backend",
-      "label": "3-State Decision Logic",
-      "sublabel": "Frozen Dual-Threshold",
-      "tag": "OK / DEFECT / REVIEW",
+      "label": "7-Class IPC-A-610 Engine",
+      "sublabel": "Class 2/3 Tolerance Envelopes",
+      "tag": "7 Defect Classes",
       "icon": "backend",
-      "explanation": "Applies calibrated dual-threshold gates (ZNCC >= 0.89 OK, ZNCC <= 0.86 DEFECT, intermediate REVIEW) to classify missing components safely."
+      "explanation": "Classifies components into 7 distinct defect states: PRESENT, MISSING, TILTED (>3.5 deg), MISALIGNED (>5px), TOMBSTONED, BRIDGED, POLARITY_REVERSED, and UNCERTAIN."
+    },
+    {
+      "id": "loupe_crop_srv",
+      "type": "backend",
+      "label": "Loupe Diagnostics Engine",
+      "sublabel": "GET /loupe/{fn}/{comp}",
+      "tag": "Illumination-Compensated",
+      "icon": "backend",
+      "explanation": "Extracts 100% pixel-aligned crops and generates illumination-compensated difference residual heatmaps for true defect visualization."
     },
     {
       "id": "report_exporter",
       "type": "backend",
-      "label": "Inspection Report Exporter",
-      "sublabel": "CSV & Printable Audit",
-      "tag": "Machine + Human Audit",
+      "label": "Audit & Report Exporter",
+      "sublabel": "CSV & Printable Certificate",
+      "tag": "Dual-Signed Audit",
       "icon": "backend",
-      "explanation": "Generates downloadable inspection audit CSV files and formatted printable inspection reports retaining original machine verdicts alongside human operator overrides."
+      "explanation": "Generates downloadable inspection audit CSV files and formatted printable ISO 9001 quality certificates retaining original machine verdicts alongside human operator overrides."
     }
   ],
   "boundaries": [
     {
       "kind": "region",
       "label": "Browser Client (100% Offline, Zero-CDN)",
-      "wraps": ["camera_station", "recipe_manager", "roi_editor", "inspection_ui", "signoff_console"]
+      "wraps": ["cad_studio", "roi_editor", "save_modal", "inspection_ui", "digital_loupe", "signoff_console"]
     },
     {
       "kind": "security-group",
       "label": "Backend Application Server (FastAPI + OpenCV)",
-      "wraps": ["api_router", "session_store", "aligner", "correlator", "classifier", "report_exporter"]
+      "wraps": ["api_router", "session_store", "recipe_db", "aligner", "aligned_image_srv", "correlator", "geometry_analyzer", "classifier", "loupe_crop_srv", "report_exporter"]
     }
   ],
   "connections": [
     {
       "id": "c1",
       "from": "operator",
-      "to": "camera_station",
-      "label": "Live Camera Feed",
+      "to": "cad_studio",
+      "label": "Select Preset or Custom Board",
       "variant": "emphasis"
     },
     {
       "id": "c2",
       "from": "operator",
       "to": "roi_editor",
-      "label": "Mark Component ROIs"
+      "label": "Author Component Footprints"
     },
     {
       "id": "c3",
-      "from": "recipe_manager",
+      "from": "cad_studio",
       "to": "roi_editor",
-      "label": "Load Recipe JSON"
+      "label": "Populate Golden BBoxes"
     },
     {
       "id": "c4",
-      "from": "camera_station",
-      "to": "api_router",
-      "label": "Captured Frames (Base64/Multipart)"
+      "from": "roi_editor",
+      "to": "save_modal",
+      "label": "Proceed to Inspection"
     },
     {
       "id": "c5",
-      "from": "roi_editor",
+      "from": "save_modal",
       "to": "api_router",
-      "label": "POST /components"
+      "label": "Save Recipe to CAD Studio"
     },
     {
       "id": "c6",
-      "from": "inspection_ui",
-      "to": "api_router",
-      "label": "POST /inspect (Batch Images)"
+      "from": "api_router",
+      "to": "recipe_db",
+      "label": "Persist JSON Recipe"
     },
     {
       "id": "c7",
-      "from": "api_router",
-      "to": "session_store",
-      "label": "Get/Set Session State"
+      "from": "save_modal",
+      "to": "inspection_ui",
+      "label": "Load Inspection Session"
     },
     {
       "id": "c8",
+      "from": "inspection_ui",
+      "to": "api_router",
+      "label": "POST /inspect (Batch Boards)"
+    },
+    {
+      "id": "c9",
       "from": "api_router",
       "to": "aligner",
       "label": "Global Board Alignment"
     },
     {
-      "id": "c9",
+      "id": "c10",
+      "from": "aligner",
+      "to": "session_store",
+      "label": "Cache Aligned Images & Warp"
+    },
+    {
+      "id": "c11",
+      "from": "session_store",
+      "to": "aligned_image_srv",
+      "label": "Aligned Test Buffer"
+    },
+    {
+      "id": "c12",
+      "from": "aligned_image_srv",
+      "to": "inspection_ui",
+      "label": "Render Aligned Canvas"
+    },
+    {
+      "id": "c13",
       "from": "aligner",
       "to": "correlator",
       "label": "Warped Aligned ROIs"
     },
     {
-      "id": "c10",
+      "id": "c14",
       "from": "correlator",
-      "to": "classifier",
-      "label": "ZNCC Score & Patch Diff"
+      "to": "geometry_analyzer",
+      "label": "Displacement & Angular Skew"
     },
     {
-      "id": "c11",
+      "id": "c15",
+      "from": "geometry_analyzer",
+      "to": "classifier",
+      "label": "ZNCC, Patch Diff, Shift & Tilt"
+    },
+    {
+      "id": "c16",
       "from": "classifier",
       "to": "api_router",
-      "label": "Annotated Images & Board Verdicts"
+      "label": "7-Class Component Verdicts"
     },
     {
-      "id": "c12",
+      "id": "c17",
       "from": "api_router",
       "to": "inspection_ui",
-      "label": "JSON Inspection Results"
+      "label": "Inspection Telemetry & Chips"
     },
     {
-      "id": "c13",
+      "id": "c18",
+      "from": "inspection_ui",
+      "to": "digital_loupe",
+      "label": "Click Component Row"
+    },
+    {
+      "id": "c19",
+      "from": "digital_loupe",
+      "to": "api_router",
+      "label": "GET /loupe/{fn}/{comp}"
+    },
+    {
+      "id": "c20",
+      "from": "api_router",
+      "to": "loupe_crop_srv",
+      "label": "Extract Exact Subpixel ROI"
+    },
+    {
+      "id": "c21",
+      "from": "loupe_crop_srv",
+      "to": "digital_loupe",
+      "label": "Ref, Test & Heatmap Base64"
+    },
+    {
+      "id": "c22",
       "from": "operator",
       "to": "signoff_console",
-      "label": "Operator Badge ID & Verdict Override"
+      "label": "Operator Sign-Off & Review"
     },
     {
-      "id": "c14",
+      "id": "c23",
       "from": "signoff_console",
       "to": "api_router",
       "label": "POST /signoff"
     },
     {
-      "id": "c15",
+      "id": "c24",
       "from": "signoff_console",
       "to": "report_exporter",
-      "label": "GET /export_report"
+      "label": "GET /export_report & Print"
     }
   ],
   "cards": [
     {
       "dot": "cyan",
-      "title": "Frontend Offline Client",
+      "title": "Frontend Air-Gapped Workstation",
       "items": [
-        "Vanilla JS + CSS without CDN or external dependencies",
-        "HTML5 Canvas bounding box editor with normalized coordinates",
-        "Webcam/USB camera capture station with alignment guidance",
-        "Recipe save/load with 256-bit aHash validation"
+        "Vanilla JS + CSS without CDN, external fonts, or cloud dependencies",
+        "CAD Studio with 5 physical hardware presets and custom recipe loading",
+        "Footprint editor with rectangle, pencil, polygon, and CV auto-detect",
+        "3x Digital Optical Loupe with 1x-5x zoom, reticle, and blink mode"
       ]
     },
     {
       "dot": "emerald",
-      "title": "Computer Vision Core",
+      "title": "Computer Vision Core & Defect Engine",
       "items": [
-        "Global Euclidean alignment via cv2.findTransformECC",
-        "Local sub-pixel +/-4px translation refinement",
-        "Multi-channel Zero-mean Normalized Cross-Correlation (ZNCC)",
-        "Calibrated 3-state classifier: PRESENT, MISSING, UNCERTAIN"
+        "Subpixel Euclidean ECC alignment (+/-50px translation, +/-5 deg rotation)",
+        "Bounded local ZNCC search with normalized patch MAE",
+        "Rotational skew (tilt) and subpixel shift vector [dx, dy] measurement",
+        "7 IPC-A-610 defect classes: MISSING, TILT, SHIFT, TOMBSTONE, BRIDGE, POLARITY"
       ]
     },
     {
       "dot": "rose",
-      "title": "Human-in-the-Loop & Audit",
+      "title": "Human-in-the-Loop Quality & Traceability",
       "items": [
-        "Preserves raw machine verdicts alongside human operator overrides",
-        "Tracks badge ID, timestamps, and operator notes per component",
-        "Computes First-Pass Yield (FPY) vs post-sign-off Operational Yield",
-        "Exports full audit log as CSV and printable inspection report"
+        "Unified SMT Station Operator role with full authoring and disposition permissions",
+        "Electronic sign-off audit trail with badge ID, timestamps, and notes",
+        "First-Pass Yield (FPY) vs post-sign-off Operational Yield tracking",
+        "Dual-signed printable ISO 9001 certificate and CSV telemetry export"
       ]
     }
   ]

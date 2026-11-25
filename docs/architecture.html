@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="dark light">
   <meta name="generator" content="archify 3.3.0">
   <meta name="archify-reader-contract" content="declared-wide-v1">
-  <title>PCB Missing Component Detector (Task B) Diagram</title>
+  <title>PCB Missing Component Detector &amp; Industrial AOI Station Diagram</title>
   <script>
     // Resolve the theme before first paint so light-preference users don't
     // see a dark flash. The toolbar script below re-applies with UI state.
@@ -6115,21 +6115,21 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
            data-preset-badge-blueprint="BLUEPRINT / REV 01"
            data-preset-badge-editorial="EDITORIAL / FIELD NOTE">
         <div class="pulse-dot"></div>
-        <h1>PCB Missing Component Detector (Task B)</h1>
+        <h1>PCB Missing Component Detector &amp; Industrial AOI Station</h1>
       </div>
-      <p class="subtitle">Offline Automated Optical Inspection (AOI) with ECC Alignment, Local ZNCC, Recipe Management &amp; Operator Sign-off</p>
+      <p class="subtitle">Offline Automated Optical Inspection with ECC Alignment, CAD Recipe Studio, 7-Class IPC-A-610 Engine &amp; 3× Digital Optical Loupe</p>
     </div>
 
-    <script id="archify-explanations-data" type="application/json">{"operator":"Human operator capturing PCB images, adjusting sensitivity, reviewing flagged defects, and signing off on uncertain components.","camera_station":"Client-side video stream capture station with live crosshairs, fixed positioning guidance, and frame freezing for reference and test boards.","recipe_manager":"Exports and imports JSON inspection recipes with 256-bit luminance Average Hash (aHash) fingerprinting and aspect-ratio mismatch warnings.","roi_editor":"Allows drawing and editing normalized bounding boxes [x1, y1, x2, y2] on golden reference boards with sensitivity controls.","inspection_ui":"Multi-board batch upload console with live status chips, side-by-side reference vs test crop diff viewer, and alignment metrics.","signoff_console":"Interactive audit panel for verifying PRESENT or confirming MISSING on uncertain parts with badge ID and notes, dynamic yield calculations, and printable reports.","api_router":"FastAPI application managing REST endpoints for reference upload, recipe validation, multi-board inspection, audit export, and static asset serving.","session_store":"In-memory dictionary mapping session UUIDs to golden reference OpenCV matrices, component coordinates, inspection run history, and audit logs.","aligner":"Computes Enhanced Correlation Coefficient maximization matrix to rigidly align incoming test boards to golden reference coordinates down to sub-pixel accuracy.","correlator":"Performs local sub-pixel translation search and Zero-mean Normalized Cross-Correlation alongside normalized Mean Absolute Difference (Patch Diff).","classifier":"Applies calibrated dual-threshold gates (ZNCC \u003e= 0.89 OK, ZNCC \u003c= 0.86 DEFECT, intermediate REVIEW) to classify missing components safely.","report_exporter":"Generates downloadable inspection audit CSV files and formatted printable inspection reports retaining original machine verdicts alongside human operator overrides."}</script>
+    <script id="archify-explanations-data" type="application/json">{"operator":"Human operator authoring footprints, executing batch inspections, examining components under 3x optical loupe, and signing off on quality disposition.","cad_studio":"Pre-calibrated hardware golden masters across 5 physical PCB architectures (Arduino Uno, Appliance Power, PMS-63 Scale, Analog, SMPS) plus custom recipe persistence.","roi_editor":"Interactive CAD footprint authoring canvas with Rectangle, Freehand Pencil, Polygon tools, and automated CV contour detection.","save_modal":"Interstitial modal prompting the operator to persist currently loaded reference board and annotated footprints directly into CAD Studio before batch inspection.","inspection_ui":"Multi-board inspection console with live defect chips, side-by-side comparison, split-slider view, and real-time pass/fail indicators.","digital_loupe":"High-accuracy component microscope pop-out with server-aligned crops, illumination-compensated difference heatmap, measurement reticle, shift vectors, and 2.5 Hz blink comparator.","signoff_console":"Interactive audit panel for verifying PRESENT or confirming DEFECT with badge ID and notes, dynamic yield calculations, and printable ISO 9001 reports.","api_router":"High-throughput asynchronous REST gateway managing session lifecycle, CAD recipes, batch inspections, aligned images, loupe data, and static assets.","session_store":"In-memory thread-safe dictionary mapping session UUIDs to golden reference templates, component coordinates, aligned test images, and inspection run history.","recipe_db":"Stores custom board master images and component coordinate manifests for persistent reuse across sessions and one-click CAD Studio loading.","aligner":"Computes Enhanced Correlation Coefficient maximization matrix to rigidly align test board coordinates (translation +/-50px, rotation +/-5 deg) down to sub-pixel accuracy.","aligned_image_srv":"Serves pixel-perfect aligned full test board images to eliminate camera displacement on the main inspection canvas overlay.","correlator":"Performs bounded local search computing Zero-mean Normalized Cross-Correlation alongside normalized Patch Mean Absolute Error (MAE).","geometry_analyzer":"Measures rotational skew angle and calculates subpixel centroid displacement vectors [dx, dy] for misaligned components.","classifier":"Classifies components into 7 distinct defect states: PRESENT, MISSING, TILTED (\u003e3.5 deg), MISALIGNED (\u003e5px), TOMBSTONED, BRIDGED, POLARITY_REVERSED, and UNCERTAIN.","loupe_crop_srv":"Extracts 100% pixel-aligned crops and generates illumination-compensated difference residual heatmaps for true defect visualization.","report_exporter":"Generates downloadable inspection audit CSV files and formatted printable ISO 9001 quality certificates retaining original machine verdicts alongside human operator overrides."}</script>
 
 
     <script id="archify-i18n-data" type="application/json">{"locale":"en","messages":{"viewer.kind.frontend":"Frontend","viewer.kind.backend":"Backend","viewer.kind.database":"Database","viewer.kind.cloud":"Cloud","viewer.kind.security":"Security","viewer.kind.messagebus":"Message bus","viewer.kind.external":"External","viewer.kind.neutral":"Neutral","viewer.kind.node":"Node","viewer.kind.start":"Start","viewer.kind.active":"Active","viewer.kind.waiting":"Waiting","viewer.kind.decision":"Decision","viewer.kind.success":"Success","viewer.kind.failure":"Failure","viewer.toolbar.actions":"Diagram actions","viewer.diagnosis.button":"Code Analysis","viewer.diagnosis.title":"Architecture Diagnosis","viewer.diagnosis.local":"Built into Archify, runs locally","viewer.diagnosis.starMapTitle":"Radial star map","viewer.diagnosis.starMap":"Explore dependencies across files and functions in a radial star map.","viewer.diagnosis.modelTitle":"Rotatable 3D model","viewer.diagnosis.model":"Rotate a 3D model to see how modules connect.","viewer.diagnosis.countsTitle":"Issues per component","viewer.diagnosis.counts":"See issue counts on each component in this diagram, including the most crowded areas, dependency cycles, and dependencies the diagram doesn’t show.","viewer.diagnosis.findingsTitle":"Source and AI fixes","viewer.diagnosis.findings":"Open the source behind each finding and hand it to an AI as a fix task.","viewer.diagnosis.ask":"Ask your AI assistant:","viewer.diagnosis.prompt":"Use Archify to create an architecture diagram for this project and start Architecture Diagnosis.","viewer.diagnosis.copy":"Copy prompt","viewer.theme.toggle.title":"Toggle theme (T)","viewer.theme.toggle":"Toggle color theme","viewer.theme.dark":"Dark","viewer.theme.light":"Light","viewer.preset.choose.title":"Choose visual style (S cycles)","viewer.preset.choose":"Choose visual style","viewer.preset.style":"Style","viewer.preset.menu":"Visual style","viewer.preset.identity":"Visual identity","viewer.preset.cycles":"to cycle","viewer.preset.classic":"Classic","viewer.preset.classic.short":"Classic","viewer.preset.classic.hint":"Stable technical default","viewer.preset.flow":"Signal Flow","viewer.preset.flow.short":"Flow","viewer.preset.flow.hint":"Motion-forward presentation","viewer.preset.blueprint":"Blueprint","viewer.preset.blueprint.hint":"Engineering review","viewer.preset.editorial":"Editorial","viewer.preset.editorial.hint":"Publication and launch notes","viewer.preset.badge.signalFlow":"SIGNAL FLOW","viewer.preset.badge.blueprint":"BLUEPRINT / REV 01","viewer.preset.badge.editorial":"EDITORIAL / FIELD NOTE","viewer.preset.badge.editorialPlate":"ARCHIFY / PLATE 04","viewer.preset.current":"Visual style: {style}. Choose visual style","viewer.motion.live":"Live","viewer.motion.still":"Still","viewer.motion.pause":"Pause motion","viewer.motion.resume":"Resume motion","viewer.motion.reduced":"Motion paused by reduced-motion preference","viewer.motion.hidden":"Motion paused while this page is hidden","viewer.motion.yielding":"Pause motion; currently yielding to {owner}","viewer.motion.yielding.title":"Live preview enabled · yielding to {owner}","viewer.owner.route":"Route Probe","viewer.owner.lens":"Semantic Lens","viewer.owner.relationship":"Relationship Preview","viewer.owner.intent":"Intent Trace","viewer.owner.focus":"semantic focus","viewer.owner.legend":"legend preview","viewer.owner.reader":"reader interaction","viewer.present.enter":"Enter presentation stage","viewer.present.enter.title":"Presentation stage (F)","viewer.present.exit":"Exit presentation stage","viewer.present.exit.title":"Exit presentation stage (F or Escape)","viewer.present.present":"Present","viewer.present.exit.label":"Exit","viewer.export.button":"Export","viewer.export.button.title":"Export diagram (E)","viewer.export.diagram":"Export diagram","viewer.export.menu":"Export","viewer.export.subtitle":"Portable, clean outputs","viewer.export.share":"Share","viewer.export.shareCard":"Share Card","viewer.export.routeShareCard":"Route Share Card","viewer.export.reachShareCard":"Reach Share Card","viewer.export.copyDiagram":"Copy diagram","viewer.export.clipboardPng":"PNG to clipboard","viewer.export.raster":"Raster images","viewer.export.image":"Image","viewer.export.lossless":"Lossless image","viewer.export.compact":"Compact image","viewer.export.modern":"Modern image","viewer.export.vectorMotion":"Vector and motion","viewer.export.vectorMotion.heading":"Vector \u0026 motion","viewer.export.editable":"Editable vector","viewer.export.svg.auto":"SVG · Auto","viewer.export.svg.auto.hint":"Matches host theme","viewer.export.svg.light":"SVG · Light","viewer.export.svg.light.hint":"Always light","viewer.export.svg.dark":"SVG · Dark","viewer.export.svg.dark.hint":"Always dark","viewer.export.motion6s":"6s motion","viewer.export.unsupported":"Not supported by this browser","viewer.export.clipboardUnsupported":"Clipboard image write not supported by this browser","viewer.export.clipboardUnsupported.short":"Clipboard image write not supported in this browser.","viewer.export.motionUnavailable":"Motion capture unavailable in this browser","viewer.export.webmUnavailable":"WebM unavailable in this browser","viewer.export.failed":"Export failed: {message}","viewer.export.unknownVariant":"Unknown Share Card variant: {variant}","viewer.export.routeRequired":"Trace a route before exporting a Route Share Card","viewer.export.reachRequired":"Trace authored reach before exporting a Reach Share Card","viewer.export.unknown":"unknown","viewer.export.routeFailed":"Route Share Card export failed: {message}","viewer.export.reachFailed":"Reach Share Card export failed: {message}","viewer.export.copyFailed":"Copy failed: {message}","viewer.export.copiedPng":"Copied PNG to clipboard","viewer.export.downloadedRoute":"Downloaded Route Share Card","viewer.export.downloadedReach":"Downloaded Reach Share Card","viewer.export.downloadedWebm":"Downloaded WebM","viewer.export.recording":"Recording 6 seconds of motion…","viewer.export.card.routeSummary.one":"Path: {source} → {target} · {count} step","viewer.export.card.routeSummary.other":"Path: {source} → {target} · {count} steps","viewer.export.card.reachSummary":"Authored {direction} from {origin} · {nodes} · {links} · max {hops}","viewer.export.card.node.one":"{count} node","viewer.export.card.node.other":"{count} nodes","viewer.export.card.link.one":"{count} link","viewer.export.card.link.other":"{count} links","viewer.export.card.hop.one":"{count} hop","viewer.export.card.hop.other":"{count} hops","viewer.export.card.routeBadge":"ARCHIFY · ROUTE · {hops}","viewer.export.card.reachBadge":"ARCHIFY · {direction} REACH","viewer.export.direction.upstream":"Upstream","viewer.export.direction.downstream":"Downstream","viewer.export.error.canvasUnavailable":"Canvas unavailable for {label}","viewer.export.error.contextUnavailable":"2D canvas context unavailable for {label}","viewer.export.error.toBlobUnavailable":"canvas.toBlob unavailable for {label}","viewer.export.error.toBlobNull":"canvas.toBlob returned no data for {label}","viewer.export.error.variantsCombined":"Share Card variants cannot be combined","viewer.export.error.viewerState":"Share Card export could not remove temporary viewer state","viewer.export.error.routeState":"Route Card export could not preserve the resolved route safely","viewer.export.error.reachState":"Reach Card export could not preserve authored reach safely","viewer.export.error.webmRequirements":"WebM motion export requires a trace animation and browser MediaRecorder support","viewer.export.error.mediaRecorder":"MediaRecorder failed","viewer.export.error.emptyWebm":"MediaRecorder produced an empty WebM","viewer.export.error.webmBackground":"SVG background could not be loaded for WebM export","viewer.guide.title":"Explore this system","viewer.focus.selectedNodes":"{count} selected nodes","viewer.guide.eyebrow":"Diagram guide","viewer.guide.close":"Close diagram guide","viewer.guide.inspecting":"Inspecting compiled semantics","viewer.guide.actions":"Diagram exploration actions","viewer.guide.find":"Find any node","viewer.guide.find.hint":"Search labels, responsibilities, kinds, and stable IDs.","viewer.guide.route":"Trace a route","viewer.guide.route.aria":"Trace a directed route","viewer.guide.route.hint":"Ask how two semantic nodes connect in authored direction.","viewer.guide.map":"See the whole system","viewer.guide.map.hint":"Open Semantic Radar with a live viewport and stable nodes.","viewer.guide.lens":"Compare semantic kinds","viewer.guide.lens.hint":"Count roles, reveal their traffic, and compare direct authored links.","viewer.guide.present":"Enter Presentation Stage","viewer.guide.present.hint":"Give the live diagram the viewport without changing export.","viewer.guide.shortcuts":"Additional keyboard shortcuts","viewer.guide.shortcut.export":"Export","viewer.guide.shortcut.theme":"Theme","viewer.guide.shortcut.style":"Style","viewer.guide.shortcut.reset":"Reset","viewer.guide.shortcut.zoomIn":"Zoom in","viewer.guide.shortcut.zoomOut":"Zoom out","viewer.guide.shortcut.close":"Close","viewer.guide.credit":"Find Archify useful? A star on GitHub helps","viewer.guide.star":"Star","viewer.feedback.label":"Feedback and support","viewer.feedback.tagline":"Turn anything you want to understand, plan, or share into an interactive visual.","viewer.feedback.trigger":"Feedback","viewer.feedback.issue":"Open an issue","viewer.feedback.issueHint":"Bug report or suggestion","viewer.feedback.email":"Send email","viewer.feedback.copyEmail":"Copy email address","viewer.feedback.starPrompt":"If Archify helped you","viewer.feedback.star":"Star","viewer.feedback.starLabel":"Star Archify on GitHub","viewer.feedback.starTitle":"Support Archify on GitHub","viewer.feedback.starBody":"Every star helps us keep building and sharing it openly.","viewer.guide.facts":"{nodes} · {relationships}","viewer.guide.fact.node.one":"{count} semantic node","viewer.guide.fact.node.other":"{count} semantic nodes","viewer.guide.fact.relationship.one":"{count} relationship","viewer.guide.fact.relationship.other":"{count} relationships","viewer.guide.open":"Open diagram guide","viewer.finder.title":"Find a node","viewer.finder.close":"Close node finder","viewer.finder.placeholder":"Search labels or IDs","viewer.finder.search":"Search diagram nodes","viewer.finder.results":"Diagram nodes","viewer.finder.empty":"No matching nodes","viewer.finder.result.focus":"Focus {label}","viewer.finder.result.routeStart":"Choose {label} as route start","viewer.finder.result.routeTarget":"Choose {label} as route destination, {links}","viewer.finder.status.empty":"No matching nodes","viewer.finder.status.count.one":"{count} matching node","viewer.finder.status.count.other":"{count} matching nodes","viewer.finder.noun.nodes":"nodes","viewer.finder.link.one":"{count} link","viewer.finder.link.other":"{count} links","viewer.finder.result.focus.one":"Focus {label}, {count} related connection","viewer.finder.result.focus.other":"Focus {label}, {count} related connections","viewer.finder.status.filtered":"{visible} of {available} {noun}","viewer.finder.status.all":"{available} {noun}","viewer.passport.eyebrow":"Semantic passport","viewer.passport.metadata":"Node metadata","viewer.passport.evidence":"Verified source evidence","viewer.passport.verified":"Verified source","viewer.passport.verificationScope":"Verified against local Git at the pinned revision. Remote access has not been checked.","viewer.passport.payload":"Payload","viewer.passport.payload.role.request":"Request","viewer.passport.payload.role.response":"Response","viewer.passport.payload.role.flow":"Flow","viewer.passport.payload.diff":"{added} added · {removed} removed · {modified} changed · {unchanged} unchanged","viewer.passport.payload.unchanged":"{count} unchanged fields","viewer.passport.payload.sample":"Sample payload (read-only)","viewer.passport.payload.after":"Payload after this change (read-only)","viewer.passport.payload.before":"Payload before this change (read-only)","viewer.passport.payload.field.added":"Added {path}: {after}","viewer.passport.payload.field.removed":"Removed {path}: {before}","viewer.passport.payload.field.modified":"Changed {path}: {before} → {after}","viewer.passport.payload.field.unchanged":"{path}: {after}","viewer.passport.reach":"Authored reach","viewer.passport.reach.trace":"Trace authored reachability","viewer.passport.upstream":"Upstream","viewer.passport.downstream":"Downstream","viewer.passport.upstream.trace":"Trace upstream authored reachability","viewer.passport.downstream.trace":"Trace downstream authored reachability","viewer.passport.close":"Close semantic passport","viewer.passport.move":"Move semantic passport. Drag, use arrow keys, or press Home to reset.","viewer.passport.copy":"Copy link","viewer.passport.copy.focus":"Copy link to focused node","viewer.passport.relations":"Relations","viewer.passport.relations.show":"Show connected relationships","viewer.passport.relations.hide":"Hide connected relationships","viewer.passport.relations.list":"Connected relationships","viewer.passport.copyRelation":"Copy relation","viewer.passport.copyNode":"Copy node","viewer.passport.copyPinned":"Copy link to pinned relationship","viewer.passport.copySource":"Copy link to source node","viewer.passport.copy.focused.success":"Focused node link copied","viewer.passport.copy.pinned.success":"Pinned relationship link copied","viewer.passport.copy.focused.failed":"Could not copy focused node link","viewer.passport.copy.pinned.failed":"Could not copy pinned relationship link","viewer.passport.relationship.none":"No connected relationships","viewer.passport.relationship.count.one":"{count} relation","viewer.passport.relationship.count.other":"{count} relations","viewer.passport.relationship.show.one":"Show {count} connected relationship","viewer.passport.relationship.show.other":"Show {count} connected relationships","viewer.passport.relationship.summary":"{out} outgoing · {in} incoming{loops}","viewer.passport.relationship.loops":" · {count} loop","viewer.passport.relationship.explorer":"Direct relationship explorer","viewer.passport.relationship.help":"Use arrow keys to explore relationships. Press Enter or Space to pin details; Escape clears.","viewer.passport.relationship.loopsBack":"loops back","viewer.passport.relationship.connectsTo":"connects to","viewer.passport.relationship.connectsFrom":"connects from","viewer.passport.relationship.pinned":"Pinned relationship · {from} → {to} · {label}","viewer.passport.relationship.inspect":"Inspect relationship {index} of {total}: {from} to {to}, {label}. Press Enter for details.","viewer.passport.relationship.group.out":"Outgoing","viewer.passport.relationship.group.in":"Incoming","viewer.passport.relationship.group.loop":"Self loops","viewer.passport.relationship.row":"{group}: {relationship}, {neighbor}","viewer.passport.relationship.direction.out":"OUT →","viewer.passport.relationship.direction.in":"← IN","viewer.passport.relationship.direction.loop":"LOOP","viewer.passport.sourceCount.one":"{count} verified source reference","viewer.passport.sourceCount.other":"{count} verified source references","viewer.passport.repository.open":"Open verified repository revision {revision}","viewer.passport.source.open":"Open verified source {path} at revision {revision}","viewer.passport.source.openLink":"Open ↗","viewer.passport.reach.upstream.one":"Trace {count} upstream authored node","viewer.passport.reach.upstream.other":"Trace {count} upstream authored nodes","viewer.passport.reach.downstream.one":"Trace {count} downstream authored node","viewer.passport.reach.downstream.other":"Trace {count} downstream authored nodes","viewer.passport.reach.noUpstream":"No upstream authored nodes","viewer.passport.reach.noDownstream":"No downstream authored nodes","viewer.passport.reach.status":"{direction} · {nodes} nodes · {links} links · max {hops} hops","viewer.route.eyebrow":"Path","viewer.route.start":"Click where the path starts","viewer.route.start.find":"Find start","viewer.route.start.find.aria":"Find a route start","viewer.route.copy":"Copy link","viewer.route.copy.aria":"Copy link to traced route","viewer.route.clear":"Clear","viewer.route.clear.aria":"Clear route probe","viewer.route.traced":"Path","viewer.route.pickTwo":"Click two nodes on the diagram","viewer.route.pickOne":"Click a node on the diagram","viewer.route.controls":"Route journey controls","viewer.route.previous":"Previous route position","viewer.route.play":"Play route journey","viewer.route.pause":"Pause route journey","viewer.route.replay":"Replay route journey","viewer.route.next":"Next route position","viewer.route.journey":"Journey","viewer.route.pause.label":"Pause","viewer.route.replay.label":"Replay","viewer.route.overview":"Overview","viewer.route.overview.aria":"Show complete route overview","viewer.route.instructions":"Click a start, then an end. Paths follow the arrows.","viewer.route.destination":"Where does the path from {label} end?","viewer.route.destination.find":"Find target","viewer.route.destination.find.aria":"Find a reachable route destination","viewer.route.differentDestination":"Choose a different destination","viewer.route.distinct":"Pick two different nodes.","viewer.route.unreachable":"Cannot reach {label} from here","viewer.route.unreachable.detail":"{target} cannot be reached from {source} along the arrows. Pick a highlighted node.","viewer.route.start.instructions":"Next, pick the end. Only nodes you can reach will light up.","viewer.route.copy.success":"Traced route link copied","viewer.route.copy.failed":"Could not copy traced route link","viewer.route.position":"Route position {index} of {total}: {label}","viewer.route.step":"Step {index} of {total} · {phase} · {label}","viewer.route.motionRequired":"Automatic journey requires Live motion","viewer.route.trigger.clear":"Clear traced route","viewer.route.overview.status":"{nodes} · {hops} · shortest path","viewer.route.overview.node.one":"{count} node","viewer.route.overview.node.other":"{count} nodes","viewer.route.overview.hop.one":"{count} step","viewer.route.overview.hop.other":"{count} steps","viewer.route.phase.playing":"Playing","viewer.route.phase.complete":"Complete","viewer.route.phase.inspecting":"Inspecting","viewer.route.destination.count.one":"{count} reachable node is highlighted. Click it.","viewer.route.destination.count.other":"{count} reachable nodes are highlighted. Click one.","viewer.route.noOutgoing":"No arrows lead out of this node. Clear it and pick another start.","viewer.route.result.title":"{source} to {target}","viewer.route.finder.source.title":"Choose route start","viewer.route.finder.source.placeholder":"Search route sources","viewer.route.finder.source.empty":"No matching route sources","viewer.route.finder.source.results":"Nodes that can start a route","viewer.route.finder.source.noun":"route sources","viewer.route.finder.source.badge":"start","viewer.route.finder.target.title":"Destination from {label}","viewer.route.finder.target.placeholder":"Search reachable destinations","viewer.route.finder.target.empty":"No matching reachable destinations","viewer.route.finder.target.results":"Reachable route destinations","viewer.route.finder.target.noun":"reachable destinations","viewer.route.hop.one":"{count} hop","viewer.route.hop.other":"{count} hops","viewer.lens.eyebrow":"Semantic lens","viewer.lens.title":"Compare system roles","viewer.lens.close":"Close semantic lens","viewer.lens.instruction":"Choose up to two semantic kinds. One reveals its real traffic; two compare only direct authored relationships.","viewer.lens.kinds":"Semantic kinds","viewer.lens.choose":"Choose a kind to inspect its nodes and touching relationships.","viewer.lens.copy":"Copy link to semantic lens","viewer.lens.clear":"Clear semantic lens","viewer.lens.open":"Open semantic lens","viewer.lens.openActive":"Open active semantic lens","viewer.lens.legend":"Semantic legend","viewer.lens.legend.inspect.one":"Inspect {label}, {count} node","viewer.lens.legend.inspect.other":"Inspect {label}, {count} nodes","viewer.lens.kind.count.one":"{label}, {count} node","viewer.lens.kind.count.other":"{label}, {count} nodes","viewer.lens.compare.one":"{first} → {second}: {forward} · {second} → {first}: {reverse} · {count} direct relationship","viewer.lens.compare.other":"{first} → {second}: {forward} · {second} → {first}: {reverse} · {count} direct relationships","viewer.lens.single":"{nodes} · {relationships} · connected peers remain visible","viewer.lens.node.one":"{count} {label} node","viewer.lens.node.other":"{count} {label} nodes","viewer.lens.relationship.one":"{count} touching relationship","viewer.lens.relationship.other":"{count} touching relationships","viewer.radar.title":"Semantic radar","viewer.radar.building":"Building overview","viewer.radar.openFull":"Open full semantic radar","viewer.radar.open":"Open radar","viewer.radar.close":"Close semantic radar","viewer.radar.surface":"Diagram overview. Click a node to focus it, or use arrow keys to pan.","viewer.radar.click":"Click node","viewer.radar.drag":"Drag to pan","viewer.radar.space":"Semantic radar needs more MAP space.","viewer.radar.nodes":"Semantic diagram radar nodes","viewer.radar.focus":"Focus {label} from Semantic Radar","viewer.radar.status":"{count} nodes · {viewport}","viewer.radar.fullMap":"{count} nodes · full map","viewer.radar.compacted":"Radar compacted to avoid covering the Semantic Passport or MAP controls.","viewer.radar.cancelWaiting":"Cancel semantic radar waiting for more MAP space","viewer.radar.needsSpace":"Semantic radar needs more visible MAP space","viewer.radar.viewport.full":"full map","viewer.radar.viewport.width":"{percent}% width","viewer.radar.viewport.scale":"{percent}% viewport","viewer.nav.controls":"Diagram view controls","viewer.nav.route":"Trace a directed route","viewer.nav.route.title":"Trace route (R)","viewer.nav.route.short":"ROUTE","viewer.nav.radar":"Open semantic radar","viewer.nav.radar.title":"Semantic radar (M)","viewer.nav.radar.short":"MAP","viewer.nav.lens":"Open semantic lens","viewer.nav.lens.title":"Semantic lens (L)","viewer.nav.lens.short":"LENS","viewer.nav.find":"Find a node","viewer.nav.find.title":"Find a node (/)","viewer.outline.title":"Node index","viewer.rail.show":"Notes \u0026 index","viewer.rail.controls":"Side panel","viewer.rail.collapse":"Collapse side panel","viewer.rail.bottom":"Move panel below the diagram","viewer.rail.right":"Move panel beside the diagram","viewer.nav.guide":"Open diagram guide","viewer.nav.guide.title":"Diagram guide (?)","viewer.nav.zoomOut":"Zoom out","viewer.nav.zoomOut.title":"Zoom out (-)","viewer.nav.reset":"Reset diagram view","viewer.nav.reset.title":"Reset view (0)","viewer.nav.read":"READ","viewer.nav.zoomIn":"Zoom in","viewer.nav.zoomIn.title":"Zoom in (+)","viewer.nav.camera":"{hint}. Reset diagram view","viewer.nav.camera.title":"{semantic}{hint} · reset view (0)","viewer.nav.camera.semantic":"Semantic camera active · ","viewer.nav.level.map":"MAP","viewer.nav.level.read":"READ","viewer.nav.level.full":"FULL","viewer.nav.level.auto":"AUTO","viewer.nav.detail.map":"Zoom in to reveal relationship labels and node context","viewer.nav.detail.read":"Zoom in again to reveal tags and annotations","viewer.nav.detail.full":"Full diagram detail","viewer.intent.summary":"{label}. {out} outgoing, {in} incoming{loops}. {total} connections. Press Enter for details.","viewer.intent.loops":", {count} self loop","viewer.common.copied":"Copied","viewer.common.copyFailed":"Copy failed","viewer.common.copyLink":"Copy link","viewer.common.clear":"Clear","viewer.common.close":"Close","viewer.passport.explain":"Explain","viewer.passport.explain.show":"Show the explanation for this node","viewer.passport.explanation":"Explanation","viewer.passport.explanation.back":"{label} explanation. Activate to return to the passport","viewer.passport.explanation.backLink":"Back to passport","viewer.passport.drilldowns":"Child diagrams","viewer.passport.drilldowns.list":"Open a child diagram","viewer.passport.drilldowns.hint":"Ctrl+click or double-click opens the first entry","viewer.passport.drilldowns.open":"Open {label}","viewer.passport.back":"Back to parent","viewer.passport.back.aria":"Return to the parent diagram","viewer.nav.back":"Back","viewer.nav.back.title":"Return to the parent diagram"}}</script>
     <!-- Main Diagram -->
     <div class="diagram-container" data-detail-level="read"
          data-preset-badge-editorial-plate="ARCHIFY / PLATE 04">
-      <svg viewBox="0 0 1126 1150" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="classic" data-quality-profile="showcase" data-node-ui="" data-reader-fit="intrinsic-height" data-reader-min-text="7.5" data-reader-primary-text="14">
-        <title id="archify-diagram-title">PCB Missing Component Detector (Task B)</title>
-        <desc id="archify-diagram-description">Offline Automated Optical Inspection (AOI) with ECC Alignment, Local ZNCC, Recipe Management &amp; Operator Sign-off</desc>
+      <svg viewBox="0 0 893 1850" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="classic" data-quality-profile="showcase" data-node-ui="" data-reader-fit="intrinsic-height" data-reader-min-text="7.5" data-reader-primary-text="14">
+        <title id="archify-diagram-title">PCB Missing Component Detector &amp; Industrial AOI Station</title>
+        <desc id="archify-diagram-description">Offline Automated Optical Inspection with ECC Alignment, CAD Recipe Studio, 7-Class IPC-A-610 Engine &amp; 3× Digital Optical Loupe</desc>
         <!-- Definitions -->
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
@@ -6174,323 +6174,459 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <rect width="100%" height="100%" fill="url(#grid)" />
 
         <!-- Boundaries (behind everything) -->
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" data-composition-frame-label="Browser Client (100% Offline, Zero-CDN)" x="48" y="176" width="1037.8" height="266" rx="12" class="c-region" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" data-composition-frame-label="Browser Client (100% Offline, Zero-CDN)" x="167" y="176" width="567" height="682" rx="12" class="c-region" stroke-width="1"/>
 
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="security-group" data-composition-frame-id="1" data-composition-frame-label="Backend Application Server (FastAPI + OpenCV)" x="162.14999999999998" y="540" width="809.5" height="542" rx="8" class="c-security-group" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="security-group" data-composition-frame-id="1" data-composition-frame-label="Backend Application Server (FastAPI + OpenCV)" x="48" y="956" width="805" height="826" rx="8" class="c-security-group" stroke-width="1"/>
 
         <!-- Connection paths (before components for correct z-order) -->
         <g data-graph-role="automatic-crossover" style="--step:0">
-          <path data-graph-role="automatic-crossover-underlay" d="M 629.8 108 L 629.8 206" fill="none" stroke="var(--mask)" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="operator" data-edge-to="camera_station" data-edge-label="Live Camera Feed" data-edge-key="0" data-edge-id="c1" data-composition-points="629.8,108;629.8,206" data-composition-crossover="halo" data-composition-independent="true" d="M 629.8 108 L 629.8 206" class="a-emphasis" data-animate="edge" style="--step:0" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 377 108 L 377 206" fill="none" stroke="var(--mask)" stroke-width="5.8" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="operator" data-edge-to="cad_studio" data-edge-label="Select Preset or Custom Board" data-edge-key="0" data-edge-id="c1" data-composition-points="377,108;377,206" data-composition-crossover="halo" data-composition-independent="true" d="M 377 108 L 377 206" class="a-emphasis" data-animate="edge" style="--step:0" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:1">
-          <path data-graph-role="automatic-crossover-underlay" d="M 525.8 108 L 525.8 206" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="operator" data-edge-to="roi_editor" data-edge-label="Mark Component ROIs" data-edge-key="1" data-edge-id="c2" data-composition-points="525.8,108;525.8,206" data-composition-crossover="halo" data-composition-independent="true" d="M 525.8 108 L 525.8 206" class="a-default" data-animate="edge" style="--step:1" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 450.5 108 L 450.5 354 Q 450.5 362 442.5 362 L 400 362" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="operator" data-edge-to="roi_editor" data-edge-label="Author Component Footprints" data-edge-key="1" data-edge-id="c2" data-composition-points="450.5,108;450.5,362;400,362" data-composition-crossover="halo" data-composition-independent="true" d="M 450.5 108 L 450.5 354 Q 450.5 362 442.5 362 L 400 362" class="a-default" data-animate="edge" style="--step:1" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:2">
-          <path data-graph-role="automatic-crossover-underlay" d="M 220 242 L 334.8 242" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="recipe_manager" data-edge-to="roi_editor" data-edge-label="Load Recipe JSON" data-edge-key="2" data-edge-id="c3" data-composition-points="220,242;334.8,242" data-composition-crossover="halo" data-composition-independent="true" d="M 220 242 L 334.8 242" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 300.5 278 L 300.5 346" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="cad_studio" data-edge-to="roi_editor" data-edge-label="Populate Golden BBoxes" data-edge-key="2" data-edge-id="c3" data-composition-points="300.5,278;300.5,346" data-composition-crossover="halo" data-composition-independent="true" d="M 300.5 278 L 300.5 346" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:3">
-          <path data-graph-role="automatic-crossover-underlay" d="M 706.3 278 L 706.3 516 Q 706.3 524 698.3 524 L 531.15 524 Q 523.15 524 523.15 532 L 523.15 570" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="camera_station" data-edge-to="api_router" data-edge-label="Captured Frames (Base64/Multipart)" data-edge-key="3" data-edge-id="c4" data-composition-points="706.3,278;706.3,524;523.15,524;523.15,570" data-composition-crossover="halo" data-composition-independent="true" d="M 706.3 278 L 706.3 516 Q 706.3 524 698.3 524 L 531.15 524 Q 523.15 524 523.15 532 L 523.15 570" class="a-default" data-animate="edge" style="--step:3" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 307.5 418 L 307.5 486" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="roi_editor" data-edge-to="save_modal" data-edge-label="Proceed to Inspection" data-edge-key="3" data-edge-id="c4" data-composition-points="307.5,418;307.5,486" data-composition-crossover="halo" data-composition-independent="true" d="M 307.5 418 L 307.5 486" class="a-default" data-animate="edge" style="--step:3" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:4">
-          <path data-graph-role="automatic-crossover-underlay" d="M 457.15 278 L 457.15 570" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="roi_editor" data-edge-to="api_router" data-edge-label="POST /components" data-edge-key="4" data-edge-id="c5" data-composition-points="457.15,278;457.15,570" data-composition-crossover="halo" data-composition-independent="true" d="M 457.15 278 L 457.15 570" class="a-default" data-animate="edge" style="--step:4" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 396.5 522 L 543 522 Q 551 522 551 530 L 551 996 Q 551 1004 543 1004 L 527 1004" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="save_modal" data-edge-to="api_router" data-edge-label="Save Recipe to CAD Studio" data-edge-key="4" data-edge-id="c5" data-composition-points="396.5,522;551,522;551,1004;527,1004" data-composition-crossover="halo" data-composition-independent="true" d="M 396.5 522 L 543 522 Q 551 522 551 530 L 551 996 Q 551 1004 543 1004 L 527 1004" class="a-default" data-animate="edge" style="--step:4" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:5">
-          <path data-graph-role="automatic-crossover-underlay" d="M 970.3 278 L 970.3 528 Q 970.3 536 962.3 536 L 559.15 536 Q 551.15 536 551.15 544 L 551.15 570" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="inspection_ui" data-edge-to="api_router" data-edge-label="POST /inspect (Batch Images)" data-edge-key="5" data-edge-id="c6" data-composition-points="970.3,278;970.3,536;551.15,536;551.15,570" data-composition-crossover="halo" data-composition-independent="true" d="M 970.3 278 L 970.3 528 Q 970.3 536 962.3 536 L 559.15 536 Q 551.15 536 551.15 544 L 551.15 570" class="a-default" data-animate="edge" style="--step:5" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 371 1022 L 197 1022 Q 189 1022 189 1030 L 189 1126" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="api_router" data-edge-to="recipe_db" data-edge-label="Persist JSON Recipe" data-edge-key="5" data-edge-id="c6" data-composition-points="371,1022;189,1022;189,1126" data-composition-crossover="halo" data-composition-independent="true" d="M 371 1022 L 197 1022 Q 189 1022 189 1030 L 189 1126" class="a-default" data-animate="edge" style="--step:5" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:6">
-          <path data-graph-role="automatic-crossover-underlay" d="M 441.15 626 L 369.15 626 Q 361.15 626 361.15 634 L 361.15 710" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="api_router" data-edge-to="session_store" data-edge-label="Get/Set Session State" data-edge-key="6" data-edge-id="c7" data-composition-points="441.15,626;361.15,626;361.15,710" data-composition-crossover="halo" data-composition-independent="true" d="M 441.15 626 L 369.15 626 Q 361.15 626 361.15 634 L 361.15 710" class="a-default" data-animate="edge" style="--step:6" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 300.5 558 L 300.5 626" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="save_modal" data-edge-to="inspection_ui" data-edge-label="Load Inspection Session" data-edge-key="6" data-edge-id="c7" data-composition-points="300.5,558;300.5,626" data-composition-crossover="halo" data-composition-independent="true" d="M 300.5 558 L 300.5 626" class="a-default" data-animate="edge" style="--step:6" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:7">
-          <path data-graph-role="automatic-crossover-underlay" d="M 537.15 642 L 537.15 710" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="api_router" data-edge-to="aligner" data-edge-label="Global Board Alignment" data-edge-key="7" data-edge-id="c8" data-composition-points="537.15,642;537.15,710" data-composition-crossover="halo" data-composition-independent="true" d="M 537.15 642 L 537.15 710" class="a-default" data-animate="edge" style="--step:7" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 342.5 698 L 342.5 714 Q 342.5 722 350.5 722 L 455 722 Q 463 722 463 730 L 463 986" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="inspection_ui" data-edge-to="api_router" data-edge-label="POST /inspect (Batch Boards)" data-edge-key="7" data-edge-id="c8" data-composition-points="342.5,698;342.5,722;463,722;463,986" data-composition-crossover="halo" data-composition-independent="true" d="M 342.5 698 L 342.5 714 Q 342.5 722 350.5 722 L 455 722 Q 463 722 463 730 L 463 986" class="a-default" data-animate="edge" style="--step:7" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:8">
-          <path data-graph-role="automatic-crossover-underlay" d="M 530.15 782 L 530.15 850" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="aligner" data-edge-to="correlator" data-edge-label="Warped Aligned ROIs" data-edge-key="8" data-edge-id="c9" data-composition-points="530.15,782;530.15,850" data-composition-crossover="halo" data-composition-independent="true" d="M 530.15 782 L 530.15 850" class="a-default" data-animate="edge" style="--step:8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 456 1058 L 456 1126" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="api_router" data-edge-to="aligner" data-edge-label="Global Board Alignment" data-edge-key="8" data-edge-id="c9" data-composition-points="456,1058;456,1126" data-composition-crossover="halo" data-composition-independent="true" d="M 456 1058 L 456 1126" class="a-default" data-animate="edge" style="--step:8" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:9">
-          <path data-graph-role="automatic-crossover-underlay" d="M 523.15 922 L 523.15 990" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="correlator" data-edge-to="classifier" data-edge-label="ZNCC Score &amp; Patch Diff" data-edge-key="9" data-edge-id="c10" data-composition-points="523.15,922;523.15,990" data-composition-crossover="halo" data-composition-independent="true" d="M 523.15 922 L 523.15 990" class="a-default" data-animate="edge" style="--step:9" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 360 1162 L 334.25 1162 Q 326.25 1162 326.25 1170 L 326.25 1294 Q 326.25 1302 318.25 1302 L 292.5 1302" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="aligner" data-edge-to="session_store" data-edge-label="Cache Aligned Images &amp; Warp" data-edge-key="9" data-edge-id="c10" data-composition-points="360,1162;326.25,1162;326.25,1302;292.5,1302" data-composition-crossover="halo" data-composition-independent="true" d="M 360 1162 L 334.25 1162 Q 326.25 1162 326.25 1170 L 326.25 1294 Q 326.25 1302 318.25 1302 L 292.5 1302" class="a-default" data-animate="edge" style="--step:9" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:10">
-          <path data-graph-role="automatic-crossover-underlay" d="M 633.65 1026 L 649.65 1026 Q 657.65 1026 657.65 1018 L 657.65 614 Q 657.65 606 649.65 606 L 619.15 606" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="classifier" data-edge-to="api_router" data-edge-label="Annotated Images &amp; Board Verdicts" data-edge-key="10" data-edge-id="c11" data-composition-points="633.65,1026;657.65,1026;657.65,606;619.15,606" data-composition-crossover="halo" data-composition-independent="true" d="M 633.65 1026 L 649.65 1026 Q 657.65 1026 657.65 1018 L 657.65 614 Q 657.65 606 649.65 606 L 619.15 606" class="a-default" data-animate="edge" style="--step:10" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 189 1338 L 189 1406" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="session_store" data-edge-to="aligned_image_srv" data-edge-label="Aligned Test Buffer" data-edge-key="10" data-edge-id="c11" data-composition-points="189,1338;189,1406" data-composition-crossover="halo" data-composition-independent="true" d="M 189 1338 L 189 1406" class="a-default" data-animate="edge" style="--step:10" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:11">
-          <path data-graph-role="automatic-crossover-underlay" d="M 537.15 570 L 537.15 432 Q 537.15 424 545.15 424 L 948.3 424 Q 956.3 424 956.3 416 L 956.3 278" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="api_router" data-edge-to="inspection_ui" data-edge-label="JSON Inspection Results" data-edge-key="11" data-edge-id="c12" data-composition-points="537.15,570;537.15,424;956.3,424;956.3,278" data-composition-crossover="halo" data-composition-independent="true" d="M 537.15 570 L 537.15 432 Q 537.15 424 545.15 424 L 948.3 424 Q 956.3 424 956.3 416 L 956.3 278" class="a-default" data-animate="edge" style="--step:11" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 78 1442 L 68 1442 Q 60 1442 60 1434 L 60 670 Q 60 662 68 662 L 197 662" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="aligned_image_srv" data-edge-to="inspection_ui" data-edge-label="Render Aligned Canvas" data-edge-key="11" data-edge-id="c12" data-composition-points="78,1442;60,1442;60,662;197,662" data-composition-crossover="halo" data-composition-independent="true" d="M 78 1442 L 68 1442 Q 60 1442 60 1434 L 60 670 Q 60 662 68 662 L 197 662" class="a-default" data-animate="edge" style="--step:11" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:12">
-          <path data-graph-role="automatic-crossover-underlay" d="M 481.4 78 L 324 78 Q 316 78 316 86 L 316 364 Q 316 372 308 372 L 292 372" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="operator" data-edge-to="signoff_console" data-edge-label="Operator Badge ID &amp; Verdict Override" data-edge-key="12" data-edge-id="c13" data-composition-points="481.4,78;316,78;316,372;292,372" data-composition-crossover="halo" data-composition-independent="true" d="M 481.4 78 L 324 78 Q 316 78 316 86 L 316 364 Q 316 372 308 372 L 292 372" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 456 1198 L 456 1266" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="aligner" data-edge-to="correlator" data-edge-label="Warped Aligned ROIs" data-edge-key="12" data-edge-id="c13" data-composition-points="456,1198;456,1266" data-composition-crossover="halo" data-composition-independent="true" d="M 456 1198 L 456 1266" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:13">
-          <path data-graph-role="automatic-crossover-underlay" d="M 185 422 L 185 591 Q 185 599 193 599 L 441.15 599" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="signoff_console" data-edge-to="api_router" data-edge-label="POST /signoff" data-edge-key="13" data-edge-id="c14" data-composition-points="185,422;185,599;441.15,599" data-composition-crossover="halo" data-composition-independent="true" d="M 185 422 L 185 591 Q 185 599 193 599 L 441.15 599" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 449 1338 L 449 1406" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="correlator" data-edge-to="geometry_analyzer" data-edge-label="Displacement &amp; Angular Skew" data-edge-key="13" data-edge-id="c14" data-composition-points="449,1338;449,1406" data-composition-crossover="halo" data-composition-independent="true" d="M 449 1338 L 449 1406" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
         <g data-graph-role="automatic-crossover" style="--step:14">
-          <path data-graph-role="automatic-crossover-underlay" d="M 292 406 L 713.65 406 Q 721.65 406 721.65 414 L 721.65 570" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
-          <path data-edge-from="signoff_console" data-edge-to="report_exporter" data-edge-label="GET /export_report" data-edge-key="14" data-edge-id="c15" data-composition-points="292,406;721.65,406;721.65,570" data-composition-crossover="halo" data-composition-independent="true" d="M 292 406 L 713.65 406 Q 721.65 406 721.65 414 L 721.65 570" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+          <path data-graph-role="automatic-crossover-underlay" d="M 442 1478 L 442 1546" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="geometry_analyzer" data-edge-to="classifier" data-edge-label="ZNCC, Patch Diff, Shift &amp; Tilt" data-edge-key="14" data-edge-id="c15" data-composition-points="442,1478;442,1546" data-composition-crossover="halo" data-composition-independent="true" d="M 442 1478 L 442 1546" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        </g>
+        <g data-graph-role="automatic-crossover" style="--step:15">
+          <path data-graph-role="automatic-crossover-underlay" d="M 460 1546 L 460 1508 Q 460 1500 468 1500 L 591 1500 Q 599 1500 599 1492 L 599 1131 Q 599 1123 607 1123 L 655.6500000000001 1123 Q 663.6500000000001 1123 663.6500000000001 1115 L 663.6500000000001 1030 Q 663.6500000000001 1022 655.6500000000001 1022 L 527 1022" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="classifier" data-edge-to="api_router" data-edge-label="7-Class Component Verdicts" data-edge-key="15" data-edge-id="c16" data-composition-points="460,1546;460,1500;599,1500;599,1123;663.6500000000001,1123;663.6500000000001,1022;527,1022" data-composition-crossover="halo" data-composition-independent="true" d="M 460 1546 L 460 1508 Q 460 1500 468 1500 L 591 1500 Q 599 1500 599 1492 L 599 1131 Q 599 1123 607 1123 L 655.6500000000001 1123 Q 663.6500000000001 1123 663.6500000000001 1115 L 663.6500000000001 1030 Q 663.6500000000001 1022 655.6500000000001 1022 L 527 1022" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        </g>
+        <g data-graph-role="automatic-crossover" style="--step:16">
+          <path data-graph-role="automatic-crossover-underlay" d="M 421 986 L 421 770 Q 421 762 413 762 L 322.5 762 Q 314.5 762 314.5 754 L 314.5 698" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="api_router" data-edge-to="inspection_ui" data-edge-label="Inspection Telemetry &amp; Chips" data-edge-key="16" data-edge-id="c17" data-composition-points="421,986;421,762;314.5,762;314.5,698" data-composition-crossover="halo" data-composition-independent="true" d="M 421 986 L 421 770 Q 421 762 413 762 L 322.5 762 Q 314.5 762 314.5 754 L 314.5 698" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        </g>
+        <g data-graph-role="automatic-crossover" style="--step:17">
+          <path data-graph-role="automatic-crossover-underlay" d="M 296.5 698 L 296.5 766" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="inspection_ui" data-edge-to="digital_loupe" data-edge-label="Click Component Row" data-edge-key="17" data-edge-id="c18" data-composition-points="296.5,698;296.5,766" data-composition-crossover="halo" data-composition-independent="true" d="M 296.5 698 L 296.5 766" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        </g>
+        <g data-graph-role="automatic-crossover" style="--step:18">
+          <path data-graph-role="automatic-crossover-underlay" d="M 220 838 L 220 994 Q 220 1002 228 1002 L 371 1002" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="digital_loupe" data-edge-to="api_router" data-edge-label="GET /loupe/{fn}/{comp}" data-edge-key="18" data-edge-id="c19" data-composition-points="220,838;220,1002;371,1002" data-composition-crossover="halo" data-composition-independent="true" d="M 220 838 L 220 994 Q 220 1002 228 1002 L 371 1002" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        </g>
+        <g data-graph-role="automatic-crossover" style="--step:19">
+          <path data-graph-role="automatic-crossover-underlay" d="M 527 1042 L 610 1042 Q 618 1042 618 1050 L 618 1126" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="api_router" data-edge-to="loupe_crop_srv" data-edge-label="Extract Exact Subpixel ROI" data-edge-key="19" data-edge-id="c20" data-composition-points="527,1042;618,1042;618,1126" data-composition-crossover="halo" data-composition-independent="true" d="M 527 1042 L 610 1042 Q 618 1042 618 1050 L 618 1126" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        </g>
+        <g data-graph-role="automatic-crossover" style="--step:20">
+          <path data-graph-role="automatic-crossover-underlay" d="M 698.5 1126 L 698.5 810 Q 698.5 802 690.5 802 L 411 802" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="loupe_crop_srv" data-edge-to="digital_loupe" data-edge-label="Ref, Test &amp; Heatmap Base64" data-edge-key="20" data-edge-id="c21" data-composition-points="698.5,1126;698.5,802;411,802" data-composition-crossover="halo" data-composition-independent="true" d="M 698.5 1126 L 698.5 810 Q 698.5 802 690.5 802 L 411 802" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        </g>
+        <g data-graph-role="automatic-crossover" style="--step:21">
+          <path data-graph-role="automatic-crossover-underlay" d="M 506 108 L 506 206" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="operator" data-edge-to="signoff_console" data-edge-label="Operator Sign-Off &amp; Review" data-edge-key="21" data-edge-id="c22" data-composition-points="506,108;506,206" data-composition-crossover="halo" data-composition-independent="true" d="M 506 108 L 506 206" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        </g>
+        <g data-graph-role="automatic-crossover" style="--step:22">
+          <path data-graph-role="automatic-crossover-underlay" d="M 511 278 L 511 986" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="signoff_console" data-edge-to="api_router" data-edge-label="POST /signoff" data-edge-key="22" data-edge-id="c23" data-composition-points="511,278;511,986" data-composition-crossover="halo" data-composition-independent="true" d="M 511 278 L 511 986" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        </g>
+        <g data-graph-role="automatic-crossover" style="--step:23">
+          <path data-graph-role="automatic-crossover-underlay" d="M 590 278 L 590 590 Q 590 598 598 598 L 818 598 Q 826 598 826 606 L 826 1718 Q 826 1726 818 1726 L 292 1726" fill="none" stroke="var(--mask)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <path data-edge-from="signoff_console" data-edge-to="report_exporter" data-edge-label="GET /export_report &amp; Print" data-edge-key="23" data-edge-id="c24" data-composition-points="590,278;590,598;826,598;826,1726;292,1726" data-composition-crossover="halo" data-composition-independent="true" d="M 590 278 L 590 590 Q 590 598 598 598 L 818 598 Q 826 598 826 606 L 826 1718 Q 826 1726 818 1726 L 292 1726" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.5" marker-end="url(#arrowhead)"/>
         </g>
 
         <!-- Components -->
-        <g id="node-operator" data-node-id="operator" data-node-label="Assembly Operator" tabindex="0" role="button" aria-label="Focus Assembly Operator, Production Line Inspector, Architecture component" aria-pressed="false" data-node-kind="external" data-node-sublabel="Production Line Inspector" data-node-context="Architecture component">
-          <title>Assembly Operator · Production Line Inspector · Architecture component</title>
-          <rect x="481.4" y="48" width="171" height="60" rx="8" class="c-mask"/>
-          <rect x="481.4" y="48" width="171" height="60" rx="8" class="c-external" data-animate="node" style="--step:0" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="person" class="semantic-sigil s-external" transform="translate(487.4 54) scale(0.6875)">
+        <g id="node-operator" data-node-id="operator" data-node-label="SMT Station Operator" tabindex="0" role="button" aria-label="Focus SMT Station Operator, Production Line Inspector, Architecture component" aria-pressed="false" data-node-kind="external" data-node-sublabel="Production Line Inspector" data-node-context="Architecture component">
+          <title>SMT Station Operator · Production Line Inspector · Architecture component</title>
+          <rect x="354.5" y="48" width="192" height="60" rx="8" class="c-mask"/>
+          <rect x="354.5" y="48" width="192" height="60" rx="8" class="c-external" data-animate="node" style="--step:0" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="person" class="semantic-sigil s-external" transform="translate(360.5 54) scale(0.6875)">
             <circle cx="8" cy="4.5" r="2.5"/><path d="M3 14v-2a5 5 0 0 1 10 0v2"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="566.9" y="76" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Assembly Operator</text>
-        <text data-detail="context" x="566.9" y="92" class="t-muted" font-size="10.5" text-anchor="middle">Production Line Inspector</text>
+          <text data-node-label="" data-detail-anchor="" x="450.5" y="76" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">SMT Station Operator</text>
+        <text data-detail="context" x="450.5" y="92" class="t-muted" font-size="10.5" text-anchor="middle">Production Line Inspector</text>
         </g>
 
-        <g id="node-camera_station" data-node-id="camera_station" data-node-label="Live Camera Station" tabindex="0" role="button" aria-label="Focus Live Camera Station, navigator.mediaDevices, Browser Client (100% Offline, Zero-CDN)" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="navigator.mediaDevices" data-node-tag="Offline WebRTC" data-node-context="Browser Client (100% Offline, Zero-CDN)">
-          <title>Live Camera Station · navigator.mediaDevices · Browser Client (100% Offline, Zero-CDN) · Offline WebRTC</title>
-          <rect x="613.8" y="206" width="185" height="72" rx="8" class="c-mask"/>
-          <rect x="613.8" y="206" width="185" height="72" rx="8" class="c-frontend" data-animate="node" style="--step:1" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(619.8 212) scale(0.6875)">
+        <g id="node-cad_studio" data-node-id="cad_studio" data-node-label="CAD Recipe Studio" tabindex="0" role="button" aria-label="Focus CAD Recipe Studio, 5 Golden Presets + Custom, Browser Client (100% Offline, Zero-CDN)" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="5 Golden Presets + Custom" data-node-tag="1-Click Board Load" data-node-context="Browser Client (100% Offline, Zero-CDN)">
+          <title>CAD Recipe Studio · 5 Golden Presets + Custom · Browser Client (100% Offline, Zero-CDN) · 1-Click Board Load</title>
+          <rect x="222" y="206" width="171" height="72" rx="8" class="c-mask"/>
+          <rect x="222" y="206" width="171" height="72" rx="8" class="c-frontend" data-animate="node" style="--step:1" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(228 212) scale(0.6875)">
             <rect x="2" y="3" width="12" height="10" rx="2"/>
             <path d="M2 6.5h12"/>
             <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
             <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="706.3" y="240" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Live Camera Station</text>
-        <text data-detail="context" x="706.3" y="256" class="t-muted" font-size="10.5" text-anchor="middle">navigator.mediaDevices</text>
-        <text data-detail="fine" x="706.3" y="270" class="t-frontend" font-size="7" text-anchor="middle">Offline WebRTC</text>
+          <text data-node-label="" data-detail-anchor="" x="307.5" y="240" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">CAD Recipe Studio</text>
+        <text data-detail="context" x="307.5" y="256" class="t-muted" font-size="10.5" text-anchor="middle">5 Golden Presets + Custom</text>
+        <text data-detail="fine" x="307.5" y="270" class="t-frontend" font-size="7" text-anchor="middle">1-Click Board Load</text>
         </g>
 
-        <g id="node-recipe_manager" data-node-id="recipe_manager" data-node-label="Recipe Engine" tabindex="0" role="button" aria-label="Focus Recipe Engine, Save / Load JSON, Browser Client (100% Offline, Zero-CDN)" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="Save / Load JSON" data-node-tag="256-bit aHash" data-node-context="Browser Client (100% Offline, Zero-CDN)">
-          <title>Recipe Engine · Save / Load JSON · Browser Client (100% Offline, Zero-CDN) · 256-bit aHash</title>
-          <rect x="78" y="206" width="142" height="72" rx="8" class="c-mask"/>
-          <rect x="78" y="206" width="142" height="72" rx="8" class="c-frontend" data-animate="node" style="--step:2" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(84 212) scale(0.6875)">
+        <g id="node-roi_editor" data-node-id="roi_editor" data-node-label="Footprint Authoring" tabindex="0" role="button" aria-label="Focus Footprint Authoring, Rectangle, Pencil, Polygon, Browser Client (100% Offline, Zero-CDN)" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="Rectangle, Pencil, Polygon" data-node-tag="CV Auto-Detect" data-node-context="Browser Client (100% Offline, Zero-CDN)">
+          <title>Footprint Authoring · Rectangle, Pencil, Polygon · Browser Client (100% Offline, Zero-CDN) · CV Auto-Detect</title>
+          <rect x="215" y="346" width="185" height="72" rx="8" class="c-mask"/>
+          <rect x="215" y="346" width="185" height="72" rx="8" class="c-frontend" data-animate="node" style="--step:2" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(221 352) scale(0.6875)">
             <rect x="2" y="3" width="12" height="10" rx="2"/>
             <path d="M2 6.5h12"/>
             <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
             <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="149" y="240" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Recipe Engine</text>
-        <text data-detail="context" x="149" y="256" class="t-muted" font-size="10.5" text-anchor="middle">Save / Load JSON</text>
-        <text data-detail="fine" x="149" y="270" class="t-frontend" font-size="7" text-anchor="middle">256-bit aHash</text>
+          <text data-node-label="" data-detail-anchor="" x="307.5" y="380" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Footprint Authoring</text>
+        <text data-detail="context" x="307.5" y="396" class="t-muted" font-size="10.5" text-anchor="middle">Rectangle, Pencil, Polygon</text>
+        <text data-detail="fine" x="307.5" y="410" class="t-frontend" font-size="7" text-anchor="middle">CV Auto-Detect</text>
         </g>
 
-        <g id="node-roi_editor" data-node-id="roi_editor" data-node-label="Interactive ROI Canvas" tabindex="0" role="button" aria-label="Focus Interactive ROI Canvas, HTML5 Canvas 2D, Browser Client (100% Offline, Zero-CDN)" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="HTML5 Canvas 2D" data-node-tag="Normalized BBox" data-node-context="Browser Client (100% Offline, Zero-CDN)">
-          <title>Interactive ROI Canvas · HTML5 Canvas 2D · Browser Client (100% Offline, Zero-CDN) · Normalized BBox</title>
-          <rect x="334.8" y="206" width="207" height="72" rx="8" class="c-mask"/>
-          <rect x="334.8" y="206" width="207" height="72" rx="8" class="c-frontend" data-animate="node" style="--step:2" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(340.8 212) scale(0.6875)">
+        <g id="node-save_modal" data-node-id="save_modal" data-node-label="Recipe Save Prompt" tabindex="0" role="button" aria-label="Focus Recipe Save Prompt, Save Board Yes / No, Browser Client (100% Offline, Zero-CDN)" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="Save Board Yes / No" data-node-tag="Studio Persistence" data-node-context="Browser Client (100% Offline, Zero-CDN)">
+          <title>Recipe Save Prompt · Save Board Yes / No · Browser Client (100% Offline, Zero-CDN) · Studio Persistence</title>
+          <rect x="218.5" y="486" width="178" height="72" rx="8" class="c-mask"/>
+          <rect x="218.5" y="486" width="178" height="72" rx="8" class="c-frontend" data-animate="node" style="--step:4" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(224.5 492) scale(0.6875)">
             <rect x="2" y="3" width="12" height="10" rx="2"/>
             <path d="M2 6.5h12"/>
             <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
             <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="438.3" y="240" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Interactive ROI Canvas</text>
-        <text data-detail="context" x="438.3" y="256" class="t-muted" font-size="10.5" text-anchor="middle">HTML5 Canvas 2D</text>
-        <text data-detail="fine" x="438.3" y="270" class="t-frontend" font-size="7" text-anchor="middle">Normalized BBox</text>
+          <text data-node-label="" data-detail-anchor="" x="307.5" y="520" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Recipe Save Prompt</text>
+        <text data-detail="context" x="307.5" y="536" class="t-muted" font-size="10.5" text-anchor="middle">Save Board Yes / No</text>
+        <text data-detail="fine" x="307.5" y="550" class="t-frontend" font-size="7" text-anchor="middle">Studio Persistence</text>
         </g>
 
-        <g id="node-inspection_ui" data-node-id="inspection_ui" data-node-label="Batch Inspection UI" tabindex="0" role="button" aria-label="Focus Batch Inspection UI, Multi-Image Console, Browser Client (100% Offline, Zero-CDN)" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="Multi-Image Console" data-node-tag="Zero CDN / Vanilla JS" data-node-context="Browser Client (100% Offline, Zero-CDN)">
-          <title>Batch Inspection UI · Multi-Image Console · Browser Client (100% Offline, Zero-CDN) · Zero CDN / Vanilla JS</title>
-          <rect x="870.8" y="206" width="185" height="72" rx="8" class="c-mask"/>
-          <rect x="870.8" y="206" width="185" height="72" rx="8" class="c-frontend" data-animate="node" style="--step:5" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(876.8 212) scale(0.6875)">
+        <g id="node-inspection_ui" data-node-id="inspection_ui" data-node-label="Batch Inspection Station" tabindex="0" role="button" aria-label="Focus Batch Inspection Station, Multi-Board Console, Browser Client (100% Offline, Zero-CDN)" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="Multi-Board Console" data-node-tag="Side-by-Side &amp; Split" data-node-context="Browser Client (100% Offline, Zero-CDN)">
+          <title>Batch Inspection Station · Multi-Board Console · Browser Client (100% Offline, Zero-CDN) · Side-by-Side &amp; Split</title>
+          <rect x="197" y="626" width="221" height="72" rx="8" class="c-mask"/>
+          <rect x="197" y="626" width="221" height="72" rx="8" class="c-frontend" data-animate="node" style="--step:7" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(203 632) scale(0.6875)">
             <rect x="2" y="3" width="12" height="10" rx="2"/>
             <path d="M2 6.5h12"/>
             <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
             <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="963.3" y="240" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Batch Inspection UI</text>
-        <text data-detail="context" x="963.3" y="256" class="t-muted" font-size="10.5" text-anchor="middle">Multi-Image Console</text>
-        <text data-detail="fine" x="963.3" y="270" class="t-frontend" font-size="7" text-anchor="middle">Zero CDN / Vanilla JS</text>
+          <text data-node-label="" data-detail-anchor="" x="307.5" y="660" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Batch Inspection Station</text>
+        <text data-detail="context" x="307.5" y="676" class="t-muted" font-size="10.5" text-anchor="middle">Multi-Board Console</text>
+        <text data-detail="fine" x="307.5" y="690" class="t-frontend" font-size="7" text-anchor="middle">Side-by-Side &amp; Split</text>
         </g>
 
-        <g id="node-signoff_console" data-node-id="signoff_console" data-node-label="Operator Sign-Off &amp; KPI" tabindex="0" role="button" aria-label="Focus Operator Sign-Off &amp; KPI, Human-in-the-Loop Triage, Browser Client (100% Offline, Zero-CDN)" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="Human-in-the-Loop Triage" data-node-tag="FPY &amp; Pareto Tally" data-node-context="Browser Client (100% Offline, Zero-CDN)">
-          <title>Operator Sign-Off &amp; KPI · Human-in-the-Loop Triage · Browser Client (100% Offline, Zero-CDN) · FPY &amp; Pareto Tally</title>
-          <rect x="78" y="350" width="214" height="72" rx="8" class="c-mask"/>
-          <rect x="78" y="350" width="214" height="72" rx="8" class="c-frontend" data-animate="node" style="--step:12" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(84 356) scale(0.6875)">
+        <g id="node-digital_loupe" data-node-id="digital_loupe" data-node-label="3× Digital Optical Loupe" tabindex="0" role="button" aria-label="Focus 3× Digital Optical Loupe, 1×, 2×, 3×, 5× Optical Zoom, Browser Client (100% Offline, Zero-CDN)" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="1×, 2×, 3×, 5× Optical Zoom" data-node-tag="Reticle &amp; Blink Mode" data-node-context="Browser Client (100% Offline, Zero-CDN)">
+          <title>3× Digital Optical Loupe · 1×, 2×, 3×, 5× Optical Zoom · Browser Client (100% Offline, Zero-CDN) · Reticle &amp; Blink Mode</title>
+          <rect x="204" y="766" width="207" height="72" rx="8" class="c-mask"/>
+          <rect x="204" y="766" width="207" height="72" rx="8" class="c-frontend" data-animate="node" style="--step:12" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(210 772) scale(0.6875)">
             <rect x="2" y="3" width="12" height="10" rx="2"/>
             <path d="M2 6.5h12"/>
             <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
             <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="185" y="384" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Operator Sign-Off &amp; KPI</text>
-        <text data-detail="context" x="185" y="400" class="t-muted" font-size="10.5" text-anchor="middle">Human-in-the-Loop Triage</text>
-        <text data-detail="fine" x="185" y="414" class="t-frontend" font-size="7" text-anchor="middle">FPY &amp; Pareto Tally</text>
+          <text data-node-label="" data-detail-anchor="" x="307.5" y="800" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">3× Digital Optical Loupe</text>
+        <text data-detail="context" x="307.5" y="816" class="t-muted" font-size="9" text-anchor="middle">1×, 2×, 3×, 5× Optical Zoom</text>
+        <text data-detail="fine" x="307.5" y="830" class="t-frontend" font-size="7" text-anchor="middle">Reticle &amp; Blink Mode</text>
         </g>
 
-        <g id="node-api_router" data-node-id="api_router" data-node-label="FastAPI Web Server" tabindex="0" role="button" aria-label="Focus FastAPI Web Server, Uvicorn :8000, Backend Application Server (FastAPI + OpenCV)" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Uvicorn :8000" data-node-tag="REST Endpoints" data-node-context="Backend Application Server (FastAPI + OpenCV)">
-          <title>FastAPI Web Server · Uvicorn :8000 · Backend Application Server (FastAPI + OpenCV) · REST Endpoints</title>
-          <rect x="441.15" y="570" width="178" height="72" rx="8" class="c-mask"/>
-          <rect x="441.15" y="570" width="178" height="72" rx="8" class="c-backend" data-animate="node" style="--step:4" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(447.15 576) scale(0.6875)">
+        <g id="node-signoff_console" data-node-id="signoff_console" data-node-label="Operator Sign-Off &amp; KPI" tabindex="0" role="button" aria-label="Focus Operator Sign-Off &amp; KPI, Unified Operator Role, Browser Client (100% Offline, Zero-CDN)" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="Unified Operator Role" data-node-tag="FPY &amp; Audit Trail" data-node-context="Browser Client (100% Offline, Zero-CDN)">
+          <title>Operator Sign-Off &amp; KPI · Unified Operator Role · Browser Client (100% Offline, Zero-CDN) · FPY &amp; Audit Trail</title>
+          <rect x="490" y="206" width="214" height="72" rx="8" class="c-mask"/>
+          <rect x="490" y="206" width="214" height="72" rx="8" class="c-frontend" data-animate="node" style="--step:12" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(496 212) scale(0.6875)">
+            <rect x="2" y="3" width="12" height="10" rx="2"/>
+            <path d="M2 6.5h12"/>
+            <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
+            <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="597" y="240" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Operator Sign-Off &amp; KPI</text>
+        <text data-detail="context" x="597" y="256" class="t-muted" font-size="10.5" text-anchor="middle">Unified Operator Role</text>
+        <text data-detail="fine" x="597" y="270" class="t-frontend" font-size="7" text-anchor="middle">FPY &amp; Audit Trail</text>
+        </g>
+
+        <g id="node-api_router" data-node-id="api_router" data-node-label="FastAPI Gateway" tabindex="0" role="button" aria-label="Focus FastAPI Gateway, Uvicorn :8000, Backend Application Server (FastAPI + OpenCV)" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Uvicorn :8000" data-node-tag="Air-Gapped REST API" data-node-context="Backend Application Server (FastAPI + OpenCV)">
+          <title>FastAPI Gateway · Uvicorn :8000 · Backend Application Server (FastAPI + OpenCV) · Air-Gapped REST API</title>
+          <rect x="371" y="986" width="156" height="72" rx="8" class="c-mask"/>
+          <rect x="371" y="986" width="156" height="72" rx="8" class="c-backend" data-animate="node" style="--step:5" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(377 992) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="530.15" y="604" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">FastAPI Web Server</text>
-        <text data-detail="context" x="530.15" y="620" class="t-muted" font-size="10.5" text-anchor="middle">Uvicorn :8000</text>
-        <text data-detail="fine" x="530.15" y="634" class="t-backend" font-size="7" text-anchor="middle">REST Endpoints</text>
+          <text data-node-label="" data-detail-anchor="" x="449" y="1020" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">FastAPI Gateway</text>
+        <text data-detail="context" x="449" y="1036" class="t-muted" font-size="10.5" text-anchor="middle">Uvicorn :8000</text>
+        <text data-detail="fine" x="449" y="1050" class="t-backend" font-size="7" text-anchor="middle">Air-Gapped REST API</text>
         </g>
 
-        <g id="node-session_store" data-node-id="session_store" data-node-label="Session State Store" tabindex="0" role="button" aria-label="Focus Session State Store, In-Memory Thread-Safe, Backend Application Server (FastAPI + OpenCV)" aria-pressed="false" data-node-kind="database" data-node-sublabel="In-Memory Thread-Safe" data-node-tag="Volatile Session" data-node-context="Backend Application Server (FastAPI + OpenCV)">
-          <title>Session State Store · In-Memory Thread-Safe · Backend Application Server (FastAPI + OpenCV) · Volatile Session</title>
-          <rect x="192.14999999999998" y="710" width="185" height="72" rx="8" class="c-mask"/>
-          <rect x="192.14999999999998" y="710" width="185" height="72" rx="8" class="c-database" data-animate="node" style="--step:7" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(198.14999999999998 716) scale(0.6875)">
+        <g id="node-session_store" data-node-id="session_store" data-node-label="Session Buffer &amp; Cache" tabindex="0" role="button" aria-label="Focus Session Buffer &amp; Cache, In-Memory Thread-Safe, Backend Application Server (FastAPI + OpenCV)" aria-pressed="false" data-node-kind="database" data-node-sublabel="In-Memory Thread-Safe" data-node-tag="Aligned Images Buffer" data-node-context="Backend Application Server (FastAPI + OpenCV)">
+          <title>Session Buffer &amp; Cache · In-Memory Thread-Safe · Backend Application Server (FastAPI + OpenCV) · Aligned Images Buffer</title>
+          <rect x="85.5" y="1266" width="207" height="72" rx="8" class="c-mask"/>
+          <rect x="85.5" y="1266" width="207" height="72" rx="8" class="c-database" data-animate="node" style="--step:10" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(91.5 1272) scale(0.6875)">
             <ellipse cx="8" cy="4" rx="5" ry="2"/>
             <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="284.65" y="744" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Session State Store</text>
-        <text data-detail="context" x="284.65" y="760" class="t-muted" font-size="10.5" text-anchor="middle">In-Memory Thread-Safe</text>
-        <text data-detail="fine" x="284.65" y="774" class="t-database" font-size="7" text-anchor="middle">Volatile Session</text>
+          <text data-node-label="" data-detail-anchor="" x="189" y="1300" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Session Buffer &amp; Cache</text>
+        <text data-detail="context" x="189" y="1316" class="t-muted" font-size="10.5" text-anchor="middle">In-Memory Thread-Safe</text>
+        <text data-detail="fine" x="189" y="1330" class="t-database" font-size="7" text-anchor="middle">Aligned Images Buffer</text>
         </g>
 
-        <g id="node-aligner" data-node-id="aligner" data-node-label="Global ECC Aligner" tabindex="0" role="button" aria-label="Focus Global ECC Aligner, cv2.findTransformECC, Backend Application Server (FastAPI + OpenCV)" aria-pressed="false" data-node-kind="backend" data-node-sublabel="cv2.findTransformECC" data-node-tag="Euclidean Warp" data-node-context="Backend Application Server (FastAPI + OpenCV)">
-          <title>Global ECC Aligner · cv2.findTransformECC · Backend Application Server (FastAPI + OpenCV) · Euclidean Warp</title>
-          <rect x="441.15" y="710" width="178" height="72" rx="8" class="c-mask"/>
-          <rect x="441.15" y="710" width="178" height="72" rx="8" class="c-backend" data-animate="node" style="--step:8" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(447.15 716) scale(0.6875)">
-            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+        <g id="node-recipe_db" data-node-id="recipe_db" data-node-label="Recipe File Persistence" tabindex="0" role="button" aria-label="Focus Recipe File Persistence, data/custom_recipes/, Backend Application Server (FastAPI + OpenCV)" aria-pressed="false" data-node-kind="database" data-node-sublabel="data/custom_recipes/" data-node-tag="JSON Recipes" data-node-context="Backend Application Server (FastAPI + OpenCV)">
+          <title>Recipe File Persistence · data/custom_recipes/ · Backend Application Server (FastAPI + OpenCV) · JSON Recipes</title>
+          <rect x="82" y="1126" width="214" height="72" rx="8" class="c-mask"/>
+          <rect x="82" y="1126" width="214" height="72" rx="8" class="c-database" data-animate="node" style="--step:6" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(88 1132) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="530.15" y="744" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Global ECC Aligner</text>
-        <text data-detail="context" x="530.15" y="760" class="t-muted" font-size="10.5" text-anchor="middle">cv2.findTransformECC</text>
-        <text data-detail="fine" x="530.15" y="774" class="t-backend" font-size="7" text-anchor="middle">Euclidean Warp</text>
+          <text data-node-label="" data-detail-anchor="" x="189" y="1160" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Recipe File Persistence</text>
+        <text data-detail="context" x="189" y="1176" class="t-muted" font-size="10.5" text-anchor="middle">data/custom_recipes/</text>
+        <text data-detail="fine" x="189" y="1190" class="t-database" font-size="7" text-anchor="middle">JSON Recipes</text>
         </g>
 
-        <g id="node-correlator" data-node-id="correlator" data-node-label="Local ZNCC Correlator" tabindex="0" role="button" aria-label="Focus Local ZNCC Correlator, Grid Search +/-4px, Backend Application Server (FastAPI + OpenCV)" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Grid Search +/-4px" data-node-tag="Multi-Channel ZNCC" data-node-context="Backend Application Server (FastAPI + OpenCV)">
-          <title>Local ZNCC Correlator · Grid Search +/-4px · Backend Application Server (FastAPI + OpenCV) · Multi-Channel ZNCC</title>
-          <rect x="430.15" y="850" width="200" height="72" rx="8" class="c-mask"/>
-          <rect x="430.15" y="850" width="200" height="72" rx="8" class="c-backend" data-animate="node" style="--step:9" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(436.15 856) scale(0.6875)">
+        <g id="node-aligner" data-node-id="aligner" data-node-label="Global ECC Aligner" tabindex="0" role="button" aria-label="Focus Global ECC Aligner, cv2.findTransformECC, Backend Application Server (FastAPI + OpenCV)" aria-pressed="false" data-node-kind="backend" data-node-sublabel="cv2.findTransformECC" data-node-tag="Subpixel Rigid Warp" data-node-context="Backend Application Server (FastAPI + OpenCV)">
+          <title>Global ECC Aligner · cv2.findTransformECC · Backend Application Server (FastAPI + OpenCV) · Subpixel Rigid Warp</title>
+          <rect x="360" y="1126" width="178" height="72" rx="8" class="c-mask"/>
+          <rect x="360" y="1126" width="178" height="72" rx="8" class="c-backend" data-animate="node" style="--step:9" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(366 1132) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="530.15" y="884" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Local ZNCC Correlator</text>
-        <text data-detail="context" x="530.15" y="900" class="t-muted" font-size="10.5" text-anchor="middle">Grid Search +/-4px</text>
-        <text data-detail="fine" x="530.15" y="914" class="t-backend" font-size="7" text-anchor="middle">Multi-Channel ZNCC</text>
+          <text data-node-label="" data-detail-anchor="" x="449" y="1160" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Global ECC Aligner</text>
+        <text data-detail="context" x="449" y="1176" class="t-muted" font-size="10.5" text-anchor="middle">cv2.findTransformECC</text>
+        <text data-detail="fine" x="449" y="1190" class="t-backend" font-size="7" text-anchor="middle">Subpixel Rigid Warp</text>
         </g>
 
-        <g id="node-classifier" data-node-id="classifier" data-node-label="3-State Decision Logic" tabindex="0" role="button" aria-label="Focus 3-State Decision Logic, Frozen Dual-Threshold, Backend Application Server (FastAPI + OpenCV)" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Frozen Dual-Threshold" data-node-tag="OK / DEFECT / REVIEW" data-node-context="Backend Application Server (FastAPI + OpenCV)">
-          <title>3-State Decision Logic · Frozen Dual-Threshold · Backend Application Server (FastAPI + OpenCV) · OK / DEFECT / REVIEW</title>
-          <rect x="426.65" y="990" width="207" height="72" rx="8" class="c-mask"/>
-          <rect x="426.65" y="990" width="207" height="72" rx="8" class="c-backend" data-animate="node" style="--step:10" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(432.65 996) scale(0.6875)">
+        <g id="node-aligned_image_srv" data-node-id="aligned_image_srv" data-node-label="Aligned Image Service" tabindex="0" role="button" aria-label="Focus Aligned Image Service, GET /aligned-image/{fn}, Backend Application Server (FastAPI + OpenCV)" aria-pressed="false" data-node-kind="backend" data-node-sublabel="GET /aligned-image/{fn}" data-node-tag="Zero Misalignment" data-node-context="Backend Application Server (FastAPI + OpenCV)">
+          <title>Aligned Image Service · GET /aligned-image/{fn} · Backend Application Server (FastAPI + OpenCV) · Zero Misalignment</title>
+          <rect x="78" y="1406" width="200" height="72" rx="8" class="c-mask"/>
+          <rect x="78" y="1406" width="200" height="72" rx="8" class="c-backend" data-animate="node" style="--step:11" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(84 1412) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="530.15" y="1024" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">3-State Decision Logic</text>
-        <text data-detail="context" x="530.15" y="1040" class="t-muted" font-size="10.5" text-anchor="middle">Frozen Dual-Threshold</text>
-        <text data-detail="fine" x="530.15" y="1054" class="t-backend" font-size="7" text-anchor="middle">OK / DEFECT / REVIEW</text>
+          <text data-node-label="" data-detail-anchor="" x="178" y="1440" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Aligned Image Service</text>
+        <text data-detail="context" x="178" y="1456" class="t-muted" font-size="10.5" text-anchor="middle">GET /aligned-image/{fn}</text>
+        <text data-detail="fine" x="178" y="1470" class="t-backend" font-size="7" text-anchor="middle">Zero Misalignment</text>
         </g>
 
-        <g id="node-report_exporter" data-node-id="report_exporter" data-node-label="Inspection Report Exporter" tabindex="0" role="button" aria-label="Focus Inspection Report Exporter, CSV &amp; Printable Audit, Backend Application Server (FastAPI + OpenCV)" aria-pressed="false" data-node-kind="backend" data-node-sublabel="CSV &amp; Printable Audit" data-node-tag="Machine + Human Audit" data-node-context="Backend Application Server (FastAPI + OpenCV)">
-          <title>Inspection Report Exporter · CSV &amp; Printable Audit · Backend Application Server (FastAPI + OpenCV) · Machine + Human Audit</title>
-          <rect x="705.65" y="570" width="236" height="72" rx="8" class="c-mask"/>
-          <rect x="705.65" y="570" width="236" height="72" rx="8" class="c-backend" data-animate="node" style="--step:12" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(711.65 576) scale(0.6875)">
+        <g id="node-correlator" data-node-id="correlator" data-node-label="Bounded ZNCC Search" tabindex="0" role="button" aria-label="Focus Bounded ZNCC Search, Grid Search +/-16px, Backend Application Server (FastAPI + OpenCV)" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Grid Search +/-16px" data-node-tag="Multi-Channel ZNCC" data-node-context="Backend Application Server (FastAPI + OpenCV)">
+          <title>Bounded ZNCC Search · Grid Search +/-16px · Backend Application Server (FastAPI + OpenCV) · Multi-Channel ZNCC</title>
+          <rect x="356.5" y="1266" width="185" height="72" rx="8" class="c-mask"/>
+          <rect x="356.5" y="1266" width="185" height="72" rx="8" class="c-backend" data-animate="node" style="--step:12" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(362.5 1272) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="823.65" y="604" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Inspection Report Exporter</text>
-        <text data-detail="context" x="823.65" y="620" class="t-muted" font-size="10.5" text-anchor="middle">CSV &amp; Printable Audit</text>
-        <text data-detail="fine" x="823.65" y="634" class="t-backend" font-size="7" text-anchor="middle">Machine + Human Audit</text>
+          <text data-node-label="" data-detail-anchor="" x="449" y="1300" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Bounded ZNCC Search</text>
+        <text data-detail="context" x="449" y="1316" class="t-muted" font-size="10.5" text-anchor="middle">Grid Search +/-16px</text>
+        <text data-detail="fine" x="449" y="1330" class="t-backend" font-size="7" text-anchor="middle">Multi-Channel ZNCC</text>
+        </g>
+
+        <g id="node-geometry_analyzer" data-node-id="geometry_analyzer" data-node-label="Geometry &amp; Shift Engine" tabindex="0" role="button" aria-label="Focus Geometry &amp; Shift Engine, Tilt &amp; Vector [dx, dy], Backend Application Server (FastAPI + OpenCV)" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Tilt &amp; Vector [dx, dy]" data-node-tag="Rotated Templates" data-node-context="Backend Application Server (FastAPI + OpenCV)">
+          <title>Geometry &amp; Shift Engine · Tilt &amp; Vector [dx, dy] · Backend Application Server (FastAPI + OpenCV) · Rotated Templates</title>
+          <rect x="342" y="1406" width="214" height="72" rx="8" class="c-mask"/>
+          <rect x="342" y="1406" width="214" height="72" rx="8" class="c-backend" data-animate="node" style="--step:12" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(348 1412) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="449" y="1440" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Geometry &amp; Shift Engine</text>
+        <text data-detail="context" x="449" y="1456" class="t-muted" font-size="10.5" text-anchor="middle">Tilt &amp; Vector [dx, dy]</text>
+        <text data-detail="fine" x="449" y="1470" class="t-backend" font-size="7" text-anchor="middle">Rotated Templates</text>
+        </g>
+
+        <g id="node-classifier" data-node-id="classifier" data-node-label="7-Class IPC-A-610 Engine" tabindex="0" role="button" aria-label="Focus 7-Class IPC-A-610 Engine, Class 2/3 Tolerance Envelopes, Backend Application Server (FastAPI + OpenCV)" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Class 2/3 Tolerance Envelopes" data-node-tag="7 Defect Classes" data-node-context="Backend Application Server (FastAPI + OpenCV)">
+          <title>7-Class IPC-A-610 Engine · Class 2/3 Tolerance Envelopes · Backend Application Server (FastAPI + OpenCV) · 7 Defect Classes</title>
+          <rect x="338.5" y="1546" width="221" height="72" rx="8" class="c-mask"/>
+          <rect x="338.5" y="1546" width="221" height="72" rx="8" class="c-backend" data-animate="node" style="--step:12" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(344.5 1552) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="449" y="1580" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">7-Class IPC-A-610 Engine</text>
+        <text data-detail="context" x="449" y="1596" class="t-muted" font-size="10.5" text-anchor="middle">Class 2/3 Tolerance Envelopes</text>
+        <text data-detail="fine" x="449" y="1610" class="t-backend" font-size="7" text-anchor="middle">7 Defect Classes</text>
+        </g>
+
+        <g id="node-loupe_crop_srv" data-node-id="loupe_crop_srv" data-node-label="Loupe Diagnostics Engine" tabindex="0" role="button" aria-label="Focus Loupe Diagnostics Engine, GET /loupe/{fn}/{comp}, Backend Application Server (FastAPI + OpenCV)" aria-pressed="false" data-node-kind="backend" data-node-sublabel="GET /loupe/{fn}/{comp}" data-node-tag="Illumination-Compensated" data-node-context="Backend Application Server (FastAPI + OpenCV)">
+          <title>Loupe Diagnostics Engine · GET /loupe/{fn}/{comp} · Backend Application Server (FastAPI + OpenCV) · Illumination-Compensated</title>
+          <rect x="602" y="1126" width="221" height="72" rx="8" class="c-mask"/>
+          <rect x="602" y="1126" width="221" height="72" rx="8" class="c-backend" data-animate="node" style="--step:12" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(608 1132) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="712.5" y="1160" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Loupe Diagnostics Engine</text>
+        <text data-detail="context" x="712.5" y="1176" class="t-muted" font-size="10.5" text-anchor="middle">GET /loupe/{fn}/{comp}</text>
+        <text data-detail="fine" x="712.5" y="1190" class="t-backend" font-size="7" text-anchor="middle">Illumination-Compensated</text>
+        </g>
+
+        <g id="node-report_exporter" data-node-id="report_exporter" data-node-label="Audit &amp; Report Exporter" tabindex="0" role="button" aria-label="Focus Audit &amp; Report Exporter, CSV &amp; Printable Certificate, Backend Application Server (FastAPI + OpenCV)" aria-pressed="false" data-node-kind="backend" data-node-sublabel="CSV &amp; Printable Certificate" data-node-tag="Dual-Signed Audit" data-node-context="Backend Application Server (FastAPI + OpenCV)">
+          <title>Audit &amp; Report Exporter · CSV &amp; Printable Certificate · Backend Application Server (FastAPI + OpenCV) · Dual-Signed Audit</title>
+          <rect x="78" y="1690" width="214" height="72" rx="8" class="c-mask"/>
+          <rect x="78" y="1690" width="214" height="72" rx="8" class="c-backend" data-animate="node" style="--step:12" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(84 1696) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="185" y="1724" class="t-primary" font-size="12" font-weight="600" text-anchor="middle">Audit &amp; Report Exporter</text>
+        <text data-detail="context" x="185" y="1740" class="t-muted" font-size="10.5" text-anchor="middle">CSV &amp; Printable Certificate</text>
+        <text data-detail="fine" x="185" y="1754" class="t-backend" font-size="7" text-anchor="middle">Dual-Signed Audit</text>
         </g>
 
         <!-- Connection labels -->
-        <g data-detail="context" data-edge-from="operator" data-edge-to="camera_station" data-edge-label="Live Camera Feed" data-edge-key="0" data-edge-id="c1">
-          <rect x="537" y="150" width="86.8" height="14" rx="3" class="c-mask"/>
-          <text x="580.4" y="160" class="t-edge-emphasis" font-size="10" font-weight="500" textLength="82.8" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Live Camera Feed</text>
+        <g data-detail="context" data-edge-from="operator" data-edge-to="cad_studio" data-edge-label="Select Preset or Custom Board" data-edge-key="0" data-edge-id="c1">
+          <rect x="221.79999999999998" y="150" width="149.2" height="14" rx="3" class="c-mask"/>
+          <text x="296.4" y="160" class="t-edge-emphasis" font-size="10" font-weight="500" textLength="145.2" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Select Preset or Custom Board</text>
         </g>
-        <g data-detail="context" data-edge-from="operator" data-edge-to="roi_editor" data-edge-label="Mark Component ROIs" data-edge-key="1" data-edge-id="c2">
-          <rect x="418.5999999999999" y="150" width="101.2" height="14" rx="3" class="c-mask"/>
-          <text x="469.19999999999993" y="160" class="t-edge-default" font-size="10" font-weight="500" textLength="97.2" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Mark Component ROIs</text>
+        <g data-detail="context" data-edge-from="operator" data-edge-to="roi_editor" data-edge-label="Author Component Footprints" data-edge-key="1" data-edge-id="c2">
+          <rect x="308.9" y="291.5" width="139.6" height="14" rx="3" class="c-mask"/>
+          <text x="378.7" y="301.5" class="t-edge-default" font-size="10" font-weight="500" textLength="135.6" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Author Component Footprints</text>
         </g>
-        <g data-detail="context" data-edge-from="recipe_manager" data-edge-to="roi_editor" data-edge-label="Load Recipe JSON" data-edge-key="2" data-edge-id="c3">
-          <rect x="222.6" y="226" width="86.8" height="14" rx="3" class="c-mask"/>
-          <text x="266" y="236" class="t-edge-default" font-size="10" font-weight="500" textLength="82.8" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Load Recipe JSON</text>
+        <g data-detail="context" data-edge-from="cad_studio" data-edge-to="roi_editor" data-edge-label="Populate Golden BBoxes" data-edge-key="2" data-edge-id="c3">
+          <rect x="178.89999999999998" y="305" width="115.6" height="14" rx="3" class="c-mask"/>
+          <text x="236.7" y="315" class="t-edge-default" font-size="10" font-weight="500" textLength="111.6" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Populate Golden BBoxes</text>
         </g>
-        <g data-detail="context" data-edge-from="camera_station" data-edge-to="api_router" data-edge-label="Captured Frames (Base64/Multipart)" data-edge-key="3" data-edge-id="c4">
-          <rect x="527.0999999999999" y="332.5" width="173.2" height="14" rx="3" class="c-mask"/>
-          <text x="613.6999999999999" y="342.5" class="t-edge-default" font-size="10" font-weight="500" textLength="169.2" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Captured Frames (Base64/Multipart)</text>
+        <g data-detail="context" data-edge-from="roi_editor" data-edge-to="save_modal" data-edge-label="Proceed to Inspection" data-edge-key="3" data-edge-id="c4">
+          <rect x="190.7" y="445" width="110.8" height="14" rx="3" class="c-mask"/>
+          <text x="246.1" y="455" class="t-edge-default" font-size="10" font-weight="500" textLength="106.8" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Proceed to Inspection</text>
         </g>
-        <g data-detail="context" data-edge-from="roi_editor" data-edge-to="api_router" data-edge-label="POST /components" data-edge-key="4" data-edge-id="c5">
-          <rect x="364.35" y="417" width="86.8" height="14" rx="3" class="c-mask"/>
-          <text x="407.75" y="427" class="t-edge-default" font-size="10" font-weight="500" textLength="82.8" lengthAdjust="spacingAndGlyphs" text-anchor="middle">POST /components</text>
+        <g data-detail="context" data-edge-from="save_modal" data-edge-to="api_router" data-edge-label="Save Recipe to CAD Studio" data-edge-key="4" data-edge-id="c5">
+          <rect x="557" y="756" width="130" height="14" rx="3" class="c-mask"/>
+          <text x="622" y="766" class="t-edge-default" font-size="10" font-weight="500" textLength="126" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Save Recipe to CAD Studio</text>
         </g>
-        <g data-detail="context" data-edge-from="inspection_ui" data-edge-to="api_router" data-edge-label="POST /inspect (Batch Images)" data-edge-key="5" data-edge-id="c6">
-          <rect x="819.8999999999999" y="464.5" width="144.4" height="14" rx="3" class="c-mask"/>
-          <text x="892.0999999999999" y="474.5" class="t-edge-default" font-size="10" font-weight="500" textLength="140.4" lengthAdjust="spacingAndGlyphs" text-anchor="middle">POST /inspect (Batch Images)</text>
+        <g data-detail="context" data-edge-from="api_router" data-edge-to="recipe_db" data-edge-label="Persist JSON Recipe" data-edge-key="5" data-edge-id="c6">
+          <rect x="229.4" y="1032" width="101.2" height="14" rx="3" class="c-mask"/>
+          <text x="280" y="1042" class="t-edge-default" font-size="10" font-weight="500" textLength="97.2" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Persist JSON Recipe</text>
         </g>
-        <g data-detail="context" data-edge-from="api_router" data-edge-to="session_store" data-edge-label="Get/Set Session State" data-edge-key="6" data-edge-id="c7">
-          <rect x="305.75" y="648" width="110.8" height="14" rx="3" class="c-mask"/>
-          <text x="361.15" y="658" class="t-edge-default" font-size="10" font-weight="500" textLength="106.8" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Get/Set Session State</text>
+        <g data-detail="context" data-edge-from="save_modal" data-edge-to="inspection_ui" data-edge-label="Load Inspection Session" data-edge-key="6" data-edge-id="c7">
+          <rect x="174.10000000000002" y="585" width="120.39999999999999" height="14" rx="3" class="c-mask"/>
+          <text x="234.3" y="595" class="t-edge-default" font-size="10" font-weight="500" textLength="116.39999999999999" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Load Inspection Session</text>
         </g>
-        <g data-detail="context" data-edge-from="api_router" data-edge-to="aligner" data-edge-label="Global Board Alignment" data-edge-key="7" data-edge-id="c8">
-          <rect x="415.54999999999995" y="669" width="115.6" height="14" rx="3" class="c-mask"/>
-          <text x="473.34999999999997" y="679" class="t-edge-default" font-size="10" font-weight="500" textLength="111.6" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Global Board Alignment</text>
+        <g data-detail="context" data-edge-from="inspection_ui" data-edge-to="api_router" data-edge-label="POST /inspect (Batch Boards)" data-edge-key="7" data-edge-id="c8">
+          <rect x="330.55" y="740" width="144.4" height="14" rx="3" class="c-mask"/>
+          <text x="402.75" y="750" class="t-edge-default" font-size="10" font-weight="500" textLength="140.4" lengthAdjust="spacingAndGlyphs" text-anchor="middle">POST /inspect (Batch Boards)</text>
         </g>
-        <g data-detail="context" data-edge-from="aligner" data-edge-to="correlator" data-edge-label="Warped Aligned ROIs" data-edge-key="8" data-edge-id="c9">
-          <rect x="422.94999999999993" y="809" width="101.2" height="14" rx="3" class="c-mask"/>
-          <text x="473.54999999999995" y="819" class="t-edge-default" font-size="10" font-weight="500" textLength="97.2" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Warped Aligned ROIs</text>
+        <g data-detail="context" data-edge-from="api_router" data-edge-to="aligner" data-edge-label="Global Board Alignment" data-edge-key="8" data-edge-id="c9">
+          <rect x="334.4" y="1085" width="115.6" height="14" rx="3" class="c-mask"/>
+          <text x="392.2" y="1095" class="t-edge-default" font-size="10" font-weight="500" textLength="111.6" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Global Board Alignment</text>
         </g>
-        <g data-detail="context" data-edge-from="correlator" data-edge-to="classifier" data-edge-label="ZNCC Score &amp; Patch Diff" data-edge-key="9" data-edge-id="c10">
-          <rect x="396.75" y="949" width="120.39999999999999" height="14" rx="3" class="c-mask"/>
-          <text x="456.95" y="959" class="t-edge-default" font-size="10" font-weight="500" textLength="116.39999999999999" lengthAdjust="spacingAndGlyphs" text-anchor="middle">ZNCC Score &amp; Patch Diff</text>
+        <g data-detail="context" data-edge-from="aligner" data-edge-to="session_store" data-edge-label="Cache Aligned Images &amp; Warp" data-edge-key="9" data-edge-id="c10">
+          <rect x="256.45" y="1212" width="139.6" height="14" rx="3" class="c-mask"/>
+          <text x="326.25" y="1222" class="t-edge-default" font-size="10" font-weight="500" textLength="135.6" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Cache Aligned Images &amp; Warp</text>
         </g>
-        <g data-detail="context" data-edge-from="classifier" data-edge-to="api_router" data-edge-label="Annotated Images &amp; Board Verdicts" data-edge-key="10" data-edge-id="c11">
-          <rect x="573.4499999999999" y="796" width="168.4" height="14" rx="3" class="c-mask"/>
-          <text x="657.65" y="806" class="t-edge-default" font-size="10" font-weight="500" textLength="164.4" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Annotated Images &amp; Board Verdicts</text>
+        <g data-detail="context" data-edge-from="session_store" data-edge-to="aligned_image_srv" data-edge-label="Aligned Test Buffer" data-edge-key="10" data-edge-id="c11">
+          <rect x="81.80000000000001" y="1365" width="101.2" height="14" rx="3" class="c-mask"/>
+          <text x="132.4" y="1375" class="t-edge-default" font-size="10" font-weight="500" textLength="97.2" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Aligned Test Buffer</text>
         </g>
-        <g data-detail="context" data-edge-from="api_router" data-edge-to="inspection_ui" data-edge-label="JSON Inspection Results" data-edge-key="11" data-edge-id="c12">
-          <rect x="543.15" y="490" width="120.39999999999999" height="14" rx="3" class="c-mask"/>
-          <text x="603.35" y="500" class="t-edge-default" font-size="10" font-weight="500" textLength="116.39999999999999" lengthAdjust="spacingAndGlyphs" text-anchor="middle">JSON Inspection Results</text>
+        <g data-detail="context" data-edge-from="aligned_image_srv" data-edge-to="inspection_ui" data-edge-label="Render Aligned Canvas" data-edge-key="11" data-edge-id="c12">
+          <rect x="66" y="1045" width="110.8" height="14" rx="3" class="c-mask"/>
+          <text x="121.4" y="1055" class="t-edge-default" font-size="10" font-weight="500" textLength="106.8" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Render Aligned Canvas</text>
         </g>
-        <g data-detail="context" data-edge-from="operator" data-edge-to="signoff_console" data-edge-label="Operator Badge ID &amp; Verdict Override" data-edge-key="12" data-edge-id="c13">
-          <rect x="127.20000000000003" y="144.5" width="182.79999999999998" height="14" rx="3" class="c-mask"/>
-          <text x="218.60000000000002" y="154.5" class="t-edge-default" font-size="10" font-weight="500" textLength="178.79999999999998" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Operator Badge ID &amp; Verdict Override</text>
+        <g data-detail="context" data-edge-from="aligner" data-edge-to="correlator" data-edge-label="Warped Aligned ROIs" data-edge-key="12" data-edge-id="c13">
+          <rect x="462" y="1225" width="101.2" height="14" rx="3" class="c-mask"/>
+          <text x="512.6" y="1235" class="t-edge-default" font-size="10" font-weight="500" textLength="97.2" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Warped Aligned ROIs</text>
         </g>
-        <g data-detail="context" data-edge-from="signoff_console" data-edge-to="api_router" data-edge-label="POST /signoff" data-edge-key="13" data-edge-id="c14">
-          <rect x="276.875" y="579" width="72.4" height="14" rx="3" class="c-mask"/>
-          <text x="313.075" y="589" class="t-edge-default" font-size="10" font-weight="500" textLength="68.4" lengthAdjust="spacingAndGlyphs" text-anchor="middle">POST /signoff</text>
+        <g data-detail="context" data-edge-from="correlator" data-edge-to="geometry_analyzer" data-edge-label="Displacement &amp; Angular Skew" data-edge-key="13" data-edge-id="c14">
+          <rect x="303.4" y="1365" width="139.6" height="14" rx="3" class="c-mask"/>
+          <text x="373.2" y="1375" class="t-edge-default" font-size="10" font-weight="500" textLength="135.6" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Displacement &amp; Angular Skew</text>
         </g>
-        <g data-detail="context" data-edge-from="signoff_console" data-edge-to="report_exporter" data-edge-label="GET /export_report" data-edge-key="14" data-edge-id="c15">
-          <rect x="566.0374999999999" y="386" width="96.39999999999999" height="14" rx="3" class="c-mask"/>
-          <text x="614.2375" y="396" class="t-edge-default" font-size="10" font-weight="500" textLength="92.39999999999999" lengthAdjust="spacingAndGlyphs" text-anchor="middle">GET /export_report</text>
+        <g data-detail="context" data-edge-from="geometry_analyzer" data-edge-to="classifier" data-edge-label="ZNCC, Patch Diff, Shift &amp; Tilt" data-edge-key="14" data-edge-id="c15">
+          <rect x="282" y="1505" width="154" height="14" rx="3" class="c-mask"/>
+          <text x="359" y="1515" class="t-edge-default" font-size="10" font-weight="500" textLength="150" lengthAdjust="spacingAndGlyphs" text-anchor="middle">ZNCC, Patch Diff, Shift &amp; Tilt</text>
+        </g>
+        <g data-detail="context" data-edge-from="classifier" data-edge-to="api_router" data-edge-label="7-Class Component Verdicts" data-edge-key="15" data-edge-id="c16">
+          <rect x="466" y="1516" width="134.8" height="14" rx="3" class="c-mask"/>
+          <text x="533.4" y="1526" class="t-edge-default" font-size="10" font-weight="500" textLength="130.8" lengthAdjust="spacingAndGlyphs" text-anchor="middle">7-Class Component Verdicts</text>
+        </g>
+        <g data-detail="context" data-edge-from="api_router" data-edge-to="inspection_ui" data-edge-label="Inspection Telemetry &amp; Chips" data-edge-key="16" data-edge-id="c17">
+          <rect x="270.6" y="867" width="144.4" height="14" rx="3" class="c-mask"/>
+          <text x="342.8" y="877" class="t-edge-default" font-size="10" font-weight="500" textLength="140.4" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Inspection Telemetry &amp; Chips</text>
+        </g>
+        <g data-detail="context" data-edge-from="inspection_ui" data-edge-to="digital_loupe" data-edge-label="Click Component Row" data-edge-key="17" data-edge-id="c18">
+          <rect x="189.3" y="725" width="101.2" height="14" rx="3" class="c-mask"/>
+          <text x="239.9" y="735" class="t-edge-default" font-size="10" font-weight="500" textLength="97.2" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Click Component Row</text>
+        </g>
+        <g data-detail="context" data-edge-from="digital_loupe" data-edge-to="api_router" data-edge-label="GET /loupe/{fn}/{comp}" data-edge-key="18" data-edge-id="c19">
+          <rect x="237.7" y="982" width="115.6" height="14" rx="3" class="c-mask"/>
+          <text x="295.5" y="992" class="t-edge-default" font-size="10" font-weight="500" textLength="111.6" lengthAdjust="spacingAndGlyphs" text-anchor="middle">GET /loupe/{fn}/{comp}</text>
+        </g>
+        <g data-detail="context" data-edge-from="api_router" data-edge-to="loupe_crop_srv" data-edge-label="Extract Exact Subpixel ROI" data-edge-key="19" data-edge-id="c20">
+          <rect x="477.20000000000005" y="1077" width="134.8" height="14" rx="3" class="c-mask"/>
+          <text x="544.6" y="1087" class="t-edge-default" font-size="10" font-weight="500" textLength="130.8" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Extract Exact Subpixel ROI</text>
+        </g>
+        <g data-detail="context" data-edge-from="loupe_crop_srv" data-edge-to="digital_loupe" data-edge-label="Ref, Test &amp; Heatmap Base64" data-edge-key="20" data-edge-id="c21">
+          <rect x="561.7" y="916.5" width="134.8" height="14" rx="3" class="c-mask"/>
+          <text x="629.1" y="926.5" class="t-edge-default" font-size="10" font-weight="500" textLength="130.8" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Ref, Test &amp; Heatmap Base64</text>
+        </g>
+        <g data-detail="context" data-edge-from="operator" data-edge-to="signoff_console" data-edge-label="Operator Sign-Off &amp; Review" data-edge-key="21" data-edge-id="c22">
+          <rect x="512" y="150" width="134.8" height="14" rx="3" class="c-mask"/>
+          <text x="579.4" y="160" class="t-edge-default" font-size="10" font-weight="500" textLength="130.8" lengthAdjust="spacingAndGlyphs" text-anchor="middle">Operator Sign-Off &amp; Review</text>
+        </g>
+        <g data-detail="context" data-edge-from="signoff_console" data-edge-to="api_router" data-edge-label="POST /signoff" data-edge-key="22" data-edge-id="c23">
+          <rect x="432.6" y="625" width="72.4" height="14" rx="3" class="c-mask"/>
+          <text x="468.8" y="635" class="t-edge-default" font-size="10" font-weight="500" textLength="68.4" lengthAdjust="spacingAndGlyphs" text-anchor="middle">POST /signoff</text>
+        </g>
+        <g data-detail="context" data-edge-from="signoff_console" data-edge-to="report_exporter" data-edge-label="GET /export_report &amp; Print" data-edge-key="23" data-edge-id="c24">
+          <rect x="596" y="431" width="134.8" height="14" rx="3" class="c-mask"/>
+          <text x="663.4" y="441" class="t-edge-default" font-size="10" font-weight="500" textLength="130.8" lengthAdjust="spacingAndGlyphs" text-anchor="middle">GET /export_report &amp; Print</text>
         </g>
 
         <!-- Boundary labels (foreground masks keep routes out of titles) -->
         <g data-graph-role="structural-frame-label" data-composition-frame-id="0" data-composition-frame-kind="region" data-composition-frame-label="Browser Client (100% Offline, Zero-CDN)">
-          <rect data-graph-role="structural-frame-label-mask" x="52" y="186" width="220.6" height="16" rx="3" class="c-mask"/>
-          <text data-boundary-label="" x="56" y="199" class="t-cloud" font-size="9" font-weight="600">Browser Client (100% Offline, Zero-CDN)</text>
+          <rect data-graph-role="structural-frame-label-mask" x="509.4" y="186" width="220.6" height="16" rx="3" class="c-mask"/>
+          <text data-boundary-label="" x="513.4" y="199" class="t-cloud" font-size="9" font-weight="600">Browser Client (100% Offline, Zero-CDN)</text>
         </g>
 
         <g data-graph-role="structural-frame-label" data-composition-frame-id="1" data-composition-frame-kind="security-group" data-composition-frame-label="Backend Application Server (FastAPI + OpenCV)">
-          <rect data-graph-role="structural-frame-label-mask" x="193" y="550" width="253" height="16" rx="3" class="c-mask"/>
-          <text data-boundary-label="" x="197" y="563" class="t-security" font-size="9" font-weight="600">Backend Application Server (FastAPI + OpenCV)</text>
+          <rect data-graph-role="structural-frame-label-mask" x="52" y="1762" width="253" height="16" rx="3" class="c-mask"/>
+          <text data-boundary-label="" x="56" y="1775" class="t-security" font-size="9" font-weight="600">Backend Application Server (FastAPI + OpenCV)</text>
         </g>
 
         <!-- Legend -->
         <g data-legend="" data-legend-bridge="">
-          <text x="40" y="1114" class="t-primary" font-size="12" font-weight="650">Legend</text>
-          <g data-legend-semantic-kind="frontend" data-legend-kind="frontend" data-legend-label="Frontend" data-legend-x="40" data-legend-baseline="1134" data-legend-width="93">
-            <rect x="40" y="1125" width="16" height="10" rx="2.5" class="c-frontend" stroke-width="1"/>
-            <text x="62" y="1134" class="t-muted" font-size="10" font-weight="500">Frontend</text>
+          <text x="40" y="1814" class="t-primary" font-size="12" font-weight="650">Legend</text>
+          <g data-legend-semantic-kind="frontend" data-legend-kind="frontend" data-legend-label="Frontend" data-legend-x="40" data-legend-baseline="1834" data-legend-width="93">
+            <rect x="40" y="1825" width="16" height="10" rx="2.5" class="c-frontend" stroke-width="1"/>
+            <text x="62" y="1834" class="t-muted" font-size="10" font-weight="500">Frontend</text>
           </g>
-          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Backend" data-legend-x="155" data-legend-baseline="1134" data-legend-width="87">
-            <rect x="155" y="1125" width="16" height="10" rx="2.5" class="c-backend" stroke-width="1"/>
-            <text x="177" y="1134" class="t-muted" font-size="10" font-weight="500">Backend</text>
+          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Backend" data-legend-x="155" data-legend-baseline="1834" data-legend-width="87">
+            <rect x="155" y="1825" width="16" height="10" rx="2.5" class="c-backend" stroke-width="1"/>
+            <text x="177" y="1834" class="t-muted" font-size="10" font-weight="500">Backend</text>
           </g>
-          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="Database" data-legend-x="264" data-legend-baseline="1134" data-legend-width="93">
-            <rect x="264" y="1125" width="16" height="10" rx="2.5" class="c-database" stroke-width="1"/>
-            <text x="286" y="1134" class="t-muted" font-size="10" font-weight="500">Database</text>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="Database" data-legend-x="264" data-legend-baseline="1834" data-legend-width="93">
+            <rect x="264" y="1825" width="16" height="10" rx="2.5" class="c-database" stroke-width="1"/>
+            <text x="286" y="1834" class="t-muted" font-size="10" font-weight="500">Database</text>
           </g>
-          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External" data-legend-x="379" data-legend-baseline="1134" data-legend-width="93">
-            <rect x="379" y="1125" width="16" height="10" rx="2.5" class="c-external" stroke-width="1"/>
-            <text x="401" y="1134" class="t-muted" font-size="10" font-weight="500">External</text>
+          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External" data-legend-x="379" data-legend-baseline="1834" data-legend-width="93">
+            <rect x="379" y="1825" width="16" height="10" rx="2.5" class="c-external" stroke-width="1"/>
+            <text x="401" y="1834" class="t-muted" font-size="10" font-weight="500">External</text>
           </g>
         </g>
       </svg>
@@ -6695,39 +6831,39 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       <div class="card">
         <div class="card-header">
           <div class="card-dot cyan"></div>
-          <h3>Frontend Offline Client</h3>
+          <h3>Frontend Air-Gapped Workstation</h3>
         </div>
         <ul>
-          <li>Vanilla JS + CSS without CDN or external dependencies</li>
-          <li>HTML5 Canvas bounding box editor with normalized coordinates</li>
-          <li>Webcam/USB camera capture station with alignment guidance</li>
-          <li>Recipe save/load with 256-bit aHash validation</li>
+          <li>Vanilla JS + CSS without CDN, external fonts, or cloud dependencies</li>
+          <li>CAD Studio with 5 physical hardware presets and custom recipe loading</li>
+          <li>Footprint editor with rectangle, pencil, polygon, and CV auto-detect</li>
+          <li>3x Digital Optical Loupe with 1x-5x zoom, reticle, and blink mode</li>
         </ul>
       </div>
 
       <div class="card">
         <div class="card-header">
           <div class="card-dot emerald"></div>
-          <h3>Computer Vision Core</h3>
+          <h3>Computer Vision Core &amp; Defect Engine</h3>
         </div>
         <ul>
-          <li>Global Euclidean alignment via cv2.findTransformECC</li>
-          <li>Local sub-pixel +/-4px translation refinement</li>
-          <li>Multi-channel Zero-mean Normalized Cross-Correlation (ZNCC)</li>
-          <li>Calibrated 3-state classifier: PRESENT, MISSING, UNCERTAIN</li>
+          <li>Subpixel Euclidean ECC alignment (+/-50px translation, +/-5 deg rotation)</li>
+          <li>Bounded local ZNCC search with normalized patch MAE</li>
+          <li>Rotational skew (tilt) and subpixel shift vector [dx, dy] measurement</li>
+          <li>7 IPC-A-610 defect classes: MISSING, TILT, SHIFT, TOMBSTONE, BRIDGE, POLARITY</li>
         </ul>
       </div>
 
       <div class="card">
         <div class="card-header">
           <div class="card-dot rose"></div>
-          <h3>Human-in-the-Loop &amp; Audit</h3>
+          <h3>Human-in-the-Loop Quality &amp; Traceability</h3>
         </div>
         <ul>
-          <li>Preserves raw machine verdicts alongside human operator overrides</li>
-          <li>Tracks badge ID, timestamps, and operator notes per component</li>
-          <li>Computes First-Pass Yield (FPY) vs post-sign-off Operational Yield</li>
-          <li>Exports full audit log as CSV and printable inspection report</li>
+          <li>Unified SMT Station Operator role with full authoring and disposition permissions</li>
+          <li>Electronic sign-off audit trail with badge ID, timestamps, and notes</li>
+          <li>First-Pass Yield (FPY) vs post-sign-off Operational Yield tracking</li>
+          <li>Dual-signed printable ISO 9001 certificate and CSV telemetry export</li>
         </ul>
       </div>
     </div>
