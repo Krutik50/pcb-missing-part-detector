@@ -313,6 +313,11 @@
                                         <button type="button" class="btn btn-sm btn-outline" id="btn-auto-detect" title="Scan and automatically detect component footprints on golden reference image" style="border-color: rgba(56, 189, 248, 0.4); color: var(--color-blue); margin-left: 0.5rem;">
                                             <svg class="ui-icon btn-svg-icon"><use href="#icon-wand"></use></svg> Auto-Detect Footprints
                                         </button>
+                                        <div class="canvas-zoom-control" style="display: inline-flex; margin-left: 0.5rem; align-items: center; border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden; background: var(--bg-card);" title="Canvas Optical Zoom (Inspect small silkscreen text)">
+                                            <button type="button" class="btn-zoom-btn" id="btn-canvas-zoom-out" title="Zoom Out (-)" style="padding: 0.25rem 0.5rem; background: transparent; border: none; color: var(--text-secondary); cursor: pointer; font-weight: 700;">&minus;</button>
+                                            <button type="button" class="btn-zoom-btn" id="btn-canvas-zoom-reset" title="Reset Zoom (100%)" style="padding: 0.25rem 0.5rem; background: var(--bg-card-subtle); border: none; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer; font-family: var(--font-mono); font-size: 0.72rem; min-width: 48px;">100%</button>
+                                            <button type="button" class="btn-zoom-btn" id="btn-canvas-zoom-in" title="Zoom In (+)" style="padding: 0.25rem 0.5rem; background: transparent; border: none; color: var(--text-secondary); cursor: pointer; font-weight: 700;">&plus;</button>
+                                        </div>
                                         <span class="toolbar-info" id="canvas-dim-info">Resolution: 1920 &times; 1080</span>
                                         <span class="toolbar-hint" id="canvas-tool-hint">Click and drag to draw component bounding box</span>
                                     </div>
@@ -573,21 +578,103 @@
     </div>
 
     <!-- Modal for Naming Component -->
+    <!-- Method A: Silkscreen Matching & Footprint Registration Modal -->
     <div id="name-modal" class="modal-backdrop d-none">
-        <div class="modal-card">
-            <h3>Register Component Footprint</h3>
-            <p class="modal-sub">Enter reference designator (e.g. U1, R1, C1):</p>
-            <input type="text" id="comp-name-input" class="text-input" placeholder="e.g. U1_MCU or R1_PULLUP" maxlength="32">
-            <div class="quick-tags" id="quick-tags-container">
-                <span class="tag-chip" data-prefix="U">U (IC)</span>
-                <span class="tag-chip" data-prefix="R">R (Resistor)</span>
-                <span class="tag-chip" data-prefix="C">C (Capacitor)</span>
-                <span class="tag-chip" data-prefix="D">D (Diode/LED)</span>
-                <span class="tag-chip" data-prefix="Y">Y (Crystal)</span>
+        <div class="modal-card modal-card-silkscreen" style="max-width: 550px;">
+            <div class="modal-camera-header">
+                <div class="camera-title-group">
+                    <h3 id="name-modal-title" style="display: flex; align-items: center; gap: 0.5rem; margin: 0; font-size: 1.1rem; color: var(--text-primary);">
+                        <svg class="ui-icon" style="color: var(--color-blue); width: 1.15rem; height: 1.15rem;"><use href="#icon-chip"></use></svg>
+                        Silkscreen Component Designation
+                    </h3>
+                </div>
+                <button type="button" class="btn-icon" id="btn-cancel-name" title="Cancel">&times;</button>
             </div>
-            <div class="modal-actions">
-                <button type="button" class="btn btn-outline" id="btn-cancel-name">Cancel</button>
-                <button type="button" class="btn btn-primary" id="btn-save-name">Save Footprint</button>
+            <p class="modal-sub" style="margin-top: 0.35rem; margin-bottom: 0.9rem; font-size: 0.82rem;">
+                Match the white silkscreen legend printed on the PCB (e.g. <code>CN-FAN</code>, <code>R105</code>, <code>ZD302</code>, <code>U102</code>).
+            </p>
+
+            <!-- 3x Optical Loupe Crop & Measurement Box -->
+            <div style="display: flex; gap: 1rem; align-items: center; background: #060a10; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem; margin-bottom: 1rem;">
+                <div style="width: 130px; height: 95px; background: #000; border-radius: 4px; overflow: hidden; flex-shrink: 0; border: 1px solid rgba(56, 189, 248, 0.4); display: flex; align-items: center; justify-content: center; position: relative;">
+                    <canvas id="silkscreen-loupe-canvas" width="260" height="190" style="width: 100%; height: 100%; object-fit: contain;"></canvas>
+                    <span style="position: absolute; bottom: 3px; right: 4px; font-size: 0.65rem; background: rgba(0,0,0,0.7); color: #38bdf8; padding: 1px 4px; border-radius: 2px; font-family: var(--font-mono); font-weight: 700;">3&times; LOUPE</span>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem;">
+                        Pad &amp; Silkscreen Loupe
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); line-height: 1.4;" id="silkscreen-envelope-info">
+                        Envelope: [0, 0, 0&times;0 px]
+                    </div>
+                    <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 0.25rem;">
+                        Inspect white printed legend text next to solder pads in this loupe.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Name Input Field -->
+            <div style="margin-bottom: 0.85rem;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.35rem;">
+                    Component Reference Designator:
+                </label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="comp-name-input" class="text-input" placeholder="e.g. CN-FAN, R105, ZD302, U102" maxlength="32" style="flex: 1; font-weight: 700; font-family: var(--font-mono); font-size: 0.95rem;">
+                    <button type="button" class="btn btn-sm btn-outline" id="btn-clear-name-input" title="Clear name" style="padding: 0.4rem 0.65rem;">Clear</button>
+                </div>
+            </div>
+
+            <!-- Quick-Tag Silkscreen Palette (IPC Standards) -->
+            <div style="margin-bottom: 0.85rem;">
+                <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.4rem;">
+                    IPC Silkscreen Quick-Tags:
+                </span>
+                <div class="quick-tags" id="quick-tags-container" style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+                    <span class="tag-chip" data-prefix="U" title="Integrated Circuit / MCU / DIP / SOP">U (IC/MCU)</span>
+                    <span class="tag-chip" data-prefix="R" title="Resistor">R (Resistor)</span>
+                    <span class="tag-chip" data-prefix="C" title="Capacitor (Ceramic/Film)">C (Capacitor)</span>
+                    <span class="tag-chip" data-prefix="E" title="Electrolytic Can Capacitor">E (Electrolytic)</span>
+                    <span class="tag-chip" data-prefix="CN" title="Terminal Connector / Pin Header">CN (Connector)</span>
+                    <span class="tag-chip" data-prefix="K" title="Electromechanical Relay">K (Relay)</span>
+                    <span class="tag-chip" data-prefix="D" title="Rectifier Diode / LED">D (Diode/LED)</span>
+                    <span class="tag-chip" data-prefix="ZD" title="Zener Voltage Reference Diode">ZD (Zener)</span>
+                    <span class="tag-chip" data-prefix="Q" title="Transistor / MOSFET">Q (Transistor)</span>
+                    <span class="tag-chip" data-prefix="L" title="Inductor / Toroid Choke">L (Inductor)</span>
+                    <span class="tag-chip" data-prefix="FUSE" title="Fuse Protection">FUSE (Fuse)</span>
+                    <span class="tag-chip" data-prefix="MOV" title="Metal Oxide Varistor">MOV (Varistor)</span>
+                    <span class="tag-chip" data-prefix="Y" title="Crystal / Resonator">Y (Crystal)</span>
+                    <span class="tag-chip" data-prefix="SW" title="Tactile / Push Switch">SW (Switch)</span>
+                </div>
+            </div>
+
+            <!-- Silkscreen Suffix Helpers -->
+            <div style="margin-bottom: 1.25rem; padding: 0.55rem 0.75rem; background: var(--bg-card-subtle); border-radius: 4px; border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                    <span style="font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">
+                        Quick Suffix Append:
+                    </span>
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">Click to append to designator</span>
+                </div>
+                <div id="silkscreen-suffix-container" style="display: flex; flex-wrap: wrap; gap: 0.3rem;">
+                    <button type="button" class="btn-suffix" data-suffix="-FAN">-FAN</button>
+                    <button type="button" class="btn-suffix" data-suffix="-STP">-STP</button>
+                    <button type="button" class="btn-suffix" data-suffix="-TBTF">-TBTF</button>
+                    <button type="button" class="btn-suffix" data-suffix="-PWR">-PWR</button>
+                    <button type="button" class="btn-suffix" data-suffix="_DIP8">_DIP8</button>
+                    <button type="button" class="btn-suffix" data-suffix="_BULK">_BULK</button>
+                    <button type="button" class="btn-suffix" data-suffix="_COIL">_COIL</button>
+                    <button type="button" class="btn-suffix" data-suffix="-12V">-12V</button>
+                    <button type="button" class="btn-suffix" data-suffix="-5V">-5V</button>
+                    <button type="button" class="btn-suffix" data-suffix="-GND">-GND</button>
+                </div>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 0.65rem;">
+                <button type="button" class="btn btn-outline" id="btn-cancel-name-action">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btn-save-name" style="padding: 0.55rem 1.25rem; font-weight: 700;">
+                    Save Footprint
+                </button>
             </div>
         </div>
     </div>
