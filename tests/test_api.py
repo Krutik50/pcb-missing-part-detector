@@ -494,6 +494,45 @@ class TestBackendAPI(unittest.TestCase):
         self.assertEqual(data_custom["user"]["name"], "Alex Mercer")
         self.assertEqual(data_custom["user"]["role"], "OPERATOR")
 
+    def test_save_custom_recipe_lifecycle(self):
+        # 1. Upload reference
+        with open(SAMPLE_DIR / "reference.png", "rb") as f:
+            ref_resp = client.post("/api/reference", files={"file": ("reference.png", f, "image/png")})
+        session_id = ref_resp.json()["session_id"]
+
+        # 2. Register components
+        client.post(
+            f"/api/sessions/{session_id}/components",
+            json={"components": [{"name": "R1_PULLUP", "bbox": [100, 200, 50, 60]}]},
+        )
+
+        # 3. Save recipe to Board & CAD Studio
+        save_resp = client.post(
+            f"/api/sessions/{session_id}/save-recipe",
+            json={"name": "Test Custom Studio Board", "tier": "Custom Recipe", "category": "Testing"},
+        )
+        self.assertEqual(save_resp.status_code, 200)
+        save_data = save_resp.json()
+        self.assertEqual(save_data["status"], "success")
+        recipe_id = save_data["recipe_id"]
+        self.assertIn("custom_", recipe_id)
+
+        # 4. Check that /api/presets returns the new custom recipe
+        presets_resp = client.get("/api/presets")
+        self.assertEqual(presets_resp.status_code, 200)
+        p_data = presets_resp.json()
+        custom_presets = [p for p in p_data["presets"] if p.get("is_custom")]
+        self.assertTrue(any(p["id"] == recipe_id for p in custom_presets))
+
+        # 5. Clean up by deleting the recipe
+        del_resp = client.delete(f"/api/recipes/{recipe_id}")
+        self.assertEqual(del_resp.status_code, 200)
+        self.assertEqual(del_resp.json()["status"], "success")
+
+        # 6. Verify it's no longer in presets
+        presets_after = client.get("/api/presets").json()
+        self.assertFalse(any(p["id"] == recipe_id for p in presets_after["presets"]))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -606,58 +606,173 @@ async def operator_login(req: LoginRequest):
     return {"success": True, "user": user_data}
 
 
+RECIPES_DIR = BASE_DIR.parent / "data" / "recipes"
+RECIPES_DIR.mkdir(parents=True, exist_ok=True)
+
+
+class SaveRecipeRequest(BaseModel):
+    name: str
+    tier: Optional[str] = "Custom Recipe"
+    category: Optional[str] = "Shop-Floor Custom"
+
+
 @app.get("/api/presets")
 async def get_physical_presets():
     """
     Returns all 5 real physical board presets from ground_truth_multiboard.json,
-    complete with reference image URLs, component boxes, and sample test images.
+    plus any custom recipes saved permanently in data/recipes/*.json.
     """
+    presets = []
     gt_file = BASE_DIR.parent / "data" / "multiboard" / "ground_truth_multiboard.json"
-    if not gt_file.exists():
-        return {"presets": []}
+    if gt_file.exists():
+        try:
+            with open(gt_file, "r", encoding="utf-8") as f:
+                gt_data = json.load(f)
+            boards = gt_data.get("boards", {})
+            images = gt_data.get("images", {})
 
-    try:
-        with open(gt_file, "r", encoding="utf-8") as f:
-            gt_data = json.load(f)
-        boards = gt_data.get("boards", {})
-        images = gt_data.get("images", {})
-
-        presets = []
-        for b_id, b_meta in boards.items():
-            comps = []
-            for cname, cinfo in b_meta.get("components", {}).items():
-                comps.append({
-                    "name": cname,
-                    "bbox": cinfo["bbox"],
-                    "normalized_bbox": cinfo.get("normalized_bbox"),
-                    "type": cinfo.get("type", "GENERIC"),
-                    "shape_type": cinfo.get("shape_type", "rectangle"),
-                    "polygon": cinfo.get("polygon")
-                })
-
-            sample_tests = []
-            for img_rel, img_info in images.items():
-                if img_info.get("board_type") == b_id and img_info.get("split") == "test":
-                    fname = Path(img_rel).name
-                    sample_tests.append({
-                        "name": fname,
-                        "url": f"/data/multiboard/{img_rel}",
-                        "expected_status": img_info.get("expected_board_status", "OK"),
-                        "defects": img_info.get("defects", {})
+            for b_id, b_meta in boards.items():
+                comps = []
+                for cname, cinfo in b_meta.get("components", {}).items():
+                    comps.append({
+                        "name": cname,
+                        "bbox": cinfo["bbox"],
+                        "normalized_bbox": cinfo.get("normalized_bbox"),
+                        "type": cinfo.get("type", "GENERIC"),
+                        "shape_type": cinfo.get("shape_type", "rectangle"),
+                        "polygon": cinfo.get("polygon")
                     })
 
-            presets.append({
-                "id": b_id,
-                "name": b_meta.get("name", b_id),
-                "tier": b_meta.get("tier", "Standard"),
-                "resolution": b_meta.get("resolution", [1024, 1024]),
-                "reference_url": f"/data/multiboard/{b_meta['reference_image']}",
-                "components": comps,
-                "sample_tests": sample_tests,
-            })
-        return {"presets": presets}
+                sample_tests = []
+                for img_rel, img_info in images.items():
+                    if img_info.get("board_type") == b_id and img_info.get("split") == "test":
+                        fname = Path(img_rel).name
+                        sample_tests.append({
+                            "name": fname,
+                            "url": f"/data/multiboard/{img_rel}",
+                            "expected_status": img_info.get("expected_board_status", "OK"),
+                            "defects": img_info.get("defects", {})
+                        })
+
+                presets.append({
+                    "id": b_id,
+                    "name": b_meta.get("name", b_id),
+                    "tier": b_meta.get("tier", "Standard"),
+                    "resolution": b_meta.get("resolution", [1024, 1024]),
+                    "reference_url": f"/data/multiboard/{b_meta['reference_image']}",
+                    "components": comps,
+                    "sample_tests": sample_tests,
+                    "is_custom": False,
+                })
+        except Exception:
+            pass
+
+    # Load custom saved recipes from disk
+    if RECIPES_DIR.exists():
+        for r_file in sorted(RECIPES_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
+            try:
+                with open(r_file, "r", encoding="utf-8") as f:
+                    r_data = json.load(f)
+                r_id = r_data.get("id", r_file.stem)
+                ref_img_rel = r_data.get("reference_image", f"recipes/{r_id}_ref.png")
+                presets.append({
+                    "id": r_id,
+                    "name": r_data.get("name", r_id),
+                    "tier": r_data.get("tier", "Custom Recipe"),
+                    "resolution": r_data.get("resolution", [1024, 1024]),
+                    "reference_url": f"/data/{ref_img_rel}",
+                    "components": r_data.get("components", []),
+                    "sample_tests": [],
+                    "is_custom": True,
+                    "created_at": r_data.get("created_at"),
+                })
+            except Exception:
+                continue
+
+    return {"presets": presets}
+
+
+@app.post("/api/sessions/{session_id}/save-recipe")
+async def save_session_recipe(session_id: str, payload: SaveRecipeRequest):
+    """
+    Permanently saves the session's reference image and marked component footprints to disk (data/recipes/)
+    so the custom board recipe persists and is instantly accessible in Board & CAD Studio.
+    """
+    if session_id not in SESSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session '{session_id}' not found.",
+        )
+
+    session = SESSIONS[session_id]
+    if not session.get("components"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Session has zero registered components. Mark footprints first before saving.",
+        )
+
+    recipe_name = payload.name.strip() or f"Custom_PCB_{int(time.time())}"
+    slug = re.sub(r'[^a-zA-Z0-9_-]', '_', recipe_name).lower()
+    recipe_id = f"custom_{slug}_{int(time.time()) % 10000}"
+
+    ref_bgr = session["ref_image"]
+    ref_filename = f"{recipe_id}_ref.png"
+    ref_path = RECIPES_DIR / ref_filename
+    cv2.imwrite(str(ref_path), ref_bgr)
+
+    work_h, work_w = session["working_shape"]
+    comps = []
+    for cname, cinfo in session["components"].items():
+        comps.append({
+            "name": cname,
+            "bbox": cinfo["pixel_bbox"],
+            "normalized_bbox": cinfo.get("normalized_bbox"),
+            "shape_type": cinfo.get("shape_type", "rectangle"),
+            "polygon": cinfo.get("polygon"),
+            "type": "CUSTOM"
+        })
+
+    recipe_data = {
+        "id": recipe_id,
+        "name": recipe_name,
+        "tier": payload.tier or "Custom Recipe",
+        "category": payload.category or "Custom",
+        "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "resolution": [work_w, work_h],
+        "reference_image": f"recipes/{ref_filename}",
+        "components": comps,
+        "is_custom": True
+    }
+
+    json_path = RECIPES_DIR / f"{recipe_id}.json"
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(recipe_data, f, indent=2)
+
+    return {
+        "status": "success",
+        "message": f"Recipe '{recipe_name}' permanently saved.",
+        "recipe_id": recipe_id,
+        "recipe": recipe_data
+    }
+
+
+@app.delete("/api/recipes/{recipe_id}")
+async def delete_custom_recipe(recipe_id: str):
+    """Deletes a custom saved recipe and its reference image."""
+    json_path = RECIPES_DIR / f"{recipe_id}.json"
+    if not json_path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Recipe '{recipe_id}' not found.",
+        )
+
+    try:
+        json_path.unlink(missing_ok=True)
+        img_path = RECIPES_DIR / f"{recipe_id}_ref.png"
+        img_path.unlink(missing_ok=True)
+        return {"status": "success", "message": f"Recipe '{recipe_id}' deleted."}
     except Exception as e:
-        return {"presets": [], "error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # --- RECIPE MANAGEMENT & OPERATOR SIGNOFF ENDPOINTS ---

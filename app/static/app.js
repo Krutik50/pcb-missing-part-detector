@@ -53,8 +53,17 @@ document.addEventListener('DOMContentLoaded', () => {
         inputOpBadge: document.getElementById('input-op-badge'),
         inputOpName: document.getElementById('input-op-name'),
 
-        // Presets
+        // Presets & Recipe Studio
         presetsContainer: document.getElementById('presets-container'),
+        recipeSaveModal: document.getElementById('recipe-save-modal'),
+        btnCloseRecipeModal: document.getElementById('btn-close-recipe-modal'),
+        recipeModalPreviewImg: document.getElementById('recipe-modal-preview-img'),
+        recipeModalCompCount: document.getElementById('recipe-modal-comp-count'),
+        recipeModalDimInfo: document.getElementById('recipe-modal-dim-info'),
+        recipeModalNameInput: document.getElementById('recipe-modal-name-input'),
+        recipeModalTierSelect: document.getElementById('recipe-modal-tier-select'),
+        btnRecipeModalSaveProceed: document.getElementById('btn-recipe-modal-save-proceed'),
+        btnRecipeModalSkipProceed: document.getElementById('btn-recipe-modal-skip-proceed'),
 
         // Step Navigation
         stepNav1: document.getElementById('step-nav-1'),
@@ -1034,43 +1043,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showAlert('Cannot save empty recipe: please mark at least one component first.', 'danger');
             return;
         }
-
-        const defaultName = 'PCB_BOARD_RECIPE_' + new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        const boardName = prompt('Enter a name for this PCB Board Recipe:', defaultName) || defaultName;
-
-        const recipe = {
-            recipe_version: '1.0',
-            board_name: boardName.trim(),
-            created_at: new Date().toISOString(),
-            image_size: {
-                width: state.workingDim.width,
-                height: state.workingDim.height,
-                aspect_ratio: Number((state.workingDim.width / state.workingDim.height).toFixed(4)),
-            },
-            image_fingerprint: state.referenceFingerprint || null,
-            sensitivity: state.activeSensitivity,
-            components: state.components.map(c => ({
-                name: c.name,
-                normalized_bbox: c.normalized,
-                pixel_bbox: c.bbox,
-                shape_type: c.shape_type || 'rectangle',
-                polygon: c.polygon || null,
-            })),
-        };
-
-        const jsonStr = JSON.stringify(recipe, null, 2);
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const safeFilename = (boardName.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_') || 'pcb_recipe') + '.json';
-        a.download = safeFilename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        showAlert(`Recipe "${boardName.trim()}" downloaded successfully as ${safeFilename}.`, 'success');
+        openRecipeSaveModal();
     });
 
     el.btnImportRecipe.addEventListener('click', () => {
@@ -1356,47 +1329,143 @@ document.addEventListener('DOMContentLoaded', () => {
     el.btnCaptureAsRef.addEventListener('click', () => captureCameraFrame('ref'));
     el.btnCaptureAsTest.addEventListener('click', () => captureCameraFrame('test'));
 
-    // Step 2 Proceed to Step 3
-    el.btnProceedToStep3.addEventListener('click', async () => {
-        hideAlert();
+    // --- MODAL: SAVE BOARD RECIPE TO CAD STUDIO (IN-BETWEEN STEP 2 & STEP 3) ---
+    function openRecipeSaveModal() {
         if (state.components.length === 0) {
             showAlert('Please mark at least one component before proceeding.', 'danger');
             return;
         }
 
-        try {
-            el.btnProceedToStep3.disabled = true;
-            el.btnProceedToStep3.textContent = 'Saving annotations...';
-
-            const payload = {
-                components: state.components.map(c => ({
-                    name: c.name,
-                    bbox: c.bbox,
-                    shape_type: c.shape_type || 'rectangle',
-                    polygon: c.polygon || null,
-                    is_normalized: false,
-                })),
-            };
-
-            const resp = await fetch(`/api/sessions/${state.sessionId}/components`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            if (!resp.ok) {
-                const err = await resp.json();
-                throw new Error(err.detail || 'Failed to save components');
+        if (el.recipeModalPreviewImg) {
+            if (state.referenceImg && state.referenceImg.src) {
+                el.recipeModalPreviewImg.src = state.referenceImg.src;
+            } else if (state.activePreset && state.activePreset.reference_url) {
+                el.recipeModalPreviewImg.src = state.activePreset.reference_url;
+            } else {
+                el.recipeModalPreviewImg.src = '';
             }
-
-            setStep(3);
-        } catch (err) {
-            showAlert(`Failed to proceed to Step 3: ${err.message}`, 'danger');
-        } finally {
-            el.btnProceedToStep3.disabled = false;
-            el.btnProceedToStep3.textContent = 'Proceed to Inspection →';
         }
+
+        if (el.recipeModalCompCount) {
+            el.recipeModalCompCount.textContent = `${state.components.length} Annotated Component Footprints`;
+        }
+
+        if (el.recipeModalDimInfo) {
+            el.recipeModalDimInfo.textContent = `Working Canvas: ${state.workingDim.width} × ${state.workingDim.height} px`;
+        }
+
+        if (el.recipeModalNameInput) {
+            const defaultName = (state.activePreset ? state.activePreset.name : 'PCB_RECIPE_' + new Date().toISOString().slice(0, 10).replace(/-/g, ''));
+            el.recipeModalNameInput.value = defaultName;
+        }
+
+        if (el.recipeSaveModal) {
+            el.recipeSaveModal.classList.remove('d-none');
+            if (el.recipeModalNameInput) el.recipeModalNameInput.focus();
+        }
+    }
+
+    function closeRecipeSaveModal() {
+        if (el.recipeSaveModal) {
+            el.recipeSaveModal.classList.add('d-none');
+        }
+    }
+
+    // Step 2 Proceed to Step 3 - Prompts user with option to save recipe to Board & CAD Studio
+    el.btnProceedToStep3.addEventListener('click', () => {
+        hideAlert();
+        if (state.components.length === 0) {
+            showAlert('Please mark at least one component before proceeding.', 'danger');
+            return;
+        }
+        openRecipeSaveModal();
     });
+
+    if (el.btnRecipeModalSaveProceed) {
+        el.btnRecipeModalSaveProceed.addEventListener('click', async () => {
+            const boardName = (el.recipeModalNameInput && el.recipeModalNameInput.value.trim()) || 'Custom PCB Recipe';
+            const tier = (el.recipeModalTierSelect && el.recipeModalTierSelect.value) || 'Custom Recipe';
+
+            try {
+                el.btnRecipeModalSaveProceed.disabled = true;
+                el.btnRecipeModalSaveProceed.textContent = 'Saving to Board & CAD Studio...';
+
+                // 1. Sync annotations to current backend session
+                await fetch(`/api/sessions/${state.sessionId}/components`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        components: state.components.map(c => ({
+                            name: c.name,
+                            bbox: c.bbox,
+                            shape_type: c.shape_type || 'rectangle',
+                            polygon: c.polygon || null,
+                            is_normalized: false,
+                        })),
+                    }),
+                });
+
+                // 2. Permanently save recipe to disk so it appears in Board & CAD Studio
+                const saveResp = await fetch(`/api/sessions/${state.sessionId}/save-recipe`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: boardName,
+                        tier: tier,
+                        category: 'Shop-Floor Custom'
+                    })
+                });
+                const saveData = await saveResp.json();
+                if (saveResp.ok && saveData.status === 'success') {
+                    await loadPhysicalPresets();
+                    state.activePreset = saveData.recipe;
+                    showAlert(`Board recipe "${boardName}" permanently saved to Board & CAD Studio! Proceeding to Batch Inspection.`, 'success');
+                } else {
+                    console.warn('Save recipe warning:', saveData);
+                }
+
+                closeRecipeSaveModal();
+                setStep(3);
+            } catch (err) {
+                showAlert(`Failed to save recipe: ${err.message}`, 'danger');
+            } finally {
+                el.btnRecipeModalSaveProceed.disabled = false;
+                el.btnRecipeModalSaveProceed.innerHTML = '<svg class="ui-icon btn-svg-icon"><use href="#icon-chip"></use></svg> Yes, Save to Board &amp; CAD Studio &amp; Proceed &rarr;';
+            }
+        });
+    }
+
+    if (el.btnRecipeModalSkipProceed) {
+        el.btnRecipeModalSkipProceed.addEventListener('click', async () => {
+            try {
+                el.btnRecipeModalSkipProceed.disabled = true;
+                // Save annotations in-memory for session without writing permanently to disk
+                await fetch(`/api/sessions/${state.sessionId}/components`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        components: state.components.map(c => ({
+                            name: c.name,
+                            bbox: c.bbox,
+                            shape_type: c.shape_type || 'rectangle',
+                            polygon: c.polygon || null,
+                            is_normalized: false,
+                        })),
+                    }),
+                });
+                closeRecipeSaveModal();
+                setStep(3);
+            } catch (err) {
+                showAlert(`Failed to proceed: ${err.message}`, 'danger');
+            } finally {
+                el.btnRecipeModalSkipProceed.disabled = false;
+            }
+        });
+    }
+
+    if (el.btnCloseRecipeModal) {
+        el.btnCloseRecipeModal.addEventListener('click', closeRecipeSaveModal);
+    }
 
     // --- STEP 3: TEST INSPECTION ---
     el.btnBrowseTest.addEventListener('click', () => el.testFileInput.click());
@@ -3150,27 +3219,33 @@ document.addEventListener('DOMContentLoaded', () => {
             card.className = 'studio-card';
             card.style.cssText = 'background:var(--bg-card); border:1px solid var(--border-color); border-radius:6px; overflow:hidden; display:flex; flex-direction:column;';
             const compCount = p.components ? p.components.length : 0;
+            const badgeClass = p.is_custom ? 'preset-badge-amber' : 'preset-badge-blue';
+            const customBadgeStyle = p.is_custom ? 'style="position:absolute; top:8px; right:8px; background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid rgba(168,85,247,0.4); font-size:0.7rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:3px;"' : 'style="position:absolute; top:8px; right:8px; font-size:0.7rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:3px;"';
 
             card.innerHTML = `
                 <div class="studio-thumb-wrapper" style="position:relative; width:100%; height:180px; background:#060a10; overflow:hidden;">
                     <img src="${p.reference_url}" alt="${p.name}" style="width:100%; height:100%; object-fit:cover;">
-                    <span class="preset-badge preset-badge-blue" style="position:absolute; top:8px; right:8px; font-size:0.7rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:3px;">${p.tier}</span>
+                    <span class="preset-badge ${badgeClass}" ${customBadgeStyle}>${p.tier}</span>
                 </div>
                 <div class="studio-body" style="padding:1rem; display:flex; flex-direction:column; justify-content:space-between; flex:1;">
                     <div>
                         <h3 style="font-size:1.05rem; margin-bottom:0.3rem;">${p.name}</h3>
                         <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.75rem;">
-                            ${compCount} Pre-calibrated SMT footprints &bull; ${p.resolution ? p.resolution[0] + '×' + p.resolution[1] + ' px' : '1024×1024 px'}
+                            ${compCount} ${p.is_custom ? 'Custom' : 'Pre-calibrated'} SMT footprints &bull; ${p.resolution ? p.resolution[0] + '×' + p.resolution[1] + ' px' : '1024×1024 px'}
                         </p>
                         <div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:1rem;">
                             ${(p.components || []).slice(0, 6).map(c => `<span class="tag-chip" style="font-size:0.7rem; padding:0.15rem 0.4rem; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:3px;">${c.name}</span>`).join('')}
                             ${compCount > 6 ? `<span class="tag-chip" style="font-size:0.7rem; padding:0.15rem 0.4rem; color:var(--text-muted);">+${compCount - 6} more</span>` : ''}
                         </div>
                     </div>
-                    <div style="margin-top:0.5rem;">
-                        <button type="button" class="btn btn-sm btn-primary btn-load-studio" data-id="${p.id}" style="width:100%;">
+                    <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+                        <button type="button" class="btn btn-sm btn-primary btn-load-studio" data-id="${p.id}" style="flex:1;">
                             Load into Inspection Station &rarr;
                         </button>
+                        ${p.is_custom ? `
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-delete-recipe" data-recipe-id="${p.id}" title="Delete Custom Recipe" style="padding:0.35rem 0.6rem; color:#ef4444; border-color:rgba(239,68,68,0.4);">
+                            <svg class="ui-icon btn-svg-icon" style="width:14px;height:14px;"><use href="#icon-trash"></use></svg>
+                        </button>` : ''}
                     </div>
                 </div>
             `;
@@ -3180,6 +3255,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadBtn.addEventListener('click', async () => {
                     switchWorkspace('workspace-inspect');
                     await applyPreset(p);
+                });
+            }
+
+            const delBtn = card.querySelector('.btn-delete-recipe');
+            if (delBtn) {
+                delBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (!confirm(`Are you sure you want to permanently delete custom recipe "${p.name}"?`)) return;
+                    try {
+                        const delRes = await fetch(`/api/recipes/${p.id}`, { method: 'DELETE' });
+                        if (delRes.ok) {
+                            showAlert(`Custom recipe "${p.name}" deleted.`, 'info');
+                            await loadPhysicalPresets();
+                        } else {
+                            showAlert('Failed to delete recipe.', 'danger');
+                        }
+                    } catch (err) {
+                        showAlert(`Delete failed: ${err.message}`, 'danger');
+                    }
                 });
             }
 
@@ -3232,6 +3326,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (el.nameModal && !el.nameModal.classList.contains('d-none')) {
                 el.nameModal.classList.add('d-none');
+            }
+            if (el.recipeSaveModal && !el.recipeSaveModal.classList.contains('d-none')) {
+                closeRecipeSaveModal();
             }
         }
     });
