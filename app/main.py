@@ -800,29 +800,20 @@ async def auto_detect_footprints(session_id: str, granularity: str = "standard")
     merged_boxes.sort(key=lambda b: (b[1] // 50, b[0]))
 
     detected_components = []
-    counts = {"K": 0, "CN": 0, "U": 0, "E": 0, "L": 0, "D": 0, "R": 0, "C": 0}
-    for (x, y, w, h) in merged_boxes:
+    for idx, (x, y, w, h) in enumerate(merged_boxes, 1):
         area = w * h
-        aspect = max(w, h) / max(1, min(w, h))
-        if area > 16000:
-            prefix = "K"   # Relays, transformers, power modules
-        elif aspect > 2.8 and max(w, h) > 90:
-            prefix = "CN"  # Multi-pin headers, terminal block connectors
-        elif min(w, h) > 55 and area > 2800:
-            prefix = "U"   # IC / MCU / Optocoupler packages
-        elif area > 3500 and aspect < 1.3:
-            prefix = "E"   # Electrolytic capacitor cans / toroids
-        elif area > 1200:
-            prefix = "L"   # Inductor coils / transformers / varistors
-        elif aspect > 2.0:
-            prefix = "D"   # Diodes / rectifiers
-        elif area < 800:
-            prefix = "R"   # Chip resistors
+        if area > 10000:
+            prefix = "MOD"
+        elif max(w, h) > 120:
+            prefix = "HDR"
+        elif min(w, h) > 60:
+            prefix = "IC"
+        elif area > 1500:
+            prefix = "CMP"
         else:
-            prefix = "C"   # Ceramic capacitors / generic passives
+            prefix = "SMD"
 
-        counts[prefix] += 1
-        cname = f"{prefix}{counts[prefix]}"
+        cname = f"{prefix}_{idx:02d}"
         detected_components.append({
             "name": cname,
             "bbox": [int(x), int(y), int(w), int(h)],

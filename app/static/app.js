@@ -149,23 +149,12 @@ document.addEventListener('DOMContentLoaded', () => {
         btnCaptureAsRef: document.getElementById('btn-capture-as-ref'),
         btnCaptureAsTest: document.getElementById('btn-capture-as-test'),
 
-        // Modal (Method A Silkscreen Matching)
+        // Modal
         nameModal: document.getElementById('name-modal'),
-        nameModalTitle: document.getElementById('name-modal-title'),
         compNameInput: document.getElementById('comp-name-input'),
-        btnClearNameInput: document.getElementById('btn-clear-name-input'),
         btnCancelName: document.getElementById('btn-cancel-name'),
-        btnCancelNameAction: document.getElementById('btn-cancel-name-action'),
         btnSaveName: document.getElementById('btn-save-name'),
         quickTagsContainer: document.getElementById('quick-tags-container'),
-        silkscreenSuffixContainer: document.getElementById('silkscreen-suffix-container'),
-        silkscreenLoupeCanvas: document.getElementById('silkscreen-loupe-canvas'),
-        silkscreenEnvelopeInfo: document.getElementById('silkscreen-envelope-info'),
-
-        // Canvas Optical Zoom Controls
-        btnCanvasZoomIn: document.getElementById('btn-canvas-zoom-in'),
-        btnCanvasZoomOut: document.getElementById('btn-canvas-zoom-out'),
-        btnCanvasZoomReset: document.getElementById('btn-canvas-zoom-reset'),
     };
 
     // Canvas drawing state
@@ -177,43 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let pendingPolygon = null; // [[x, y], ...]
     let freehandStroke = []; // [[x, y], ...]
     let polygonPoints = []; // [[x, y], ...]
-    let pendingEditingIndex = null; // Track index if editing an existing component
-    let selectedComponentIndex = null; // Highlight selected component
-
-    // --- STEP 2 OPTICAL ZOOM (METHOD A SILKSCREEN INSPECTION) ---
-    state.canvasZoom = 1.0;
-    const ZOOM_STEPS = [0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0];
-
-    function applyCanvasZoom(level) {
-        state.canvasZoom = level;
-        if (el.annotationCanvas && state.workingDim.width) {
-            el.annotationCanvas.style.width = Math.round(state.workingDim.width * level) + 'px';
-            el.annotationCanvas.style.height = Math.round(state.workingDim.height * level) + 'px';
-        }
-        if (el.btnCanvasZoomReset) {
-            el.btnCanvasZoomReset.textContent = Math.round(level * 100) + '%';
-        }
-    }
-
-    if (el.btnCanvasZoomIn) {
-        el.btnCanvasZoomIn.addEventListener('click', () => {
-            const next = ZOOM_STEPS.find(z => z > state.canvasZoom + 0.05) || 3.0;
-            applyCanvasZoom(next);
-        });
-    }
-
-    if (el.btnCanvasZoomOut) {
-        el.btnCanvasZoomOut.addEventListener('click', () => {
-            const prev = [...ZOOM_STEPS].reverse().find(z => z < state.canvasZoom - 0.05) || 0.75;
-            applyCanvasZoom(prev);
-        });
-    }
-
-    if (el.btnCanvasZoomReset) {
-        el.btnCanvasZoomReset.addEventListener('click', () => {
-            applyCanvasZoom(1.0);
-        });
-    }
 
     function setActiveTool(tool) {
         state.activeTool = tool;
@@ -734,9 +686,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
         // Draw existing components
-        state.components.forEach((comp, idx) => {
+        state.components.forEach((comp) => {
             const [x, y, w, h] = comp.bbox;
-            const isSelected = (idx === selectedComponentIndex);
 
             if (comp.polygon && comp.polygon.length >= 3) {
                 // Non-linear Polygon / Pencil Contour
@@ -747,21 +698,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     ctx.lineTo(comp.polygon[i][0], comp.polygon[i][1]);
                 }
                 ctx.closePath();
-                ctx.fillStyle = isSelected ? 'rgba(245, 158, 11, 0.35)' : 'rgba(56, 189, 248, 0.22)';
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.22)';
                 ctx.fill();
-                ctx.strokeStyle = isSelected ? '#f59e0b' : '#38bdf8';
-                ctx.lineWidth = isSelected ? 3.5 : 2.5;
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2.5;
                 ctx.stroke();
 
                 // Bounding envelope dashed
                 ctx.setLineDash([4, 4]);
-                ctx.strokeStyle = isSelected ? 'rgba(245, 158, 11, 0.7)' : 'rgba(56, 189, 248, 0.4)';
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
                 ctx.lineWidth = 1;
                 ctx.strokeRect(x, y, w, h);
                 ctx.restore();
 
                 // Label banner
-                ctx.fillStyle = isSelected ? '#d97706' : '#0284c7';
+                ctx.fillStyle = '#0284c7';
                 const label = `${comp.name} (${comp.shape_type === 'pencil' ? '✎' : '⬡'})`;
                 ctx.font = 'bold 15px -apple-system, sans-serif';
                 const textWidth = ctx.measureText(label).width;
@@ -770,14 +721,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 ctx.fillText(label, x + 5, Math.max(15, y - 6));
             } else {
                 // Standard Rectangle
-                ctx.strokeStyle = isSelected ? '#f59e0b' : '#388bfd';
-                ctx.lineWidth = isSelected ? 4 : 3;
+                ctx.strokeStyle = '#388bfd';
+                ctx.lineWidth = 3;
                 ctx.strokeRect(x, y, w, h);
-                ctx.fillStyle = isSelected ? 'rgba(245, 158, 11, 0.32)' : 'rgba(56, 139, 253, 0.2)';
+                ctx.fillStyle = 'rgba(56, 139, 253, 0.2)';
                 ctx.fillRect(x, y, w, h);
 
                 // Label banner
-                ctx.fillStyle = isSelected ? '#d97706' : '#388bfd';
+                ctx.fillStyle = '#388bfd';
                 const label = comp.name;
                 ctx.font = 'bold 16px -apple-system, sans-serif';
                 const textWidth = ctx.measureText(label).width;
@@ -939,23 +890,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Double-click on canvas: finish polygon OR edit clicked component directly
+    // Double-click to close multi-point polygon
     el.annotationCanvas.addEventListener('dblclick', (e) => {
         if (state.activeTool === 'polygon' && polygonPoints.length >= 3) {
             finishPolygonMarking();
-            return;
-        }
-
-        // Method A: Double-click component to open silkscreen designation modal
-        const pos = getCanvasCoords(e);
-        const hitIdx = state.components.findIndex(c => 
-            pos.x >= c.bbox[0] && pos.x <= c.bbox[0] + c.bbox[2] &&
-            pos.y >= c.bbox[1] && pos.y <= c.bbox[1] + c.bbox[3]
-        );
-        if (hitIdx !== -1) {
-            const comp = state.components[hitIdx];
-            selectedComponentIndex = hitIdx;
-            openNameModal(comp.bbox, comp.shape_type || 'rectangle', comp.polygon, hitIdx);
         }
     });
 
@@ -974,106 +912,33 @@ document.addEventListener('DOMContentLoaded', () => {
         renderAnnotationCanvas();
     }
 
-    function openNameModal(box, shapeType = 'rectangle', poly = null, editingIndex = null) {
+    function openNameModal(box, shapeType = 'rectangle', poly = null) {
         pendingBox = box;
         pendingShapeType = shapeType;
         pendingPolygon = poly;
-        pendingEditingIndex = editingIndex;
-
-        if (editingIndex !== null) {
-            if (el.nameModalTitle) {
-                el.nameModalTitle.innerHTML = '<svg class="ui-icon" style="color: var(--color-blue); width: 1.15rem; height: 1.15rem;"><use href="#icon-chip"></use></svg> Edit Silkscreen Designation';
-            }
-            if (el.btnSaveName) el.btnSaveName.textContent = 'Update Footprint';
-            el.compNameInput.value = state.components[editingIndex].name;
-        } else {
-            if (el.nameModalTitle) {
-                el.nameModalTitle.innerHTML = '<svg class="ui-icon" style="color: var(--color-blue); width: 1.15rem; height: 1.15rem;"><use href="#icon-chip"></use></svg> Silkscreen Component Designation';
-            }
-            if (el.btnSaveName) el.btnSaveName.textContent = 'Save Footprint';
-            el.compNameInput.value = '';
-        }
-
-        // Render 3x High-Definition Silkscreen Loupe Crop
-        if (el.silkscreenLoupeCanvas && state.referenceImg) {
-            const [bx, by, bw, bh] = box;
-            const pad = Math.max(25, Math.round(Math.max(bw, bh) * 0.35));
-            const sx = Math.max(0, bx - pad);
-            const sy = Math.max(0, by - pad);
-            const sw = Math.min(state.workingDim.width - sx, bw + pad * 2);
-            const sh = Math.min(state.workingDim.height - sy, bh + pad * 2);
-
-            const lCanvas = el.silkscreenLoupeCanvas;
-            const lCtx = lCanvas.getContext('2d');
-            lCtx.clearRect(0, 0, lCanvas.width, lCanvas.height);
-            lCtx.drawImage(state.referenceImg, sx, sy, sw, sh, 0, 0, lCanvas.width, lCanvas.height);
-
-            // Bounding box overlay in loupe
-            const lx = ((bx - sx) / sw) * lCanvas.width;
-            const ly = ((by - sy) / sh) * lCanvas.height;
-            const lw = (bw / sw) * lCanvas.width;
-            const lh = (bh / sh) * lCanvas.height;
-
-            lCtx.setLineDash([3, 3]);
-            lCtx.strokeStyle = '#38bdf8';
-            lCtx.lineWidth = 2;
-            lCtx.strokeRect(lx, ly, lw, lh);
-        }
-
-        if (el.silkscreenEnvelopeInfo) {
-            el.silkscreenEnvelopeInfo.textContent = `Envelope: [${box[0]}, ${box[1]}, ${box[2]}×${box[3]} px]`;
-        }
-
+        el.compNameInput.value = '';
         el.nameModal.classList.remove('d-none');
-        setTimeout(() => {
-            el.compNameInput.focus();
-            if (editingIndex !== null) el.compNameInput.select();
-        }, 50);
+        setTimeout(() => el.compNameInput.focus(), 50);
     }
 
     function closeNameModal() {
         el.nameModal.classList.add('d-none');
         pendingBox = null;
         pendingPolygon = null;
-        pendingEditingIndex = null;
         freehandStroke = [];
         polygonPoints = [];
         renderAnnotationCanvas();
     }
 
-    if (el.btnCancelName) el.btnCancelName.addEventListener('click', closeNameModal);
-    if (el.btnCancelNameAction) el.btnCancelNameAction.addEventListener('click', closeNameModal);
-    if (el.btnClearNameInput) el.btnClearNameInput.addEventListener('click', () => {
-        el.compNameInput.value = '';
-        el.compNameInput.focus();
+    el.btnCancelName.addEventListener('click', closeNameModal);
+
+    el.quickTagsContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('tag-chip')) {
+            const prefix = e.target.getAttribute('data-prefix');
+            const count = state.components.filter(c => c.name.startsWith(prefix)).length + 1;
+            el.compNameInput.value = `${prefix}${count}`;
+        }
     });
-
-    if (el.quickTagsContainer) {
-        el.quickTagsContainer.addEventListener('click', (e) => {
-            if (e.target.classList.contains('tag-chip')) {
-                const prefix = e.target.getAttribute('data-prefix');
-                // Calculate next sequential number
-                const count = state.components.filter((c, i) => i !== pendingEditingIndex && (c.name.startsWith(prefix) || c.name.startsWith(prefix + '_'))).length + 1;
-                el.compNameInput.value = `${prefix}${count}`;
-                el.compNameInput.focus();
-                el.compNameInput.select();
-            }
-        });
-    }
-
-    if (el.silkscreenSuffixContainer) {
-        el.silkscreenSuffixContainer.addEventListener('click', (e) => {
-            if (e.target.classList.contains('btn-suffix')) {
-                const suffix = e.target.getAttribute('data-suffix');
-                if (!el.compNameInput.value.trim()) {
-                    el.compNameInput.value = `CN1${suffix}`;
-                } else {
-                    el.compNameInput.value += suffix;
-                }
-                el.compNameInput.focus();
-            }
-        });
-    }
 
     el.btnSaveName.addEventListener('click', savePendingComponent);
     el.compNameInput.addEventListener('keydown', (e) => {
@@ -1092,28 +957,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function savePendingComponent() {
-        const name = el.compNameInput.value.trim() || (pendingEditingIndex !== null ? state.components[pendingEditingIndex].name : `PART_${state.components.length + 1}`);
-
-        if (pendingEditingIndex !== null) {
-            // Update existing component in-place
-            const target = state.components[pendingEditingIndex];
-            target.name = name;
-            if (pendingBox) {
-                target.bbox = pendingBox;
-                target.shape_type = pendingShapeType || target.shape_type || 'rectangle';
-                target.polygon = pendingPolygon || target.polygon || null;
-                target.warning = getBoxWarning(pendingBox[2], pendingBox[3], state.workingDim.width, state.workingDim.height);
-                target.normalized = [
-                    Number((pendingBox[0] / state.workingDim.width).toFixed(4)),
-                    Number((pendingBox[1] / state.workingDim.height).toFixed(4)),
-                    Number((pendingBox[2] / state.workingDim.width).toFixed(4)),
-                    Number((pendingBox[3] / state.workingDim.height).toFixed(4)),
-                ];
-            }
-            showAlert(`Updated component designator to "${name}".`, 'info');
-            pendingEditingIndex = null;
-        } else if (pendingBox) {
-            // Create new component
+        const name = el.compNameInput.value.trim() || `PART_${state.components.length + 1}`;
+        if (pendingBox) {
             const [x, y, w, h] = pendingBox;
             const warning = getBoxWarning(w, h, state.workingDim.width, state.workingDim.height);
 
@@ -1148,7 +993,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         state.components.forEach((comp, idx) => {
             const item = document.createElement('div');
-            item.className = 'component-card-item' + (idx === selectedComponentIndex ? ' selected' : '');
+            item.className = 'component-card-item';
 
             const [x, y, w, h] = comp.bbox;
             const warningBadge = comp.warning ? `<span class="badge badge-amber" title="${comp.warning}">FLAGGED</span>` : '';
@@ -1194,19 +1039,12 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', (e) => {
                 if (!canAuthorFootprints()) return;
                 const idx = parseInt(e.target.getAttribute('data-idx'));
-                const comp = state.components[idx];
-                selectedComponentIndex = idx;
-                openNameModal(comp.bbox, comp.shape_type || 'rectangle', comp.polygon, idx);
-            });
-        });
-
-        // Click component card to highlight and select
-        el.componentListContainer.querySelectorAll('.component-card-item').forEach((item, idx) => {
-            item.addEventListener('click', (e) => {
-                if (e.target.closest('.comp-item-actions')) return;
-                selectedComponentIndex = (selectedComponentIndex === idx) ? null : idx;
-                renderAnnotationCanvas();
-                renderComponentsList();
+                const newName = prompt('Enter new component name:', state.components[idx].name);
+                if (newName && newName.trim()) {
+                    state.components[idx].name = newName.trim();
+                    renderAnnotationCanvas();
+                    renderComponentsList();
+                }
             });
         });
     }

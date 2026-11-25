@@ -3100,36 +3100,3 @@ body {
     align-items: center;
 }
 
-
-/* Method A: Silkscreen Matching Workstation */
-.modal-card-silkscreen {
-    max-width: 550px;
-}
-
-.btn-suffix {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 3px;
-    padding: 0.18rem 0.45rem;
-    font-size: 0.72rem;
-    font-family: var(--font-mono);
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.btn-suffix:hover {
-    border-color: var(--color-blue);
-    color: var(--color-blue);
-    background: rgba(56, 189, 248, 0.12);
-}
-
-.btn-zoom-btn:hover {
-    background: rgba(56, 189, 248, 0.15) !important;
-    color: var(--color-blue) !important;
-}
-
-.component-card-item.selected {
-    border-color: #38bdf8 !important;
-    background: rgba(56, 189, 248, 0.08) !important;
-}
