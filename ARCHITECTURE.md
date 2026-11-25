@@ -52,58 +52,107 @@ This document defines the Software Requirements Specification (SRS), formal UML 
 
 ## 3. System Architecture & UML Models
 
-### 3.1 Component Architecture
+### 3.1 Latest Component Architecture Diagram (Revision 2.1.0)
 
 ```mermaid
 graph TD
-    subgraph Client_Tier ["Presentation Layer (Offline Browser SPA)"]
-        UI_View["Shop-Floor Operator & Engineer UI (HTML5 / Vanilla CSS)"]
-        UI_Canvas["Canvas ROI Annotation & Overlay Engine"]
-        UI_State["Client State & Session Store"]
+    subgraph Client_Tier ["Presentation Layer (Air-Gapped Responsive Browser SPA)"]
+        UI_Studio["PCB Board & CAD Recipe Studio (5 Golden Presets + Custom Boards)"]
+        UI_Editor["Component Footprint Editor (Rectangle, Freehand, Polygon, Auto-Detect)"]
+        UI_Modal["Interstitial Recipe Save Modal (Persist Board to Studio before Batch)"]
+        UI_Station["Batch Inspection Station (Side-by-Side, Split-Slider, Blink Compare)"]
+        UI_Loupe["3× Digital Optical Loupe (1×-5× Zoom, Reticle, Shift Vector, Blink Compare)"]
+        UI_Report["ISO 9001 Quality Certificate & Batch Telemetry Exporter"]
+        UI_State["Single Unified Operator State & Session Store"]
     end
 
-    subgraph API_Gateway ["Application Server Tier (FastAPI)"]
-        API_Router["REST API Gateway (app/main.py)"]
-        Session_Mgr["In-Memory Session & Recipe Registry"]
-        Static_Srv["Static Asset Server (Zero CDN)"]
+    subgraph API_Gateway ["Application Server Tier (FastAPI Gateway)"]
+        API_Ref["POST /api/reference (Reference Board Ingestion)"]
+        API_Recipe["GET/POST/DELETE /api/presets & /api/recipes (CAD Studio Persistence)"]
+        API_Save["POST /api/sessions/{id}/save-recipe (Interstitial Recipe Persist)"]
+        API_Inspect["POST /api/inspect (Batch Multi-Image Inspection)"]
+        API_Aligned["GET /api/sessions/{id}/aligned-image/{fn} (Pixel-Aligned Test Board)"]
+        API_Loupe["GET /api/sessions/{id}/loupe/{fn}/{comp} (High-Accuracy Loupe Data)"]
+        API_Auth["POST /api/auth/login (Unified SMT Station Operator Auth)"]
+        Session_Registry["In-Memory SESSIONS Cache & Alignment Buffer"]
     end
 
-    subgraph Processing_Engine ["Hybrid Inspection Core (app/core)"]
-        Img_Prep["Image Loader & Border Masker (image_loader.py)"]
-        Aligner["Rigid Euclidean ECC Aligner (aligner.py)"]
+    subgraph Core_Engine ["Hybrid AOI Inspection Core (app/core)"]
+        Img_Prep["Image Loader, Exif Transpose & Normalizer (image_loader.py)"]
+        ECC_Aligner["Rigid Euclidean ECC / Homography Aligner (aligner.py)"]
         
-        subgraph Stage1_CV ["Stage 1: Deterministic CV Gate"]
-            ZNCC_Engine["Bounded Local ZNCC Search (detector.py)"]
-            Delta_Engine["Normalized Patch MAE (detector.py)"]
-            Tolerance_Engine["Auto-Calibration Profile Engine (auto_calibration.py)"]
-            Decision_Gate["7-State SMT Defect Classifier (decision.py)"]
+        subgraph Stage1_Deterministic ["Stage 1: Deterministic CV Gate"]
+            ZNCC_Search["Bounded Local ZNCC Search: -16px to +16px (detector.py)"]
+            Patch_MAE["Normalized Patch Mean Absolute Error (detector.py)"]
+            Tolerance_Profile["Golden Board Auto-Calibration Registry (auto_calibration.py)"]
+            Geometry_Analyzer["Rotation (Tilt) & Subpixel Shift Vector (shift_analyzer.py)"]
         end
 
-        subgraph Stage2_DL ["Stage 2: Deep Learning Triage"]
-            Crop_Extractor["Package Mask & Sub-ROI Isolator"]
-            Deep_Embedder["Offline Siamese Metric Extractor (dl_verifier.py)"]
-            Feature_Dist["Cosine Feature Distance Evaluator"]
+        subgraph Stage2_Triage ["Stage 2: Deep Learning Triage & Edge Invariance"]
+            SubROI_Extractor["Package Mask & Sub-ROI Isolator (dl_verifier.py)"]
+            Deep_Embedder["Offline PyTorch ConvNet / MobileNet Backbone"]
+            Cosine_Distance["Cosine Latent Feature Distance Evaluator"]
+        end
+
+        subgraph Defect_Classifier ["7-Class IPC-A-610 Decision Engine (decision.py)"]
+            Class_Present["PRESENT: Nominal SMT Joint"]
+            Class_Missing["MISSING: Zero-Escape Bare Pad"]
+            Class_Tilted["TILTED: Angular Skew > 3.5 deg"]
+            Class_Shift["MISALIGNED: Shift > 5.0 px"]
+            Class_Tombstone["TOMBSTONED: Vertical Pad Lift"]
+            Class_Bridged["BRIDGED: Solder Short"]
+            Class_Polarity["POLARITY_REVERSED: 180 deg Inverted"]
+            Class_Uncertain["UNCERTAIN: Operator Escalation"]
+        end
+
+        subgraph Loupe_Engine ["Digital Microscope Engine (app/main.py)"]
+            Loupe_Aligned_Crop["100% Subpixel-Aligned ROI Crops (Ref & Test)"]
+            Illum_Comp_Residual["Illumination-Compensated Residual Heatmap"]
+            Vector_Reticle_Generator["Subpixel Reticle Crosshairs & Shift Vector"]
         end
     end
 
-    subgraph Persistence ["Data & Audit Tier"]
-        Recipe_Store["JSON Recipe Configurations & Studio Gallery"]
-        Audit_Log["Inspection Records & Telemetry"]
+    subgraph Persistence_Tier ["Offline Storage & Disk Persistence"]
+        Studio_Presets["Built-in Presets: data/multiboard/ground_truth_multiboard.json"]
+        Custom_Recipes["Custom Recipes: data/custom_recipes/*.recipe.json"]
+        Batch_Archive["Audit Logs & Export: results/api_sample_request_response.json"]
     end
 
-    UI_View -->|HTTP POST Multipart| API_Router
-    API_Router --> Session_Mgr
-    API_Router --> Img_Prep
-    Img_Prep --> Aligner
-    Aligner --> Stage1_CV
-    Stage1_CV -->|Clear Present / Missing| Decision_Gate
-    Stage1_CV -->|Uncertain / Glare Flag| Stage2_DL
-    Stage2_DL --> Decision_Gate
-    Decision_Gate --> API_Router
-    API_Router --> UI_State
-    UI_State --> UI_Canvas
-    API_Router --> Audit_Log
-    Session_Mgr --> Recipe_Store
+    %% Client Interactions
+    UI_Studio -->|Select Preset / Load Custom| API_Recipe
+    UI_Editor -->|Define Bounding Boxes| API_Inspect
+    UI_Editor -->|Proceed to Inspection| UI_Modal
+    UI_Modal -->|Save Custom Recipe Yes/No| API_Save
+    API_Save --> Custom_Recipes
+    UI_Station -->|Batch Test Boards| API_Inspect
+    UI_Station -->|Fetch Aligned Canvas| API_Aligned
+    UI_Station -->|Click Component Row| UI_Loupe
+    UI_Loupe -->|Request Exact Crop & Heatmap| API_Loupe
+
+    %% Server Internal Routing
+    API_Ref --> Img_Prep
+    API_Inspect --> Session_Registry
+    API_Inspect --> Img_Prep
+    Img_Prep --> ECC_Aligner
+    ECC_Aligner --> Stage1_Deterministic
+    Stage1_Deterministic --> Geometry_Analyzer
+    Stage1_Deterministic -->|Clear Matches / Missing| Defect_Classifier
+    Stage1_Deterministic -->|Ambiguous 0.82 <= ZNCC < 0.89| Stage2_Triage
+    Stage2_Triage --> Defect_Classifier
+    Defect_Classifier --> Session_Registry
+    
+    %% Loupe & Aligned Image Service
+    API_Aligned --> Session_Registry
+    API_Loupe --> Loupe_Engine
+    Loupe_Engine --> Loupe_Aligned_Crop
+    Loupe_Engine --> Illum_Comp_Residual
+    Loupe_Engine --> Vector_Reticle_Generator
+
+    %% Persistence
+    API_Recipe --> Studio_Presets
+    API_Recipe --> Custom_Recipes
+    Session_Registry --> Batch_Archive
+    UI_Report --> Batch_Archive
 ```
 
 ---
