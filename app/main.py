@@ -711,11 +711,14 @@ async def get_physical_presets():
 
 
 @app.post("/api/sessions/{session_id}/auto-detect-footprints")
-async def auto_detect_footprints(session_id: str):
+async def auto_detect_footprints(session_id: str, granularity: str = "standard"):
     """
     Computer Vision assisted component discovery:
     Analyzes the session's Golden Reference image using adaptive thresholding,
     morphological clustering, and contour filtering to propose candidate component footprints.
+    Granularity options:
+    - 'standard': Nominal SMT components and IC packages (default)
+    - 'fine': Higher sensitivity for compact discrete passives (0402/0603/0805)
     """
     if session_id not in SESSIONS:
         raise HTTPException(
@@ -733,20 +736,24 @@ async def auto_detect_footprints(session_id: str):
     # 1. Bilateral filter to smooth texture while preserving sharp IC edges and pads
     filtered = cv2.bilateralFilter(gray, 9, 75, 75)
 
+    is_fine = granularity.lower().strip() == "fine"
+    c_val = 3 if is_fine else 4
+    k_dim = 5 if is_fine else 9
+
     # 2. Adaptive thresholding with inverse binary
     thresh = cv2.adaptiveThreshold(
-        filtered, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 31, 4
+        filtered, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 31, c_val
     )
 
     # 3. Morphological closing to bridge component pins/leads to component body
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (k_dim, k_dim))
     closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations=2)
 
     # 4. Find external contours
     contours, _ = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     board_area = work_h * work_w
-    min_area = max(150, int(board_area * 0.0002))     # minimum 150 px or 0.02% of board
+    min_area = max(60, int(board_area * 0.00008)) if is_fine else max(150, int(board_area * 0.0002))
     max_area = int(board_area * 0.25)                  # maximum 25% of board (ignore board outline)
 
     boxes = []

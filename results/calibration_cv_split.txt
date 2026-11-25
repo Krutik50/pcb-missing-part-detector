@@ -20,10 +20,10 @@ TRAIN ON FOLD 2 -> TEST ON FOLD 1:
   Fold 2 Separation: Min Present ZNCC = 0.962, Max Missing ZNCC = 0.859
   Chosen Thresholds: ZNCC mid = 0.911, Diff mid = 0.053
   Test Results on Fold 1:
-    - Board-level Accuracy  : 4 / 10 (40.0%)
+    - Board-level Accuracy  : 9 / 10 (90.0%)
     - Expected Missing Parts: 3
     - Detected Missing Parts: 3
     - False Alarms          : 0
     - Misses                : 0
-    - Uncertain Calls       : 28
+    - Uncertain Calls       : 1
 ================================================================================

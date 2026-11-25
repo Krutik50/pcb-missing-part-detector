@@ -78,7 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
         refDropzone: document.getElementById('ref-dropzone'),
         refFileInput: document.getElementById('ref-file-input'),
         btnBrowseRef: document.getElementById('btn-browse-ref'),
-        btnLoadSampleRef: document.getElementById('btn-load-sample-ref'),
         btnCameraRef: document.getElementById('btn-camera-ref'),
         btnOpenCamera: document.getElementById('btn-open-camera'),
 
@@ -94,10 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
         componentListContainer: document.getElementById('component-list-container'),
         emptyCompsMsg: document.getElementById('empty-comps-msg'),
         compCount: document.getElementById('comp-count'),
-        btnLoadSampleComps: document.getElementById('btn-load-sample-comps'),
         btnClearComps: document.getElementById('btn-clear-comps'),
         btnExportRecipe: document.getElementById('btn-export-recipe'),
-        btnAutoDetect: document.getElementById('btn-auto-detect'),
         btnImportRecipe: document.getElementById('btn-import-recipe'),
         recipeFileInput: document.getElementById('recipe-file-input'),
         btnProceedToStep3: document.getElementById('btn-proceed-to-step3'),
@@ -107,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
         testFileInput: document.getElementById('test-file-input'),
         btnBrowseTest: document.getElementById('btn-browse-test'),
         testFileList: document.getElementById('test-file-list'),
-        btnLoadSampleBatch: document.getElementById('btn-load-sample-batch'),
         btnCameraTest: document.getElementById('btn-camera-test'),
         btnRunInspect: document.getElementById('btn-run-inspect'),
         inspectionSpinner: document.getElementById('inspection-spinner'),
@@ -117,6 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleViewCarousel: document.getElementById('toggle-view-carousel'),
         toggleViewStacked: document.getElementById('toggle-view-stacked'),
         activeSessionBadge: document.getElementById('active-session-badge'),
+
+        // Board & CAD Studio
+        btnExportStudioRecipes: document.getElementById('btn-export-studio-recipes'),
 
         // Batch Summary & KPIs
         batchSummaryPanel: document.getElementById('batch-summary-panel'),
@@ -301,7 +300,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (canvasContainer) canvasContainer.classList.remove('canvas-locked');
             if (el.btnClearComps) el.btnClearComps.disabled = false;
-            if (el.btnLoadSampleComps) el.btnLoadSampleComps.disabled = false;
             if (el.btnImportRecipe) el.btnImportRecipe.disabled = false;
         } else {
             if (step2Banner) {
@@ -313,7 +311,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (canvasContainer) canvasContainer.classList.add('canvas-locked');
             if (el.btnClearComps) el.btnClearComps.disabled = true;
-            if (el.btnLoadSampleComps) el.btnLoadSampleComps.disabled = true;
             if (el.btnImportRecipe) el.btnImportRecipe.disabled = true;
         }
 
@@ -718,26 +715,6 @@ document.addEventListener('DOMContentLoaded', () => {
             el.btnBrowseRef.disabled = false;
             el.btnBrowseRef.textContent = 'Select Reference Image';
         }
-    }
-
-    // Quick sample reference loader (optional fallback)
-    if (el.btnLoadSampleRef) {
-        el.btnLoadSampleRef.addEventListener('click', async () => {
-            try {
-                el.btnLoadSampleRef.disabled = true;
-                el.btnLoadSampleRef.textContent = 'Loading sample...';
-                const res = await fetch('/sample_data/reference.png');
-                if (!res.ok) throw new Error('Sample reference not found on server');
-                const blob = await res.blob();
-                const file = new File([blob], 'reference.png', { type: 'image/png' });
-                await handleReferenceFile(file);
-            } catch (err) {
-                showAlert(`Could not load sample reference: ${err.message}`, 'danger');
-            } finally {
-                el.btnLoadSampleRef.disabled = false;
-                el.btnLoadSampleRef.textContent = 'Load Sample Reference (sample_data/reference.png)';
-            }
-        });
     }
 
     // --- STEP 2: CANVAS ANNOTATION ---
@@ -1231,44 +1208,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderAnnotationCanvas();
                 renderComponentsList();
             });
-        });
-    }
-
-    // Quick load standard components (optional fallback)
-    if (el.btnLoadSampleComps) {
-        el.btnLoadSampleComps.addEventListener('click', async () => {
-            if (!canAuthorFootprints()) {
-                showAlert('Read-Only Layout Mode: Loading footprints requires Supervisor authorization.', 'warning');
-                return;
-            }
-            try {
-                const res = await fetch('/api/sample-components');
-                if (!res.ok) throw new Error('Failed to fetch standard components');
-                const data = await res.json();
-                const comps = data.components;
-
-                state.components = Object.keys(comps).map(cid => {
-                    const info = comps[cid];
-                    const [x, y, w, h] = info.pixel_bbox;
-                    return {
-                        id: cid,
-                        name: cid,
-                        bbox: [x, y, w, h],
-                        warning: getBoxWarning(w, h, state.workingDim.width, state.workingDim.height),
-                        normalized: [
-                            Number((x / state.workingDim.width).toFixed(4)),
-                            Number((y / state.workingDim.height).toFixed(4)),
-                            Number((w / state.workingDim.width).toFixed(4)),
-                            Number((h / state.workingDim.height).toFixed(4)),
-                        ],
-                    };
-                });
-
-                renderAnnotationCanvas();
-                renderComponentsList();
-            } catch (err) {
-                showAlert(`Could not load standard components: ${err.message}`, 'danger');
-            }
         });
     }
 
@@ -1836,76 +1775,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         el.btnRunInspect.disabled = state.testFiles.length === 0;
-    }
-
-    // Quick sample batch loader (optional fallback)
-    if (el.btnLoadSampleBatch) {
-        el.btnLoadSampleBatch.addEventListener('click', async () => {
-            const sampleFiles = [
-                { name: 'calib_01_all_ok_nominal.png', path: '/sample_data/calibration/calib_01_all_ok_nominal.png' },
-                { name: 'calib_08_missing_u1_mcu.png', path: '/sample_data/calibration/calib_08_missing_u1_mcu.png' },
-                { name: 'calib_12_missing_adj_c1_c2.png', path: '/sample_data/calibration/calib_12_missing_adj_c1_c2.png' },
-            ];
-
-            try {
-                el.btnLoadSampleBatch.disabled = true;
-                el.btnLoadSampleBatch.textContent = 'Loading sample batch...';
-
-                for (const item of sampleFiles) {
-                    const res = await fetch(item.path);
-                    if (res.ok) {
-                        const blob = await res.blob();
-                        const file = new File([blob], item.name, { type: 'image/png' });
-                        addTestFiles([file]);
-                    }
-                }
-            } catch (err) {
-                showAlert(`Failed to load sample batch: ${err.message}`, 'danger');
-            } finally {
-                el.btnLoadSampleBatch.disabled = false;
-                el.btnLoadSampleBatch.textContent = 'Load Sample Batch';
-            }
-        });
-    }
-
-    // 1-Click Load Physical Test Batch for Active Preset
-    if (el.btnLoadPresetBatch) {
-        el.btnLoadPresetBatch.addEventListener('click', async () => {
-            let preset = state.activePreset;
-            if (!preset && state.presets && state.presets.length > 0) {
-                preset = state.presets[0];
-            }
-            if (!preset || !preset.sample_tests || preset.sample_tests.length === 0) {
-                showAlert('No pre-configured physical test batch found for this board. Please select a golden board preset first.', 'warning');
-                return;
-            }
-
-            try {
-                el.btnLoadPresetBatch.disabled = true;
-                el.btnLoadPresetBatch.textContent = 'Loading physical test boards...';
-
-                const loadedFiles = [];
-                for (const item of preset.sample_tests) {
-                    const res = await fetch(item.url);
-                    if (res.ok) {
-                        const blob = await res.blob();
-                        const file = new File([blob], item.name, { type: 'image/png' });
-                        loadedFiles.push(file);
-                    }
-                }
-                if (loadedFiles.length > 0) {
-                    addTestFiles(loadedFiles);
-                    showAlert(`Loaded ${loadedFiles.length} physical test boards (nominal, missing, tilted, shifted) for "${preset.name}"!`, 'success');
-                } else {
-                    showAlert('Could not load physical test images from server.', 'danger');
-                }
-            } catch (err) {
-                showAlert(`Failed to load physical test batch: ${err.message}`, 'danger');
-            } finally {
-                el.btnLoadPresetBatch.disabled = false;
-                el.btnLoadPresetBatch.textContent = 'Load Physical Test Batch for This Board';
-            }
-        });
     }
 
     // Run Automated Inspection (Single Click - Balanced Calibrated Operating Standard)
@@ -3676,7 +3545,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-        function switchWorkspace(targetId) {
+    // Export All Recipes from Studio
+    const btnExportStudio = document.getElementById('btn-export-studio-recipes');
+    if (btnExportStudio) {
+        btnExportStudio.addEventListener('click', async () => {
+            try {
+                const res = await fetch('/api/recipes');
+                if (!res.ok) throw new Error('Failed to retrieve recipes from server');
+                const data = await res.json();
+                const jsonBlob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(jsonBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `pcb_board_recipes_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showAlert('Board & CAD Studio recipes successfully exported as JSON!', 'success');
+            } catch (err) {
+                showAlert(`Export failed: ${err.message}`, 'danger');
+            }
+        });
+    }
+
+    function switchWorkspace(targetId) {
         workspaceLinks.forEach(link => {
             if (link.getAttribute('data-workspace') === targetId) {
                 link.classList.add('active');

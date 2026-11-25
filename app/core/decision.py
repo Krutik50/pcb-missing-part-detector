@@ -82,18 +82,16 @@ def classify_component(
     elif is_present:
         # Evaluate SMT placement tolerances (IPC-A-610 Class 2/3 and Auto-Calibration envelope)
         if abs(tilt_deg) > max_tilt:
+            status = "TILTED"
             if auto_calibrated:
-                status = "UNCERTAIN"  # Automatically routed to human review!
-                reason = f"Auto-Calibration Alert: Tilt {tilt_deg:+.1f}° exceeds learned limit (±{max_tilt:.1f}° from {good_units} good {model_name} boards) — marked for human review"
+                reason = f"Auto-Calibration Defect: Tilt {tilt_deg:+.1f}° exceeds learned limit (±{max_tilt:.1f}° from {good_units} good {model_name} boards)"
             else:
-                status = "TILTED"
                 reason = f"Component skewed/tilted by {tilt_deg:+.1f}° (Tolerance limit: ±{max_tilt:.1f}°)"
         elif shift_dist > max_shift:
+            status = "MISALIGNED"
             if auto_calibrated:
-                status = "UNCERTAIN"  # Automatically routed to human review!
-                reason = f"Auto-Calibration Alert: Shift {shift_dist:.1f}px exceeds learned limit ({max_shift:.1f}px from {good_units} good {model_name} boards) — marked for human review"
+                reason = f"Auto-Calibration Defect: Shift {shift_dist:.1f}px exceeds learned limit ({max_shift:.1f}px from {good_units} good {model_name} boards, dx={shift_x:+.1f}, dy={shift_y:+.1f})"
             else:
-                status = "MISALIGNED"
                 reason = f"Component shifted by {shift_dist:.1f}px (Tolerance limit: {max_shift:.1f}px, dx={shift_x:+.1f}, dy={shift_y:+.1f})"
         else:
             status = "PRESENT"

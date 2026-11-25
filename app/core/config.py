@@ -60,8 +60,8 @@ class DetectionConfig:
             return {
                 "zncc_high": min(0.95, base_zncc_high + 0.08),
                 "zncc_low": min(0.90, base_zncc_low + 0.08),
-                "diff_low": max(0.10, base_diff_low - 0.05),
-                "diff_high": max(0.15, base_diff_high - 0.05),
+                "diff_low": max(0.02, base_diff_low - 0.025),
+                "diff_high": max(0.04, base_diff_high - 0.030),
                 "max_allowed_tilt_deg": max(1.5, self.max_allowed_tilt_deg - 1.5),
                 "max_allowed_shift_px": max(2.5, self.max_allowed_shift_px - 1.5),
             }

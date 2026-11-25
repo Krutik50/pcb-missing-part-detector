@@ -19,6 +19,7 @@ Evaluates:
   - Latency per Board (ms)
 """
 
+import argparse
 import json
 import time
 from pathlib import Path
@@ -34,7 +35,7 @@ from app.core.dl_verifier import get_dl_verifier
 
 DEFECT_TYPES = ["MISSING", "TILTED", "MISALIGNED", "BRIDGED", "POLARITY_REVERSED", "TOMBSTONED"]
 
-def run_multiboard_benchmark(split_filter="test") -> Dict[str, Any]:
+def run_multiboard_benchmark(split_filter="test", board_filter="all", max_boards=None) -> Dict[str, Any]:
     root = Path(__file__).resolve().parent
     dataset_dir = root / "data" / "multiboard"
     gt_file = dataset_dir / "ground_truth_multiboard.json"
@@ -52,13 +53,23 @@ def run_multiboard_benchmark(split_filter="test") -> Dict[str, Any]:
     images_dict = gt_data["images"]
 
     # Filter images by split
-    if split_filter:
+    if split_filter and split_filter != "all":
         images_to_eval = [
             (img_rel, meta) for img_rel, meta in images_dict.items()
             if meta.get("split") == split_filter
         ]
     else:
         images_to_eval = list(images_dict.items())
+
+    # Filter by board architecture if requested
+    if board_filter and board_filter != "all":
+        images_to_eval = [
+            (img_rel, meta) for img_rel, meta in images_to_eval
+            if meta.get("board_id") == board_filter
+        ]
+
+    if max_boards:
+        images_to_eval = images_to_eval[:max_boards]
 
     cfg = DetectionConfig(sensitivity="balanced")
     dl_verifier = get_dl_verifier()
@@ -233,28 +244,34 @@ def run_multiboard_benchmark(split_filter="test") -> Dict[str, Any]:
 
     return mode_results
 
-    return mode_results
-
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Multi-Board Physical PCB Benchmark across 5 hardware architectures.")
+    parser.add_argument("--split", choices=["test", "train", "all"], default="test",
+                        help="Dataset split to evaluate (default: test)")
+    parser.add_argument("--board", choices=["all", "arduino_uno", "appliance_board", "scale_controller", "analog_sensor", "inverter_driver"],
+                        default="all", help="Target board architecture filter (default: all)")
+    parser.add_argument("--max-boards", type=int, default=None,
+                        help="Limit evaluation to first N boards for rapid verification")
+    parser.add_argument("--output", type=str, default=None,
+                        help="Path to save benchmark JSON summary (default: results/multiboard_benchmark.json)")
+    args = parser.parse_args()
+
     root = Path(__file__).resolve().parent
     results_dir = root / "results"
     results_dir.mkdir(parents=True, exist_ok=True)
 
-    print("\n>>> RUNNING TEST SET (HELD-OUT 30% - 150 BOARDS) BENCHMARK")
-    test_results = run_multiboard_benchmark(split_filter="test")
+    if args.split == "all":
+        print("\n>>> RUNNING TEST SET (HELD-OUT 30%) BENCHMARK")
+        test_res = run_multiboard_benchmark(split_filter="test", board_filter=args.board, max_boards=args.max_boards)
+        print("\n>>> RUNNING TRAINING SET (CALIBRATION 70%) BENCHMARK")
+        train_res = run_multiboard_benchmark(split_filter="train", board_filter=args.board, max_boards=args.max_boards)
+        summary = {"timestamp": time.strftime("%Y-%m-%d %H:%M:%S"), "test_results": test_res, "train_results": train_res}
+    else:
+        print(f"\n>>> RUNNING {args.split.upper()} SET BENCHMARK (Board filter: {args.board})")
+        res = run_multiboard_benchmark(split_filter=args.split, board_filter=args.board, max_boards=args.max_boards)
+        summary = {"timestamp": time.strftime("%Y-%m-%d %H:%M:%S"), "split": args.split, "board_filter": args.board, "results": res}
 
-    print("\n\n>>> RUNNING TRAINING SET (CALIBRATION 70% - 350 BOARDS) BENCHMARK")
-    train_results = run_multiboard_benchmark(split_filter="train")
-
-    benchmark_summary = {
-        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "total_boards": 500,
-        "architectures": 5,
-        "test_split_30pct": test_results,
-        "train_split_70pct": train_results
-    }
-
-    out_file = results_dir / "multiboard_benchmark.json"
+    out_file = Path(args.output) if args.output else results_dir / "multiboard_benchmark.json"
     with open(out_file, "w", encoding="utf-8") as f:
-        json.dump(benchmark_summary, f, indent=2)
+        json.dump(summary, f, indent=2)
     print(f"\n[OK] Benchmark metrics successfully saved to {out_file}")

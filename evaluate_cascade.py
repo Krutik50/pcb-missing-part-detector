@@ -5,6 +5,7 @@ Evaluation benchmark comparing:
 on the held-out test dataset.
 """
 
+import argparse
 import json
 import time
 from pathlib import Path
@@ -17,7 +18,7 @@ from app.core.decision import classify_component, aggregate_board_status
 from app.core.config import DetectionConfig
 from app.core.dl_verifier import get_dl_verifier
 
-def run_benchmark():
+def run_benchmark(mode_filter: str = "all", max_boards: int = None):
     root = Path(__file__).resolve().parent
     sample_dir = root / "sample_data"
     gt_file = sample_dir / "ground_truth.json"
@@ -34,13 +35,17 @@ def run_benchmark():
     images_to_eval = [
         (k, v) for k, v in gt_data["images"].items() if v.get("split") == "test_heldout"
     ]
+    if max_boards:
+        images_to_eval = images_to_eval[:max_boards]
+
     components = gt_data["components"]
 
     print("=" * 80)
     print("BENCHMARK: PURE RULE-BASED vs CASCADED HYBRID (RULE + DEEP LEARNING)")
     print("=" * 80)
 
-    for mode in ["rule_based_only", "cascaded_hybrid"]:
+    modes = ["rule_based_only", "cascaded_hybrid"] if mode_filter == "all" else [mode_filter]
+    for mode in modes:
         total_evals = 0
         correct_calls = 0
         false_alarms = 0
@@ -129,4 +134,11 @@ def run_benchmark():
         print(f"  Avg Latency per Board   : {per_board_ms:.1f} ms")
 
 if __name__ == "__main__":
-    run_benchmark()
+    parser = argparse.ArgumentParser(description="Cascaded Hybrid Engine Benchmark on held-out test dataset.")
+    parser.add_argument("--mode", choices=["all", "rule_based_only", "cascaded_hybrid"], default="all",
+                        help="Operating mode to benchmark (default: all)")
+    parser.add_argument("--max-boards", type=int, default=None,
+                        help="Limit evaluation to first N boards for rapid testing")
+    args = parser.parse_args()
+
+    run_benchmark(mode_filter=args.mode, max_boards=args.max_boards)
