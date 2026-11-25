@@ -2,7 +2,7 @@
 
 This document chronicles how the engineering lead (human) and the AI agent reached a shared technical understanding, how initial AI assumptions were challenged and corrected, and how key architectural decisions were steered to build a production-grade, 100% air-gapped Automated Optical Inspection (AOI) system for missing SMT components.
 
-The complete, unabridged prompt history starting from the very first brief is archived in [`docs/chat_history.md`](docs/chat_history.md).
+The complete, unabridged prompt history starting from the very first brief is archived in both readable Markdown format in [`docs/chat_history.md`](docs/chat_history.md) and machine-readable raw JSON export in [`docs/ai_chat_transcript.json`](docs/ai_chat_transcript.json).
 
 ---
 ## Key Collaborative Decisions
@@ -133,3 +133,14 @@ The complete, unabridged prompt history starting from the very first brief is ar
 > **me:** also export recipes(json) button on the top right in Board & CAD Studio please remove it as it is of not needed. The user should be able to load and save directly in the app without dealing with loose files.
 
 ---
+
+## Full AI Chat History & Exports
+
+Per assignment guidelines, the unabridged record of all human-AI collaboration throughout this project—from the very first prompt to final delivery—is stored directly in the repository:
+
+| Artifact | Format | Description & Location |
+| :--- | :---: | :--- |
+| **Chronological Prompt History** | Markdown | [`docs/chat_history.md`](docs/chat_history.md) — All 119 sequential user prompts with timestamps, requirements, and steering directives. |
+| **Machine-Readable Transcript** | JSON | [`docs/ai_chat_transcript.json`](docs/ai_chat_transcript.json) — Full structured export of all 119 dialogue turns including timestamps, inputs, and assistant responses. |
+| **Conversation Provenance** | Native | Conversation ID: `1a7fd3eb-6da0-4cbe-bdae-f0587aee5bf9` |
+
