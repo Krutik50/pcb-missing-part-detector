@@ -533,6 +533,57 @@ class TestBackendAPI(unittest.TestCase):
         presets_after = client.get("/api/presets").json()
         self.assertFalse(any(p["id"] == recipe_id for p in presets_after["presets"]))
 
+    def test_aligned_image_and_loupe_endpoints(self):
+        # 1. Upload reference
+        with open(SAMPLE_DIR / "reference.png", "rb") as f:
+            ref_resp = client.post("/api/reference", files={"file": ("reference.png", f, "image/png")})
+        session_id = ref_resp.json()["session_id"]
+
+        # 2. Register component U1
+        client.post(
+            f"/api/sessions/{session_id}/components",
+            json={"components": [{"name": "U1", "bbox": [212, 254, 190, 147]}]},
+        )
+
+        # 3. Inspect a test image
+        with open(SAMPLE_DIR / "calibration/calib_08_missing_u1_mcu.png", "rb") as f:
+            insp_resp = client.post(
+                "/api/inspect",
+                data={"session_id": session_id},
+                files=[("test_images", ("calib_08_missing_u1_mcu.png", f, "image/png"))],
+            )
+        self.assertEqual(insp_resp.status_code, 200)
+
+        # 4. Test aligned-image endpoint
+        aligned_resp = client.get(f"/api/sessions/{session_id}/aligned-image/calib_08_missing_u1_mcu.png")
+        self.assertEqual(aligned_resp.status_code, 200)
+        self.assertEqual(aligned_resp.headers["content-type"], "image/png")
+        self.assertGreater(len(aligned_resp.content), 1000)
+
+        # Nonexistent file returns 404
+        bad_aligned = client.get(f"/api/sessions/{session_id}/aligned-image/nonexistent.png")
+        self.assertEqual(bad_aligned.status_code, 404)
+
+        # 5. Test loupe endpoint
+        loupe_resp = client.get(f"/api/sessions/{session_id}/loupe/calib_08_missing_u1_mcu.png/U1")
+        self.assertEqual(loupe_resp.status_code, 200)
+        loupe_data = loupe_resp.json()
+        self.assertEqual(loupe_data["component_name"], "U1")
+        self.assertEqual(loupe_data["filename"], "calib_08_missing_u1_mcu.png")
+        self.assertTrue(loupe_data["ref_crop_url"].startswith("data:image/png;base64,"))
+        self.assertTrue(loupe_data["test_crop_url"].startswith("data:image/png;base64,"))
+        self.assertTrue(loupe_data["diff_crop_url"].startswith("data:image/png;base64,"))
+        self.assertIn("zncc_score", loupe_data)
+        self.assertIn("patch_diff", loupe_data)
+        self.assertIn("tilt_deg", loupe_data)
+        self.assertIn("shift_dist_px", loupe_data)
+        self.assertIn("shift_px", loupe_data)
+        self.assertIn("max_pixel_dev_pct", loupe_data)
+
+        # Nonexistent component returns 404
+        bad_loupe = client.get(f"/api/sessions/{session_id}/loupe/calib_08_missing_u1_mcu.png/NONEXISTENT")
+        self.assertEqual(bad_loupe.status_code, 404)
+
 
 if __name__ == "__main__":
     unittest.main()

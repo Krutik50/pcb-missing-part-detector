@@ -8,6 +8,7 @@ Provides 100% offline REST API endpoints:
 - GET  /: Web UI single-page application entrypoint.
 """
 
+import base64
 import json
 import re
 import time
@@ -373,6 +374,7 @@ async def inspect_test_images(
         cfg.max_allowed_shift_px = float(max_shift_px)
     effective_thresh = cfg.get_effective_thresholds()
 
+    session.setdefault("aligned_images", {})
     results = []
 
     for file in test_images:
@@ -416,6 +418,8 @@ async def inspect_test_images(
                 motion_type=cfg.alignment_motion_type,
                 downscale=cfg.alignment_downscale_factor,
             )
+            session["aligned_images"][fname] = aligned_test
+            session["ref_norm"] = ref_norm
 
             # Resolve auto-calibrated optical tolerance baseline (e.g. 100-board Arduino Uno profile)
             calib_reg = get_auto_calibration_registry()
@@ -555,6 +559,120 @@ async def inspect_test_images(
             "rule": auto_profile["human_review_rule"],
         },
         "results": results,
+    }
+
+
+# --- HIGH-ACCURACY 3X DIGITAL OPTICAL LOUPE & ALIGNED CROPS ---
+
+@app.get("/api/sessions/{session_id}/aligned-image/{filename}")
+async def get_aligned_test_image(session_id: str, filename: str):
+    """Returns the aligned test board image in reference coordinates for accurate inspection overlay."""
+    if session_id not in SESSIONS:
+        raise HTTPException(status_code=404, detail="Session not found")
+    sess = SESSIONS[session_id]
+    aligned_imgs = sess.get("aligned_images", {})
+    if filename not in aligned_imgs:
+        raise HTTPException(status_code=404, detail=f"Aligned image not found for test board '{filename}'")
+    img_bgr = aligned_imgs[filename]
+    success, encoded = cv2.imencode(".png", img_bgr)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to encode aligned image")
+    return Response(content=encoded.tobytes(), media_type="image/png")
+
+
+@app.get("/api/sessions/{session_id}/loupe/{filename}/{component_name}")
+async def get_component_loupe_data(session_id: str, filename: str, component_name: str):
+    """
+    Returns high-accuracy 3x optical loupe crops directly from the normalized reference and aligned test board.
+    Includes:
+    - 100% pixel-aligned Golden Reference crop
+    - 100% pixel-aligned Test Board crop
+    - Illumination-compensated structural difference heatmap
+    - Exact subpixel shift vector and rotation diagnostics
+    """
+    if session_id not in SESSIONS:
+        raise HTTPException(status_code=404, detail="Session not found")
+    sess = SESSIONS[session_id]
+    aligned_imgs = sess.get("aligned_images", {})
+    if filename not in aligned_imgs:
+        raise HTTPException(status_code=404, detail=f"Aligned image not found for test board '{filename}'")
+
+    components = sess.get("components", {})
+    if component_name not in components:
+        raise HTTPException(status_code=404, detail=f"Component '{component_name}' not registered in session")
+
+    comp_info = components[component_name]
+    px_box = comp_info["pixel_bbox"]
+    x, y, w, h = px_box
+
+    ref_norm = sess.get("ref_norm")
+    if ref_norm is None:
+        ref_bgr = sess["ref_image"]
+        ref_norm, _, _, _ = normalize_to_reference(ref_bgr, ref_bgr)
+        sess["ref_norm"] = ref_norm
+
+    aligned_test = aligned_imgs[filename]
+
+    H, W = ref_norm.shape[:2]
+    x0 = max(0, min(x, W - 1))
+    y0 = max(0, min(y, H - 1))
+    w0 = max(4, min(w, W - x0))
+    h0 = max(4, min(h, H - y0))
+
+    ref_crop = ref_norm[y0:y0 + h0, x0:x0 + w0]
+    test_crop = aligned_test[y0:y0 + h0, x0:x0 + w0]
+
+    cfg = DEFAULT_CONFIG
+    insp = inspect_component(ref_norm, aligned_test, [x0, y0, w0, h0], search_margin_px=cfg.search_margin_px)
+
+    # Illumination-adjusted difference residual heatmap
+    r_f = ref_crop.astype(np.float32)
+    t_f = test_crop.astype(np.float32)
+    mean_r = float(np.mean(r_f))
+    mean_t = float(np.mean(t_f))
+    t_adj = np.clip(t_f - mean_t + mean_r, 0, 255)
+
+    diff_mag = np.mean(np.abs(r_f - t_adj), axis=2)  # (H, W) in [0, 255]
+    diff_norm = np.clip(diff_mag * 3.2, 0, 255).astype(np.uint8)
+
+    diff_heatmap = np.zeros_like(ref_crop)
+    # Bright red where difference is high, dark cyan where match is high
+    diff_heatmap[:, :, 2] = diff_norm  # Red channel
+    diff_heatmap[:, :, 1] = np.where(diff_norm < 50, 40, 15).astype(np.uint8)  # Green
+    diff_heatmap[:, :, 0] = np.where(diff_norm < 50, 60, 20).astype(np.uint8)  # Blue
+
+    def to_b64(arr):
+        ok, buf = cv2.imencode(".png", arr)
+        if not ok:
+            return ""
+        return f"data:image/png;base64,{base64.b64encode(buf).decode('utf-8')}"
+
+    # Find status from last results if available
+    status_label = "PRESENT"
+    reason_label = ""
+    for r in sess.get("last_inspection_results", []):
+        if r.get("filename") == filename:
+            for c in r.get("components", []):
+                if c.get("name") == component_name:
+                    status_label = c.get("status", "PRESENT")
+                    reason_label = c.get("reason", "")
+                    break
+
+    return {
+        "component_name": component_name,
+        "filename": filename,
+        "box": [x0, y0, w0, h0],
+        "status": status_label,
+        "reason": reason_label,
+        "ref_crop_url": to_b64(ref_crop),
+        "test_crop_url": to_b64(test_crop),
+        "diff_crop_url": to_b64(diff_heatmap),
+        "zncc_score": round(float(insp.get("zncc_score", 0.0)), 4),
+        "patch_diff": round(float(insp.get("patch_diff", 0.0)), 4),
+        "tilt_deg": insp.get("tilt_deg", 0.0),
+        "shift_dist_px": insp.get("shift_dist_px", 0.0),
+        "shift_px": insp.get("shift_px", (0, 0)),
+        "max_pixel_dev_pct": round(float(np.max(diff_mag) / 255.0) * 100.0, 1),
     }
 
 

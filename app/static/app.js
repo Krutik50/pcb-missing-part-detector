@@ -2805,9 +2805,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const canvas = document.getElementById(canvasId);
         if (!canvas) return;
 
-        // Find the original File object for this result
+        // Try to draw from aligned image endpoint first if sessionId exists
+        const alignedUrl = state.sessionId ? `/api/sessions/${state.sessionId}/aligned-image/${encodeURIComponent(result.filename)}` : null;
         const fileObj = state.testFiles.find(f => f.name === result.filename);
-        if (!fileObj) return;
+        if (!fileObj && !alignedUrl) return;
 
         const img = new Image();
         img.onload = () => {
@@ -2815,7 +2816,7 @@ document.addEventListener('DOMContentLoaded', () => {
             canvas.height = state.workingDim.height;
             const ctx = canvas.getContext('2d');
 
-            // Draw test image
+            // Draw aligned test image (or fallback raw test image)
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
             // Overlay colored component boxes
@@ -2891,7 +2892,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 ctx.fillText(tagText, x + 6, Math.max(16, y - 7));
             });
         };
-        img.src = URL.createObjectURL(fileObj);
+        img.onerror = () => {
+            if (fileObj && img.src !== URL.createObjectURL(fileObj)) {
+                img.src = URL.createObjectURL(fileObj);
+            }
+        };
+        if (alignedUrl) {
+            img.src = alignedUrl;
+        } else if (fileObj) {
+            img.src = URL.createObjectURL(fileObj);
+        }
     }
 
     // --- WORKSPACE 1: DIGITAL MICROSCOPE LOUPE (3X ZOOM) ---
@@ -2966,60 +2976,89 @@ document.addEventListener('DOMContentLoaded', () => {
         const shiftStr = comp.scores && comp.scores.shift_dist_px !== undefined ? `${comp.scores.shift_dist_px.toFixed(1)} px` : '0.0 px';
 
         loupeContainer.innerHTML = `
-            <div class="loupe-header">
-                <div class="loupe-header-title">
+            <div class="loupe-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
+                <div class="loupe-header-title" style="display:flex; align-items:center; gap:0.5rem;">
                     <svg class="ui-icon" style="width:18px;height:18px;color:var(--color-blue);"><use href="#icon-loupe"></use></svg>
-                    <h4>Digital Microscope Loupe: ${comp.name}</h4>
+                    <h4 style="margin:0; font-size:1rem; font-weight:700;">Digital Optical Loupe: ${comp.name}</h4>
                     <span class="badge ${badgeClass}">${comp.status}</span>
                 </div>
-                <button type="button" class="btn-xs-link btn-close-loupe" data-card="${resIdx}" style="color:var(--text-muted); font-size:0.85rem; cursor:pointer; text-decoration:none;">&times; Close Loupe</button>
+                <div class="loupe-controls" style="display:flex; align-items:center; gap:0.5rem;">
+                    <div class="btn-group" style="display:inline-flex; border:1px solid var(--border-color); border-radius:4px; overflow:hidden;">
+                        <button type="button" class="btn-loupe-zoom" data-zoom="1">1×</button>
+                        <button type="button" class="btn-loupe-zoom" data-zoom="2">2×</button>
+                        <button type="button" class="btn-loupe-zoom active" data-zoom="3">3×</button>
+                        <button type="button" class="btn-loupe-zoom" data-zoom="5">5×</button>
+                    </div>
+                    <button type="button" id="btn-loupe-reticle-${resIdx}" class="btn-secondary btn-sm" style="padding:0.25rem 0.55rem; font-size:0.75rem;" title="Toggle optical measurement reticle">
+                        Reticle: ON
+                    </button>
+                    <button type="button" id="btn-loupe-blink-${resIdx}" class="btn-secondary btn-sm" style="padding:0.25rem 0.55rem; font-size:0.75rem;" title="Blink comparator between golden reference and test board">
+                        Blink Compare
+                    </button>
+                    <button type="button" class="btn-xs-link btn-close-loupe" data-card="${resIdx}" style="color:var(--text-muted); font-size:0.85rem; cursor:pointer; text-decoration:none; margin-left:0.5rem;">&times; Close Loupe</button>
+                </div>
             </div>
 
             <div class="loupe-crops-grid">
                 <div class="loupe-crop-box">
                     <div class="loupe-crop-title">1. Golden Reference Crop</div>
-                    <canvas id="loupe-crop-ref-${resIdx}" class="loupe-crop-canvas"></canvas>
-                    <span style="font-size:0.7rem; color:var(--text-muted);">${bw}&times;${bh} px nominal template</span>
+                    <div class="loupe-canvas-wrapper">
+                        <canvas id="loupe-crop-ref-${resIdx}" class="loupe-crop-canvas"></canvas>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--text-muted); margin-top:0.25rem;">
+                        <span>${bw}&times;${bh} px nominal template</span>
+                        <span id="loupe-ref-status-${resIdx}">Golden Master</span>
+                    </div>
                 </div>
                 <div class="loupe-crop-box">
-                    <div class="loupe-crop-title">2. Aligned Test Board Crop (3× Zoom)</div>
-                    <canvas id="loupe-crop-test-${resIdx}" class="loupe-crop-canvas"></canvas>
-                    <span style="font-size:0.7rem; color:var(--text-muted);">Inspected component ROI</span>
+                    <div class="loupe-crop-title" id="loupe-test-title-${resIdx}">2. Aligned Test Board Crop (3× Zoom)</div>
+                    <div class="loupe-canvas-wrapper">
+                        <canvas id="loupe-crop-test-${resIdx}" class="loupe-crop-canvas"></canvas>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--text-muted); margin-top:0.25rem;">
+                        <span id="loupe-test-desc-${resIdx}">Subpixel-aligned ROI</span>
+                        <span id="loupe-test-shift-${resIdx}">Shift: ${shiftStr}</span>
+                    </div>
                 </div>
                 <div class="loupe-crop-box">
                     <div class="loupe-crop-title">3. Structural Difference Residual</div>
-                    <canvas id="loupe-crop-diff-${resIdx}" class="loupe-crop-canvas"></canvas>
-                    <span style="font-size:0.7rem; color:var(--text-muted);">Red pixel deviation heatmap</span>
+                    <div class="loupe-canvas-wrapper">
+                        <canvas id="loupe-crop-diff-${resIdx}" class="loupe-crop-canvas"></canvas>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--text-muted); margin-top:0.25rem;">
+                        <span>Illumination-compensated heatmap</span>
+                        <span id="loupe-diff-val-${resIdx}">Diff: ${diffStr}</span>
+                    </div>
                 </div>
             </div>
 
             <div class="loupe-metrics-bar">
                 <div class="loupe-metric-cell">
                     <span class="loupe-metric-label">ZNCC Similarity</span>
-                    <span class="loupe-metric-val" style="color:${comp.status === 'MISSING' ? 'var(--color-red)' : 'var(--color-green-light)'};">${znccStr}</span>
+                    <span class="loupe-metric-val" id="loupe-val-zncc-${resIdx}" style="color:${comp.status === 'MISSING' ? 'var(--color-red)' : 'var(--color-green-light)'};">${znccStr}</span>
                 </div>
                 <div class="loupe-metric-cell">
                     <span class="loupe-metric-label">Residual MAE Diff</span>
-                    <span class="loupe-metric-val">${diffStr}</span>
+                    <span class="loupe-metric-val" id="loupe-val-diff-${resIdx}">${diffStr}</span>
                 </div>
                 <div class="loupe-metric-cell">
                     <span class="loupe-metric-label">Rotational Skew</span>
-                    <span class="loupe-metric-val" style="color:${comp.status === 'TILTED' ? 'var(--color-amber)' : 'inherit'};">${tiltStr}</span>
+                    <span class="loupe-metric-val" id="loupe-val-tilt-${resIdx}" style="color:${comp.status === 'TILTED' ? 'var(--color-amber)' : 'inherit'};">${tiltStr}</span>
                 </div>
                 <div class="loupe-metric-cell">
                     <span class="loupe-metric-label">Positional Shift</span>
-                    <span class="loupe-metric-val" style="color:${comp.status === 'MISALIGNED' ? 'var(--color-blue)' : 'inherit'};">${shiftStr}</span>
+                    <span class="loupe-metric-val" id="loupe-val-shift-${resIdx}" style="color:${comp.status === 'MISALIGNED' ? 'var(--color-blue)' : 'inherit'};">${shiftStr}</span>
+                </div>
+                <div class="loupe-metric-cell">
+                    <span class="loupe-metric-label">Peak Deviation</span>
+                    <span class="loupe-metric-val" id="loupe-val-peak-${resIdx}">--</span>
                 </div>
             </div>
 
             <div style="margin-top:0.75rem; font-size:0.83rem; color:var(--text-secondary); background:rgba(0,0,0,0.25); padding:0.5rem 0.75rem; border-radius:4px; border-left:3px solid var(--color-blue);">
-                <strong>IPC-A-610 Diagnostic:</strong> ${comp.reason || 'Normal component footprint.'}
+                <strong>IPC-A-610 Diagnostic:</strong> <span id="loupe-ipc-desc-${resIdx}">${comp.reason || 'Normal component footprint.'}</span>
             </div>
         `;
-
-        loupeContainer.querySelector('.btn-close-loupe').addEventListener('click', () => {
-            loupeContainer.classList.add('d-none');
-        });
 
         renderLoupeCrops(res, comp, resIdx, box);
         loupeContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -3030,57 +3069,299 @@ document.addEventListener('DOMContentLoaded', () => {
         const refCanvas = document.getElementById(`loupe-crop-ref-${resIdx}`);
         const testCanvas = document.getElementById(`loupe-crop-test-${resIdx}`);
         const diffCanvas = document.getElementById(`loupe-crop-diff-${resIdx}`);
+        const loupeContainer = document.getElementById(`loupe-container-${resIdx}`);
 
         if (!refCanvas || !testCanvas || !diffCanvas) return;
 
-        refCanvas.width = bw;
-        refCanvas.height = bh;
-        testCanvas.width = bw;
-        testCanvas.height = bh;
-        diffCanvas.width = bw;
-        diffCanvas.height = bh;
+        let currentZoom = 3;
+        let showReticle = true;
+        let blinkInterval = null;
+        let blinkState = false; // false = test, true = ref
 
-        const ctxR = refCanvas.getContext('2d');
-        const ctxT = testCanvas.getContext('2d');
-        const ctxD = diffCanvas.getContext('2d');
+        const imgRef = new Image();
+        const imgTest = new Image();
+        const imgDiff = new Image();
+        const imagesLoaded = { ref: false, test: false, diff: false };
+        let loupeData = null;
 
-        if (state.referenceImg) {
-            ctxR.drawImage(state.referenceImg, bx, by, bw, bh, 0, 0, bw, bh);
+        const cleanup = () => {
+            if (blinkInterval) {
+                clearInterval(blinkInterval);
+                blinkInterval = null;
+            }
+        };
+
+        const closeBtn = loupeContainer.querySelector('.btn-close-loupe');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                cleanup();
+                loupeContainer.classList.add('d-none');
+            });
         }
 
-        const fileObj = state.testFiles.find(f => f.name === res.filename) || state.testFiles[resIdx];
-        if (fileObj) {
-            const img = new Image();
-            img.onload = () => {
-                ctxT.drawImage(img, bx, by, bw, bh, 0, 0, bw, bh);
+        function drawReticleOverlay(ctx, w, h, shiftX, shiftY, tiltDeg) {
+            if (!showReticle) return;
+            ctx.save();
 
-                try {
-                    const rData = ctxR.getImageData(0, 0, bw, bh);
-                    const tData = ctxT.getImageData(0, 0, bw, bh);
-                    const dData = ctxD.createImageData(bw, bh);
+            const cx = w / 2;
+            const cy = h / 2;
 
-                    for (let i = 0; i < rData.data.length; i += 4) {
-                        const dr = Math.abs(rData.data[i] - tData.data[i]);
-                        const dg = Math.abs(rData.data[i+1] - tData.data[i+1]);
-                        const db = Math.abs(rData.data[i+2] - tData.data[i+2]);
-                        const avgDiff = (dr + dg + db) / 3;
+            // 1. Crosshair lines (high contrast with sub-pixel rendering)
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
 
-                        if (avgDiff > 25) {
-                            dData.data[i] = Math.min(255, Math.floor(avgDiff * 2.8));
-                            dData.data[i+1] = 30;
-                            dData.data[i+2] = 30;
-                            dData.data[i+3] = 255;
-                        } else {
-                            dData.data[i] = 15;
-                            dData.data[i+1] = 20;
-                            dData.data[i+2] = 30;
-                            dData.data[i+3] = 255;
-                        }
+            ctx.beginPath();
+            ctx.moveTo(0, cy);
+            ctx.lineTo(w, cy);
+            ctx.moveTo(cx, 0);
+            ctx.lineTo(cx, h);
+            ctx.stroke();
+
+            // 2. Optical Reticle graduation tick marks (every 15px)
+            ctx.setLineDash([]);
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
+            ctx.beginPath();
+            for (let x = cx % 15; x < w; x += 15) {
+                ctx.moveTo(x, cy - 3);
+                ctx.lineTo(x, cy + 3);
+            }
+            for (let y = cy % 15; y < h; y += 15) {
+                ctx.moveTo(cx - 3, y);
+                ctx.lineTo(cx + 3, y);
+            }
+            ctx.stroke();
+
+            // 3. Center Target Ring
+            const ringR = Math.min(w, h) * 0.12;
+            ctx.beginPath();
+            ctx.arc(cx, cy, Math.max(8, ringR), 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+            ctx.stroke();
+
+            // 4. Component Boundary Box (calibrated nominal border)
+            ctx.strokeStyle = 'rgba(46, 160, 67, 0.7)';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(1, 1, w - 2, h - 2);
+
+            // 5. Shift vector arrow if component has detected misalignment
+            if (shiftX !== undefined && shiftY !== undefined && (Math.abs(shiftX) > 0.3 || Math.abs(shiftY) > 0.3)) {
+                const targetX = cx + shiftX * currentZoom;
+                const targetY = cy + shiftY * currentZoom;
+
+                ctx.strokeStyle = '#f85149';
+                ctx.fillStyle = '#f85149';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(targetX, targetY);
+                ctx.stroke();
+
+                const angle = Math.atan2(targetY - cy, targetX - cx);
+                const headLen = 6;
+                ctx.beginPath();
+                ctx.moveTo(targetX, targetY);
+                ctx.lineTo(targetX - headLen * Math.cos(angle - Math.PI / 6), targetY - headLen * Math.sin(angle - Math.PI / 6));
+                ctx.lineTo(targetX - headLen * Math.cos(angle + Math.PI / 6), targetY - headLen * Math.sin(angle + Math.PI / 6));
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            ctx.restore();
+        }
+
+        function redraw() {
+            const scale = Math.max(1, currentZoom);
+            const renderW = Math.max(80, Math.round(bw * scale));
+            const renderH = Math.max(80, Math.round(bh * scale));
+
+            [refCanvas, testCanvas, diffCanvas].forEach(c => {
+                c.width = renderW;
+                c.height = renderH;
+            });
+
+            const ctxR = refCanvas.getContext('2d');
+            const ctxT = testCanvas.getContext('2d');
+            const ctxD = diffCanvas.getContext('2d');
+
+            ctxR.imageSmoothingEnabled = currentZoom < 3;
+            ctxT.imageSmoothingEnabled = currentZoom < 3;
+            ctxD.imageSmoothingEnabled = currentZoom < 3;
+
+            // Draw Reference Crop
+            if (imagesLoaded.ref) {
+                ctxR.drawImage(imgRef, 0, 0, renderW, renderH);
+                drawReticleOverlay(ctxR, renderW, renderH);
+            }
+
+            // Draw Test Crop (or Blink Reference if in blink phase)
+            if (imagesLoaded.test && imagesLoaded.ref) {
+                if (blinkState) {
+                    ctxT.drawImage(imgRef, 0, 0, renderW, renderH);
+                    ctxT.fillStyle = 'rgba(234, 179, 8, 0.85)';
+                    ctxT.fillRect(4, 4, 120, 18);
+                    ctxT.fillStyle = '#000';
+                    ctxT.font = 'bold 10px sans-serif';
+                    ctxT.fillText('REF BLINK (GOLDEN)', 8, 16);
+                } else {
+                    ctxT.drawImage(imgTest, 0, 0, renderW, renderH);
+                }
+                const sX = (loupeData && loupeData.shift_px) ? loupeData.shift_px[0] : (comp.scores ? comp.scores.shift_px_x : 0);
+                const sY = (loupeData && loupeData.shift_px) ? loupeData.shift_px[1] : (comp.scores ? comp.scores.shift_px_y : 0);
+                drawReticleOverlay(ctxT, renderW, renderH, sX, sY, loupeData ? loupeData.tilt_deg : comp.scores?.tilt_deg);
+            }
+
+            // Draw Difference Heatmap
+            if (imagesLoaded.diff) {
+                ctxD.drawImage(imgDiff, 0, 0, renderW, renderH);
+            }
+        }
+
+        // Fetch high-accuracy server crops if session active
+        if (state.sessionId) {
+            fetch(`/api/sessions/${state.sessionId}/loupe/${encodeURIComponent(res.filename)}/${encodeURIComponent(comp.name)}`)
+                .then(r => r.ok ? r.json() : null)
+                .then(data => {
+                    if (data && data.ref_crop_url && data.test_crop_url) {
+                        loupeData = data;
+                        const elZncc = document.getElementById(`loupe-val-zncc-${resIdx}`);
+                        const elDiff = document.getElementById(`loupe-val-diff-${resIdx}`);
+                        const elTilt = document.getElementById(`loupe-val-tilt-${resIdx}`);
+                        const elShift = document.getElementById(`loupe-val-shift-${resIdx}`);
+                        const elPeak = document.getElementById(`loupe-val-peak-${resIdx}`);
+                        const elShiftHdr = document.getElementById(`loupe-test-shift-${resIdx}`);
+                        const elDiffHdr = document.getElementById(`loupe-diff-val-${resIdx}`);
+                        const elIpc = document.getElementById(`loupe-ipc-desc-${resIdx}`);
+
+                        if (elZncc) elZncc.textContent = data.zncc_score.toFixed(3);
+                        if (elDiff) elDiff.textContent = data.patch_diff.toFixed(3);
+                        if (elTilt) elTilt.textContent = `${data.tilt_deg > 0 ? '+' : ''}${data.tilt_deg.toFixed(1)}°`;
+                        if (elShift) elShift.textContent = `${data.shift_dist_px.toFixed(1)} px [dx:${data.shift_px[0]}, dy:${data.shift_px[1]}]`;
+                        if (elPeak) elPeak.textContent = `${data.max_pixel_dev_pct}%`;
+                        if (elShiftHdr) elShiftHdr.textContent = `Shift: ${data.shift_dist_px.toFixed(1)} px`;
+                        if (elDiffHdr) elDiffHdr.textContent = `Dev: ${data.max_pixel_dev_pct}%`;
+                        if (elIpc && data.reason) elIpc.textContent = data.reason;
+
+                        let pending = 3;
+                        const onImg = () => {
+                            pending--;
+                            if (pending === 0) redraw();
+                        };
+
+                        imgRef.onload = () => { imagesLoaded.ref = true; onImg(); };
+                        imgTest.onload = () => { imagesLoaded.test = true; onImg(); };
+                        imgDiff.onload = () => { imagesLoaded.diff = true; onImg(); };
+
+                        imgRef.src = data.ref_crop_url;
+                        imgTest.src = data.test_crop_url;
+                        imgDiff.src = data.diff_crop_url;
+                        return;
                     }
-                    ctxD.putImageData(dData, 0, 0);
-                } catch {}
-            };
-            img.src = URL.createObjectURL(fileObj);
+                    fallbackLocalRender();
+                })
+                .catch(() => fallbackLocalRender());
+        } else {
+            fallbackLocalRender();
+        }
+
+        function fallbackLocalRender() {
+            if (state.referenceImg) {
+                const tempC = document.createElement('canvas');
+                tempC.width = bw;
+                tempC.height = bh;
+                const tCtx = tempC.getContext('2d');
+                tCtx.drawImage(state.referenceImg, bx, by, bw, bh, 0, 0, bw, bh);
+                imgRef.onload = () => { imagesLoaded.ref = true; redraw(); };
+                imgRef.src = tempC.toDataURL();
+            }
+
+            const fileObj = state.testFiles.find(f => f.name === res.filename) || state.testFiles[resIdx];
+            if (fileObj) {
+                const rawImg = new Image();
+                rawImg.onload = () => {
+                    const tempC = document.createElement('canvas');
+                    tempC.width = bw;
+                    tempC.height = bh;
+                    const tCtx = tempC.getContext('2d');
+                    tCtx.drawImage(rawImg, bx, by, bw, bh, 0, 0, bw, bh);
+
+                    imgTest.onload = () => {
+                        imagesLoaded.test = true;
+                        if (imagesLoaded.ref) {
+                            const dC = document.createElement('canvas');
+                            dC.width = bw;
+                            dC.height = bh;
+                            const dCtx = dC.getContext('2d');
+                            try {
+                                const rData = tCtx.getImageData(0, 0, bw, bh);
+                                const tData = tCtx.getImageData(0, 0, bw, bh);
+                                const dData = dCtx.createImageData(bw, bh);
+                                for (let i = 0; i < rData.data.length; i += 4) {
+                                    const diff = Math.abs(rData.data[i] - tData.data[i]);
+                                    dData.data[i] = Math.min(255, diff * 3);
+                                    dData.data[i+1] = 20;
+                                    dData.data[i+2] = 20;
+                                    dData.data[i+3] = 255;
+                                }
+                                dCtx.putImageData(dData, 0, 0);
+                                imgDiff.onload = () => { imagesLoaded.diff = true; redraw(); };
+                                imgDiff.src = dC.toDataURL();
+                            } catch {}
+                        }
+                        redraw();
+                    };
+                    imgTest.src = tempC.toDataURL();
+                };
+                rawImg.src = URL.createObjectURL(fileObj);
+            }
+        }
+
+        // Attach zoom button handlers
+        loupeContainer.querySelectorAll('.btn-loupe-zoom').forEach(btn => {
+            btn.addEventListener('click', () => {
+                loupeContainer.querySelectorAll('.btn-loupe-zoom').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentZoom = parseInt(btn.getAttribute('data-zoom'), 10) || 3;
+                const titleEl = document.getElementById(`loupe-test-title-${resIdx}`);
+                if (titleEl) titleEl.textContent = `2. Aligned Test Board Crop (${currentZoom}× Zoom)`;
+                redraw();
+            });
+        });
+
+        // Attach reticle toggle handler
+        const reticleBtn = document.getElementById(`btn-loupe-reticle-${resIdx}`);
+        if (reticleBtn) {
+            reticleBtn.addEventListener('click', () => {
+                showReticle = !showReticle;
+                reticleBtn.textContent = `Reticle: ${showReticle ? 'ON' : 'OFF'}`;
+                if (showReticle) {
+                    reticleBtn.classList.add('active');
+                } else {
+                    reticleBtn.classList.remove('active');
+                }
+                redraw();
+            });
+        }
+
+        // Attach blink comparator handler
+        const blinkBtn = document.getElementById(`btn-loupe-blink-${resIdx}`);
+        if (blinkBtn) {
+            blinkBtn.addEventListener('click', () => {
+                if (blinkInterval) {
+                    cleanup();
+                    blinkState = false;
+                    blinkBtn.textContent = 'Blink Compare';
+                    blinkBtn.classList.remove('active');
+                    redraw();
+                } else {
+                    blinkBtn.textContent = 'Stop Blink';
+                    blinkBtn.classList.add('active');
+                    blinkInterval = setInterval(() => {
+                        blinkState = !blinkState;
+                        redraw();
+                    }, 400);
+                }
+            });
         }
     }
 

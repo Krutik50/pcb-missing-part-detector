@@ -2474,12 +2474,48 @@ body {
 }
 
 .loupe-crop-canvas {
-    width: 100%;
-    height: 140px;
+    max-width: 100%;
+    height: 180px;
     object-fit: contain;
     background: #000;
     border-radius: 4px;
-    image-rendering: pixelated;
+    image-rendering: auto;
+}
+
+.loupe-canvas-wrapper {
+    min-height: 180px;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.btn-loupe-zoom {
+    background: #0d1520;
+    color: var(--text-secondary);
+    border: none;
+    border-right: 1px solid var(--border-color);
+    padding: 0.25rem 0.55rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.btn-loupe-zoom:last-child {
+    border-right: none;
+}
+
+.btn-loupe-zoom:hover {
+    background: #1e293b;
+    color: var(--text-primary);
+}
+
+.btn-loupe-zoom.active {
+    background: #2563eb;
+    color: #fff;
 }
 
 .loupe-metrics-bar {
